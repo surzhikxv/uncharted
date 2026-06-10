@@ -1,0 +1,284 @@
+/* ============ Fonts ============ */
+/* Tenor Sans — Google Fonts (cyrillic / latin-ext / latin) */
+@font-face {
+  font-family: 'Tenor Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/tenor-sans-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Tenor Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/tenor-sans-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Tenor Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/tenor-sans-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Geometria';
+  font-style: normal;
+  font-weight: 300;
+  src: url('fonts/geometria_light.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Geometria';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/geometria-regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Geometria';
+  font-style: normal;
+  font-weight: 500;
+  src: url('fonts/geometria_medium.otf') format('opentype');
+}
+
+/* ============ Base ============ */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+body { background: #fff; }
+
+.page {
+  position: relative;
+  width: 1920px;
+  height: 9009.6px;
+  background: #fff;
+  overflow: hidden;
+  font-family: 'Tenor Sans', sans-serif;
+}
+
+.abs { position: absolute; }
+img.abs { display: block; }
+
+.t {
+  position: absolute;
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 400;
+  color: #313131;
+  white-space: pre-wrap;
+}
+.up { text-transform: uppercase; }
+.accent { color: #C35B3F; }
+
+/* ============ Buttons (Frame 402/403/389) ============ */
+.btn {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 320px;
+  padding: 24px 16px;
+  background: #C35B3F;
+  border-radius: 8px;
+}
+.btn span {
+  font-family: 'Tenor Sans', sans-serif;
+  font-size: 32px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+/* ============ 521:582 catalog texture bg ============ */
+.n582 { left: 0; top: 1810px; width: 1920px; height: 2499px; }
+
+.n583 { left: 101px;  top: 2519px; }
+.n585 { left: 567px;  top: 2519px; }
+.n587 { left: 1033px; top: 2527px; }
+.n589 { left: 1499px; top: 2527px; }
+
+/* ============ 521:591 hero bg — crop of scene-canyon-lake ============ */
+.n591 {
+  left: 0; top: 0; width: 1920px; height: 1043px;
+  background-image: url('public/images/adj/scene-canyon-lake-adj.png');
+  background-size: 2115.55px 1190.63px;
+  background-position: -71.23px -166.2px;
+}
+
+/* 521:592 aromas bg */
+.n592 { left: 0; top: 5336px; width: 1920px; height: 1632px; }
+
+/* 521:593 cream rectangle */
+.n593 { left: -72px; top: 772px; width: 2095px; height: 1038px; background: #FAF5F1; }
+
+/* 521:594 logo */
+.n594 { left: 49px; top: 54px; width: 168px; height: 143px; }
+
+/* 521:607 canyon valley bg */
+.n607 { left: -2px; top: 7054px; width: 1924px; height: 1374px; }
+
+/* 521:608 gradient blur */
+.n608 {
+  left: -42px; top: 6741px; width: 2099px; height: 409px;
+  background: linear-gradient(180deg, rgba(250, 244, 241, 1) 0%, rgba(227, 222, 217, 1) 100%);
+  filter: blur(90px);
+}
+
+/* 521:609 hero paragraph */
+.n609 { left: 49px; top: 276px; width: 871px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
+
+/* 521:610 каталог button */
+.n610 { left: 49px; top: 652px; }
+
+/* 521:612 shore bg */
+.n612 { left: -45px; top: 4309px; width: 1975px; height: 1027px; }
+
+/* 521:613 footer texture */
+.n613 { left: 0; top: 8428px; width: 1920px; height: 582px; }
+
+/* nav */
+.n614 { left: 311px; top: 92px; width: 156px; }
+.n615 { left: 549px; top: 92px; width: 147px; }
+.n616 { left: 778px; top: 92px; width: 177px; }
+.nav-link { font-size: 28.8px; line-height: 1; }
+
+/* intro texts */
+.n617 { left: 49px; top: 909px;  width: 880px;    font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
+.n618 { left: 49px; top: 1060px; transform: translateY(1px); width: 886.4px;  font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
+.n618 .brand { color: #B23D0F; }
+.n619 { left: 49px; top: 1255px; transform: translateY(1px); width: 1101px;   font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
+
+/* aromas section texts */
+.n620 { left: 64px; top: 6267px; width: 647px;   font-size: 67.2px; line-height: 1; color: #C35B3F; }
+.n621 { left: 64px; top: 6349px; width: 612.8px; font-size: 30px;   line-height: 1.2; letter-spacing: 0.08em; }
+.n622 { left: 784px; top: 6828px; width: 338px;  font-size: 40px;   line-height: 1; text-align: center; color: #C35B3F; }
+.n623 { left: 1242px; top: 5758px; width: 556px; font-size: 25.6px; line-height: 1.2; letter-spacing: 0.04em; }
+.n624 {
+  left: 1237px; top: 6402px; width: 604.8px;
+  font-family: 'Geometria', sans-serif; font-weight: 300;
+  font-size: 30px; line-height: 34px; letter-spacing: 3px;
+}
+.n624 .ts4 { font-family: 'Tenor Sans', sans-serif; font-size: 40px; line-height: 48px; letter-spacing: 4.06px; color: #C35B3F; }
+.n624 .ts5 { font-family: 'Tenor Sans', sans-serif; font-size: 40px; line-height: 48px; letter-spacing: 0.1em; color: #C35B3F; }
+.n624 .ts6 { font-family: 'Tenor Sans', sans-serif; }
+.n624 .ts7 { font-family: 'Tenor Sans', sans-serif; }
+
+
+/* 521:625 mask group (bottle-shaped photo, baked from render) */
+.n625 { left: 733px; top: 5701px; width: 442px; height: 1083px; }
+
+/* 521:628 dot */
+.n628 { left: 1232px; top: 6438.6px; width: 10px; height: 10px; border-radius: 50%; background: #FFF9BC; }
+
+/* 521:629 АРОМАТЫ */
+.n629 { left: 524px; top: 5474px; width: 838px; font-size: 150px; line-height: 1; color: #C35B3F; }
+
+/* 521:630 giant uncharted */
+.n630 {
+  left: 37px; top: 5219px; width: 1857px;
+  font-family: 'Geometria', sans-serif; font-weight: 500;
+  font-size: 286.4px; line-height: 0.9016;
+  color: #E38A71;
+}
+
+/* UNCHARTED — ЭТО section */
+.n631 { left: 128px; top: 7305px; width: 1096px; font-size: 60px;  line-height: 1; text-align: center; color: #C35B3F; }
+.n632 { left: 128px; top: 8079px; width: 1278px; font-size: 60px;  line-height: 1; color: #C35B3F; }
+.n633 { left: 128px; top: 7697px; width: 1028px; font-size: 60px;  line-height: 1; color: #C35B3F; }
+.n634 { left: 120px; top: 7069px; width: 1292px; font-size: 120px; line-height: 1; text-align: center; color: #C35B3F; }
+.n635 { left: 128px; top: 7402px; transform: translateY(2px); width: 1283px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
+.n636 { left: 133px; top: 8168px; transform: translateY(2px); width: 1283px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
+.n637 { left: 128px; top: 7791px; transform: translateY(2px); width: 1029px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
+
+/* footer */
+.n638 {
+  left: 128px; top: 8498px; width: 440px;
+  font-family: 'Geometria', sans-serif; font-weight: 500;
+  font-size: 67.8px; line-height: 0.9016;
+}
+.n639 { left: 1186px; top: 8622px; width: 254px; font-size: 30px; line-height: 1; }
+.n640 { left: 128px;  top: 8677px; transform: translateY(2px); width: 272px; font-size: 25.6px; line-height: 1; }
+.n641 { left: 1186px; top: 8762.7px; transform: translateY(1.5px);  width: 234px; font-size: 25.6px; line-height: 1; }
+.n642 { left: 1186px; top: 8721.1px; transform: translateY(2px);  width: 209px; font-size: 25.6px; line-height: 1; }
+.n643 { left: 1186px; top: 8679.6px; transform: translateY(1px);  width: 118px; font-size: 25.6px; line-height: 1; }
+.n644 { left: 1186px; top: 8804.29px; transform: translateY(2px); width: 401px; font-size: 25.6px; line-height: 1; }
+.n645 { left: 192px; top: 8741.1px; width: 136px; font-size: 25.6px; line-height: 1; }
+.n646 { left: 192px; top: 8805.1px; width: 123px; font-size: 25.6px; line-height: 1; }
+.n647 { left: 128px; top: 8730px;   width: 48px; height: 48px; }
+.n651 { left: 128px; top: 8793.9px; width: 48px; height: 48px; }
+.n657 { left: 128px; top: 8622px; width: 192px; font-size: 30px; line-height: 1; }
+.n658 { left: 660px; top: 8622px; width: 205px; font-size: 30px; line-height: 1; }
+.n659 { left: 128px; top: 8857.9px; width: 262.4px; font-size: 19.2px; line-height: 1.2; }
+.n660 { left: 660px; top: 8746px; width: 48px; height: 48px; }
+.n671 { left: 660px; top: 8682px; width: 48px; height: 48px; }
+.n680 { left: 660px; top: 8810px; width: 48px; height: 48px; }
+.n684 { left: 660px; top: 8874px; width: 48px; height: 48px; }
+.shop { font-family: 'Geometria', sans-serif; font-weight: 400; font-size: 25.6px; line-height: 1; }
+.n667 { left: 724px; top: 8757.2px; width: 202px; }
+.n668 { left: 724px; top: 8821.2px; width: 66px; }
+.n669 { left: 724px; top: 8885px;   width: 120px; }
+.n670 { left: 724px; top: 8693.2px; width: 142px; }
+/* 521:675 copyright (Ossem unavailable — set in Geometria per approval) */
+.n675 { left: 1695px; top: 8885px; width: 216px; font-family: 'Geometria', sans-serif; font-weight: 400; font-size: 19.2px; line-height: 1.3; }
+.n676 { left: 1663px; top: 8888px; width: 19.2px; height: 19.2px; }
+.n679 { left: 1186px; top: 8885px; width: 379px; font-family: 'Geometria', sans-serif; font-weight: 400; font-size: 19.2px; line-height: 1.2; }
+.n687 { left: 667px; top: 8888px; width: 37px; height: 19px; }
+
+/* 521:690 red rock */
+.n690 { left: 0; top: 5177px; width: 557px; height: 1102px; }
+
+/* 521:691 rock slab strip */
+.n691 { left: 0; top: 1392px; width: 1920px; height: 378px; }
+
+/* 521:692 свойства гелей и кремов */
+.n692 { left: 251px; top: 2741px; width: 1417px; font-size: 90px; line-height: 1; color: #C35B3F; }
+
+/* catalog cards (baked from render, radius included) */
+.card { top: 1789px; width: 424px; height: 703px; }
+.n693 { left: 49px; }
+.n694 { left: 515px; }
+.n695 { left: 981px; }
+.n696 { left: 1447px; }
+
+/* 521:697 gel pump photo (baked) */
+.n697 { left: 0; top: 2848px; width: 473px; height: 1553px; }
+.hero-right  { left: 960px; top: 0; width: 960px; height: 772px; }
+.hero-streak { left: 380px; top: 560px; width: 580px; height: 212px; }
+.hero-fade   { left: 0; top: 772px; width: 1920px; height: 136px; }
+.geldiag   { left: 850px; top: 2960px; width: 667px; height: 510px; }
+.creamdiag { left: 850px; top: 3520px; width: 667px; height: 615px; }
+
+/* 521:698 gradient blur */
+.n698 {
+  left: -107px; top: 4114px; width: 2099px; height: 554px;
+  background: linear-gradient(180deg, rgba(250, 244, 241, 1) 0%, rgba(253, 241, 228, 1) 100%);
+  filter: blur(90px);
+}
+
+/* gel/cream diagram labels */
+.lbl  { font-size: 35.2px; line-height: 1; }
+.geo  { font-family: 'Geometria', sans-serif; font-weight: 400; margin-top: -2px; }
+.n699 { left: 1518px; top: 3310px; width: 236px;   letter-spacing: -0.01em; }
+.n700 { left: 503px;  top: 3344px; width: 344px;   text-align: right; }
+.n703 { left: 1518px; top: 3164px; width: 272px; }
+.n705 { left: 569px;  top: 3025px; width: 278.4px; text-align: right; }
+.n706 { left: 525px;  top: 3202px; width: 321.6px; text-align: right; }
+.n721 { left: 570px;  top: 3770px; width: 277px; text-align: right; }
+.n722 { left: 591px;  top: 3911px; width: 256px; text-align: right; }
+.n723 { left: 598px;  top: 4053px; width: 249px; text-align: right; }
+.n724 { left: 1520px; top: 3985px; width: 269px; }
+.n725 { left: 911px;  top: 4225px; width: 556px; font-size: 44.8px; line-height: 1; }
+.n726 { left: 966px;  top: 3471px; width: 406px; font-size: 44.8px; line-height: 1; }
+.n727 { left: 1518px; top: 3824px; width: 258px; }
+.n728 { left: 1520px; top: 3661px; width: 258px; }
+
+/* 521:729 big quote over shore */
+.n729 {
+  left: 322px; top: 4549px; width: 1275px;
+  font-size: 75px; line-height: 1; letter-spacing: -0.03em;
+  text-align: center; color: #C35B3F;
+}
+.n729 .ts10 { letter-spacing: 0.03em; }
+.n729 .ts11 { letter-spacing: -0.01em; }
+
+/* 521:730 */
+.n730 { left: 1518px; top: 3002px; width: 271px; }
+
+/* 521:731 planet */
+.n731 { left: 1372px; top: 3761px; width: 548px; height: 1249px; }

@@ -1,0 +1,11 @@
+<!DOCTYPE html><html><head><style>
+body{margin:0;background:#000}
+.sec{position:relative;overflow:hidden;margin-bottom:4px;filter:brightness(5)}
+.sec img{position:absolute;top:0}
+.sec .a{left:-6px}
+.sec .b{left:0;mix-blend-mode:difference}
+</style></head><body>
+<script>
+const secs=[["hero",1100],["text",900],["catalog",1150],["gel",1300],["cream",1500],["shore",1100],["aromas-top",1000],["aromas-bot",1000],["eto-top",800],["eto-bot",750],["footer",687]];
+document.write(secs.map(([n,h])=>`<div class="sec" style="height:${h}px"><img class="a" src="crops/${n}.png"><img class="b" src="../shot/crops/${n}.png"></div>`).join(""));
+</script></body></html>

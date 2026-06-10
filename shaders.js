@@ -30,19 +30,24 @@ class GLEngine {
   addScene(canvas, frag, texUrls, getUniforms){
     const gl = canvas.getContext('webgl2', { alpha: true, antialias: false, premultipliedAlpha: true });
     if (!gl) return null;
-    const prog = this._program(gl, GL_VERT, frag.replace('${GL_NOISE}', GL_NOISE));
+    const prog = this._program(gl, GL_VERT, frag);
     const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
     const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(prog, 'aPos');
     gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    const scene = { canvas, gl, prog, vao, textures: {}, texSizes: {}, getUniforms, visible: false, ready: false };
+    const scene = { canvas, gl, prog, vao, textures: {}, texSizes: {}, getUniforms, visible: false, ready: false, failed: false, uloc: new Map() };
     const names = Object.keys(texUrls);
     let left = names.length;
+    let anyFailed = false;
     if (!left) scene.ready = true;
     names.forEach((name, i) => this._loadTex(gl, texUrls[name], (tex, w, h) => {
-      scene.textures[name] = { tex, unit: i }; scene.texSizes[name] = [w, h];
-      if (--left === 0) scene.ready = true;
+      if (tex === null) { anyFailed = true; }
+      else { scene.textures[name] = { tex, unit: i }; scene.texSizes[name] = [w, h]; }
+      if (--left === 0) {
+        if (!anyFailed) { scene.ready = true; }
+        else if (!scene.failed) { scene.failed = true; scene.onFail && scene.onFail(); }
+      }
     }));
     new IntersectionObserver(es => es.forEach(e => { scene.visible = e.isIntersecting; }), { rootMargin: '60px' }).observe(canvas);
     this.scenes.push(scene);
@@ -50,7 +55,8 @@ class GLEngine {
     return scene;
   }
   swapTexture(scene, name, url, cb){ this._loadTex(scene.gl, url, (tex, w, h) => {
-    scene.textures[name].tex = tex; scene.texSizes[name] = [w, h]; cb && cb(); }); }
+    if (!tex) { cb && cb(false); return; }
+    scene.textures[name].tex = tex; scene.texSizes[name] = [w, h]; cb && cb(true); }); }
   _loadTex(gl, url, cb){
     const img = new Image(); img.crossOrigin = 'anonymous';
     img.onload = () => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
@@ -60,6 +66,7 @@ class GLEngine {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       cb(t, img.naturalWidth, img.naturalHeight); };
+    img.onerror = () => cb(null, 0, 0);
     img.src = url;
   }
   _program(gl, vs, fs){
@@ -82,10 +89,11 @@ class GLEngine {
     gl.viewport(0, 0, w, h); gl.useProgram(s.prog); gl.bindVertexArray(s.vao);
     gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-    const set = (n, v) => { const l = gl.getUniformLocation(s.prog, n); if (l === null) return;
+    const locOf = n => { let l = s.uloc.get(n); if (l === undefined) { l = gl.getUniformLocation(s.prog, n); s.uloc.set(n, l); } return l; };
+    const set = (n, v) => { const l = locOf(n); if (l === null) return;
       if (typeof v === 'number') gl.uniform1f(l, v); else if (v.length === 2) gl.uniform2f(l, v[0], v[1]); else gl.uniform3f(l, v[0], v[1], v[2]); };
     Object.entries(s.textures).forEach(([n, t]) => { gl.activeTexture(gl.TEXTURE0 + t.unit);
-      gl.bindTexture(gl.TEXTURE_2D, t.tex); gl.uniform1i(gl.getUniformLocation(s.prog, n), t.unit);
+      gl.bindTexture(gl.TEXTURE_2D, t.tex); gl.uniform1i(locOf(n), t.unit);
       set(n + 'Res', s.texSizes[n]); });
     set('uTime', (performance.now() - this._t0) / 1000); set('uRes', [w, h]);
     const u = s.getUniforms ? s.getUniforms(rect) : {}; Object.entries(u).forEach(([n, v]) => set(n, v));

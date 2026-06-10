@@ -56,7 +56,11 @@
         const sc = ENGINE.addScene(band, BAND_FRAG, { uTex: 'public/images/adj/521-607-adj.png' }, rect => ({
           uScroll: Math.min(1, Math.max(0, 1 - (rect.top + rect.height / 2) / innerHeight)),
         }));
-        if (sc) document.body.classList.add('webgl-on');
+        if (sc) {
+          sc.onFail = () => document.body.classList.remove('webgl-on');
+          const onReady = () => { if (sc.ready) document.body.classList.add('webgl-on'); else if (!sc.failed) requestAnimationFrame(onReady); };
+          requestAnimationFrame(onReady);
+        }
       }
     } catch (e) { console.warn('WebGL off:', e); }
   }

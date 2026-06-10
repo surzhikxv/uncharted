@@ -20,9 +20,12 @@
     else el.addEventListener('click', () => window.open(url, '_blank', 'noopener'));
   });
 
+  // --- вспомогательная функция: клик + Enter/Space ---
+  const activate = (el, fn) => { el.addEventListener('click', fn); el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(e); } }); };
+
   // --- плавный скролл ---
   document.querySelectorAll('[data-scroll]').forEach(el => {
-    el.addEventListener('click', e => {
+    activate(el, e => {
       e.preventDefault();
       const y = parseFloat(el.dataset.scroll) * (document.documentElement.clientWidth > 768 ? zoom() : 1);
       window.scrollTo({ top: y, behavior: REDUCED ? 'auto' : 'smooth' });
@@ -37,9 +40,10 @@
 
   // --- модалка КУПИТЬ ---
   const modal = document.getElementById('buyModal');
-  const openModal = () => { modal.hidden = false; document.body.classList.add('modal-open'); modal.querySelector('.buy-row').focus(); };
-  const closeModal = () => { modal.hidden = true; document.body.classList.remove('modal-open'); };
-  document.querySelectorAll('[data-buy]').forEach(b => b.addEventListener('click', openModal));
+  let lastFocus = null;
+  const openModal = () => { lastFocus = document.activeElement; modal.hidden = false; document.body.classList.add('modal-open'); modal.querySelector('.buy-row').focus(); };
+  const closeModal = () => { modal.hidden = true; document.body.classList.remove('modal-open'); if (lastFocus && lastFocus.focus) lastFocus.focus(); };
+  document.querySelectorAll('[data-buy]').forEach(b => activate(b, openModal));
   modal.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
   addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
 })();

@@ -64,6 +64,8 @@ img.abs { display: block; }
   white-space: pre-wrap;
 }
 .up { text-transform: uppercase; }
+a.t, a.btn { color: #313131; text-decoration: none; }
+.nav-link, .btn, [data-scroll], [data-buy], [data-link] { cursor: pointer; }
 .accent { color: #C35B3F; }
 
 /* ============ Buttons (Frame 402/403/389) ============ */

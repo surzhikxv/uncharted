@@ -6,6 +6,7 @@
 <title>UNCHARTED</title>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="mobile.css">
+<link rel="stylesheet" href="anim.css">
 </head>
 <body>
 <div class="page">
@@ -14,10 +15,10 @@
   <img class="abs n582" src="public/images/521-582.png" alt="">
 
   <!-- 521:583/585/587/589 КУПИТЬ buttons -->
-  <div class="btn n583"><span>КУПИТЬ</span></div>
-  <div class="btn n585"><span>КУПИТЬ</span></div>
-  <div class="btn n587"><span>КУПИТЬ</span></div>
-  <div class="btn n589"><span>КУПИТЬ</span></div>
+  <div class="btn n583" data-buy><span>КУПИТЬ</span></div>
+  <div class="btn n585" data-buy><span>КУПИТЬ</span></div>
+  <div class="btn n587" data-buy><span>КУПИТЬ</span></div>
+  <div class="btn n589" data-buy><span>КУПИТЬ</span></div>
 
   <!-- 521:591 hero bg -->
   <div class="abs n591"></div>
@@ -32,7 +33,7 @@
   <img class="abs hero-fade" src="public/images/render/hero-fade.png" alt="">
 
   <!-- 521:594 logo -->
-  <img class="abs n594" src="public/images/logo.svg" alt="UNCHARTED">
+  <img class="abs n594" src="public/images/logo.svg" alt="UNCHARTED" data-scroll="0">
 
   <!-- 521:607 canyon valley bg -->
   <img class="abs n607" src="public/images/adj/521-607-adj.png" alt="">
@@ -44,7 +45,7 @@
   <p class="t n609">Парфюмированная уходовая косметика<br>для тех, кто открывает новые горизонты<br>через ароматы, уход и воображение</p>
 
   <!-- 521:610 каталог button -->
-  <div class="btn n610"><span>каталог</span></div>
+  <div class="btn n610" data-scroll="1789"><span>каталог</span></div>
 
   <!-- 521:612 shore bg -->
   <img class="abs n612" src="public/images/521-612.png" alt="">
@@ -53,9 +54,9 @@
   <img class="abs n613" src="public/images/521-613.png" alt="">
 
   <!-- nav 521:614-616 -->
-  <p class="t up nav-link n614">о бренде</p>
-  <p class="t up nav-link n615">каталог</p>
-  <p class="t up nav-link n616">контакты</p>
+  <a class="t up nav-link n614" href="#" data-scroll="7069">о бренде</a>
+  <a class="t up nav-link n615" href="#" data-scroll="1789">каталог</a>
+  <a class="t up nav-link n616" href="#" data-scroll="8428">контакты</a>
 
   <!-- 521:617-619 intro -->
   <p class="t n617">В ритме города так легко забыть о себе...</p>
@@ -93,23 +94,23 @@
   <!-- footer -->
   <p class="t up n638">uncharted</p>
   <p class="t up n639">Информация:</p>
-  <p class="t n640">info.uncharted@list.ru</p>
+  <a class="t n640" href="mailto:info.uncharted@list.ru">info.uncharted@list.ru</a>
   <p class="t n641">публичная оферта</p>
   <p class="t n642">политика cookie</p>
   <p class="t n643">лицензия</p>
   <p class="t n644">политика конфиденциальности</p>
-  <p class="t n645">ВКонтакте</p>
-  <p class="t n646">Instagram</p>
+  <a class="t n645" href="#" data-link="vk">ВКонтакте</a>
+  <a class="t n646" href="#" data-link="instagram">Instagram</a>
   <img class="abs n647" src="public/images/icon-647.svg" alt="">
   <img class="abs n651" src="public/images/icon-651.svg" alt="">
   <p class="t up n657">контакты:</p>
   <p class="t up n658">ГДЕ КУПИТЬ:</p>
   <p class="t n659">*Социальная сеть Instagram запрещена на территории РФ</p>
   <img class="abs n660" src="public/images/icon-660.svg" alt="">
-  <p class="t shop n667">Золотое яблоко</p>
-  <p class="t shop n668">Ozon</p>
-  <p class="t shop n669">ЛЭТУАЛЬ</p>
-  <p class="t shop n670">Wildberries</p>
+  <a class="t shop n667" href="#" data-link="goldapple">Золотое яблоко</a>
+  <a class="t shop n668" href="#" data-link="ozon">Ozon</a>
+  <a class="t shop n669" href="#" data-link="letu">ЛЭТУАЛЬ</a>
+  <a class="t shop n670" href="#" data-link="wildberries">Wildberries</a>
   <img class="abs n671" src="public/images/icon-671.svg" alt="">
   <p class="t n675">2025 <span class="up">uncharted</span><br>All rights reserved</p>
   <img class="abs n676" src="public/images/521-677.png" alt="">
@@ -340,6 +341,18 @@
 
 </div>
 
+<div class="buy-modal" id="buyModal" hidden>
+  <div class="buy-overlay" data-close></div>
+  <div class="buy-card" role="dialog" aria-modal="true" aria-label="Где купить">
+    <button class="buy-close" data-close aria-label="Закрыть">&#10005;</button>
+    <p class="buy-title">ГДЕ КУПИТЬ</p>
+    <a class="buy-row" data-link="wildberries" href="#" target="_blank" rel="noopener"><img src="public/images/icon-671.svg" alt="">Wildberries</a>
+    <a class="buy-row" data-link="goldapple" href="#" target="_blank" rel="noopener"><img src="public/images/icon-660.svg" alt="">Золотое яблоко</a>
+    <a class="buy-row" data-link="ozon" href="#" target="_blank" rel="noopener"><img src="public/images/icon-680.svg" alt="">Ozon</a>
+    <a class="buy-row" data-link="letu" href="#" target="_blank" rel="noopener"><img src="public/images/icon-684.svg" alt="">ЛЭТУАЛЬ</a>
+  </div>
+</div>
+
 <script>
 (function () {
   var page = document.querySelector('.page');
@@ -351,5 +364,6 @@
   fit();
 })();
 </script>
+<script src="shaders.js" defer></script><script src="app.js" defer></script>
 </body>
 </html>

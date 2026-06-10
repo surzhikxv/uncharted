@@ -46,4 +46,18 @@
   document.querySelectorAll('[data-buy]').forEach(b => activate(b, openModal));
   modal.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
   addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+
+  // --- WebGL band ---
+  if (!REDUCED && window.GLEngine) {
+    try {
+      window.ENGINE = new GLEngine();
+      const band = document.querySelector('canvas[data-shader="band"]');
+      if (band) {
+        const sc = ENGINE.addScene(band, BAND_FRAG, { uTex: 'public/images/adj/521-607-adj.png' }, rect => ({
+          uScroll: Math.min(1, Math.max(0, 1 - (rect.top + rect.height / 2) / innerHeight)),
+        }));
+        if (sc) document.body.classList.add('webgl-on');
+      }
+    } catch (e) { console.warn('WebGL off:', e); }
+  }
 })();

@@ -122,8 +122,11 @@
   <!-- 521:690 red rock -->
   <img class="abs n690" src="public/images/render/rock-690.png" alt="">
 
-  <!-- 521:691 rock slab -->
-  <img class="abs n691" src="public/images/render/slab-691.png" alt="">
+  <!-- 521:691 rock slab — replaced by WebGL photo band -->
+  <div class="abs photoband-wrap">
+    <img class="abs photoband-fallback" src="public/images/adj/521-607-adj.png" alt="">
+    <canvas class="photoband" data-shader="band"></canvas>
+  </div>
 
   <!-- 521:692 -->
   <p class="t up n692">свойства гелей и кремов</p>

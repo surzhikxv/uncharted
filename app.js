@@ -32,6 +32,17 @@
     });
   });
 
+  // --- переход по якорю с другой страницы (catalog.html → index.html#about) ---
+  const HASH_POS = { '#about': 7069, '#catalog': 1789, '#contacts': 8428 };
+  if (HASH_POS[location.hash] && document.querySelector('.page')) {
+    if (document.documentElement.clientWidth > 768) {
+      scrollTo(0, HASH_POS[location.hash] * zoom());
+    } else {
+      const m = document.getElementById('m-' + location.hash.slice(1));
+      if (m) m.scrollIntoView();
+    }
+  }
+
   // --- иконки футера кликабельны как соседние ссылки ---
   [['n647','vk'],['n651','instagram'],['n660','goldapple'],['n671','wildberries'],['n680','ozon'],['n684','letu'],['n687','letu']].forEach(([cls, key]) => {
     const el = document.querySelector('.' + cls);
@@ -126,6 +137,43 @@
     };
     activate(stage.querySelector('.car-next'), () => go(1));
     activate(stage.querySelector('.car-prev'), () => go(-1));
+  }
+
+  // --- каталог: живые фильтры + появление карточек ---
+  const catGrid = document.querySelector('.cat-grid');
+  if (catGrid) {
+    const cards = [...catGrid.querySelectorAll('.cat-card')];
+    const filters = document.querySelectorAll('.cat-filter');
+    const timers = new Map();
+    filters.forEach(btn => btn.addEventListener('click', () => {
+      filters.forEach(b => { b.classList.toggle('is-active', b === btn); b.setAttribute('aria-pressed', String(b === btn)); });
+      const f = btn.dataset.filter;
+      cards.forEach(card => {
+        const show = f === 'all' || card.dataset.cat === f;
+        clearTimeout(timers.get(card));
+        if (show) {
+          card.hidden = false;
+          requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('is-out')));
+        } else {
+          card.classList.add('is-out');
+          timers.set(card, setTimeout(() => { card.hidden = true; }, REDUCED ? 0 : 360));
+        }
+      });
+    }));
+    if (!REDUCED) {
+      const cio = new IntersectionObserver(es => es.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          setTimeout(() => { e.target.style.transitionDelay = ''; }, 900);
+          cio.unobserve(e.target);
+        }
+      }), { threshold: .1 });
+      cards.forEach((card, i) => {
+        card.classList.add('rv-card');
+        card.style.transitionDelay = (i % 4) * 110 + 'ms';
+        cio.observe(card);
+      });
+    }
   }
 
   // --- анимации: каскад хиро, reveals, параллакс, побуквенный UNCHARTED ---

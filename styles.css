@@ -236,8 +236,9 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* 521:692 свойства гелей и кремов */
 .n692 { left: 251px; top: 2741px; width: 1417px; font-size: 90px; line-height: 1; color: #C35B3F; }
 
-/* catalog cards (baked from render, radius included) */
+/* catalog cards (baked from render, radius included) — тизеры-ссылки в каталог */
 .card { top: 1789px; width: 424px; height: 703px; }
+.card img { display: block; width: 100%; height: 100%; }
 .n693 { left: 49px; }
 .n694 { left: 515px; }
 .n695 { left: 981px; }

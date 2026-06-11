@@ -71,7 +71,12 @@
   <p class="t up n624"><span class="ts4">аромат MANGO BLISS</span><br><span class="ts6">— </span><span class="ts7">билет в неизведнанные<br>уголки тропиков мьянмы,<br>где сладкий аромат манго<br>переплетается с ежевикой,<br>иланг-илангом и ноткой<br>пачули</span></p>
 
   <!-- 521:625 bottle mask group -->
-  <img class="abs n625" src="public/images/render/bottle-625.png" alt="">
+  <div class="abs n625 bottle-stage">
+    <img class="bottle-fallback" src="public/images/render/bottle-625.png" alt="">
+    <canvas class="bottle-canvas" data-shader="morph"></canvas>
+    <button class="car-arrow car-prev" aria-label="Предыдущий аромат"></button>
+    <button class="car-arrow car-next" aria-label="Следующий аромат"></button>
+  </div>
 
   <!-- 521:628 dot -->
   <div class="abs n628"></div>

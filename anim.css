@@ -11,6 +11,20 @@
 .buy-close { position: absolute; top: 14px; right: 16px; border: 0; background: none; font-size: 20px; color: #8a7a6e; cursor: pointer; padding: 8px; transition: color .2s; }
 .buy-close:hover { color: #C35B3F; }
 body.modal-open { overflow: hidden; }
+/* ===== Карусель ароматов ===== */
+.bottle-stage .bottle-fallback, .bottle-stage .bottle-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.webgl-on .bottle-stage .bottle-fallback { visibility: hidden; }
+.car-arrow { position: absolute; top: 50%; width: 56px; height: 56px; margin-top: -28px; border: 0; background: none; cursor: pointer; padding: 0; }
+.car-prev { left: -84px; } .car-next { right: -84px; }
+.car-arrow::before { content: ''; position: absolute; left: 50%; top: 50%; width: 22px; height: 22px;
+  border-top: 2px solid #C35B3F; border-right: 2px solid #C35B3F; transform: translate(-50%, -50%) rotate(45deg); transition: transform .3s, border-color .3s; }
+.car-prev::before { transform: translate(-50%, -50%) rotate(-135deg); }
+.car-next:hover::before { transform: translate(-30%, -50%) rotate(45deg); }
+.car-prev:hover::before { transform: translate(-70%, -50%) rotate(-135deg); }
+.car-arrow:focus-visible::before { border-color: #7c2d12; }
+.fade-swap { transition: opacity .45s ease, transform .45s ease; }
+.fade-swap.out { opacity: 0; transform: translateY(10px); }
+.bottle-fallback { transition: opacity .5s ease; }
 /* ===== Hover статики ===== */
 .btn { transition: background .3s, letter-spacing .3s; }
 .btn:hover { background: #A94A30; }

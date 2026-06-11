@@ -100,4 +100,18 @@ class GLEngine {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 }
-window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG;
+const MORPH_FRAG = `#version 300 es
+precision highp float; in vec2 vUv; out vec4 outC;
+uniform sampler2D uFrom, uTo; uniform float uTime, uProgress;
+${GL_NOISE}
+void main(){
+  float n = uc_noise(vUv * vec2(4.5, 8.) + uTime * .04);
+  float wave = sin(uProgress * 3.14159);
+  vec2 d = vec2(n - .5, (uc_noise(vUv * vec2(7., 3.) + 11.3) - .5) * 1.6) * .14 * wave;
+  vec4 a = texture(uFrom, vUv + d * uProgress);
+  vec4 b = texture(uTo,  vUv - d * (1. - uProgress));
+  float m = smoothstep(.2, .8, uProgress + (n - .5) * .35);
+  outC = mix(a, b, m);
+}`;
+
+window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG; window.MORPH_FRAG = MORPH_FRAG;

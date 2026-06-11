@@ -64,4 +64,59 @@
       }
     } catch (e) { console.warn('WebGL off:', e); }
   }
+
+  // --- карусель ароматов ---
+  const AROMAS = [
+    { caption: '/ MANGO BLISS', img: 'public/images/render/bottle-625.png',
+      desc: '<span class="ts4">аромат MANGO BLISS</span><br><span class="ts6">— </span><span class="ts7">билет в неизведнанные<br>уголки тропиков мьянмы,<br>где сладкий аромат манго<br>переплетается с ежевикой,<br>иланг-илангом и ноткой<br>пачули</span>' },
+    { caption: '/ NAMIBIA DUNES', img: 'public/images/render/aromas/namibia-dunes.png',
+      desc: '<span class="ts4">аромат NAMIBIA DUNES</span><br><span class="ts6">— </span><span class="ts7">билет в пустыню НАМИБ<br>с бескрайними дюнами,<br>где сладкий апельсин тает в розовом перце, пряных специях и древесном кедре</span>' },
+    { caption: '/ ISLAY SMOKE', img: 'public/images/render/aromas/islay-smoke.png',
+      desc: '<span class="ts4">аромат ISLAY SMOKE</span><br><span class="ts6">— </span><span class="ts7">прогулка по ветренным шотландским холмам,<br>где в воздухе ощущается запах выдержанного виски и табачного дыма. Теплые ноты какао и амбры окутывают словно вечерний туман</span>' },
+    { caption: '/ CITRUS VETIVER', img: 'public/images/render/aromas/citrus-vetiver.png',
+      desc: '<span class="ts4">аромат CITRUS VETIVER</span><br><span class="ts6">— </span><span class="ts7">поход в густые леса мабу, где свежесть ветивера<br>и тепло ореховой коры сливаются со сладким ароматом лимонной карамели и бобов тонка</span>' },
+    { caption: '/ KAMCHATKA VEIL', img: 'public/images/render/aromas/kamchatka-veil.png',
+      desc: '<span class="ts4">аромат KAMCHATKA VEIL</span><br><span class="ts6">— </span><span class="ts7">путешествие на вершины вулканов камчатки, где каждый вздох наполнен пикантным черным перцем<br>и бодрящим бергамотом<br>с нежностью ванили<br>и белого чая</span>' },
+  ];
+  AROMAS.forEach(a => { const i = new Image(); i.src = a.img; });
+  const capEl = document.querySelector('.n622'), descEl = document.querySelector('.n624');
+  const stage = document.querySelector('.bottle-stage');
+  if (stage && capEl && descEl) {
+    capEl.classList.add('fade-swap'); descEl.classList.add('fade-swap');
+    let idx = 0, busy = false, morphScene = null, morphProgress = 0;
+    const fallbackImg = stage.querySelector('.bottle-fallback');
+    if (window.ENGINE && !REDUCED) {
+      morphScene = ENGINE.addScene(stage.querySelector('.bottle-canvas'), MORPH_FRAG,
+        { uFrom: AROMAS[0].img, uTo: AROMAS[0].img }, () => ({ uProgress: morphProgress }));
+      if (morphScene) {
+        morphScene.onFail = () => { stage.querySelector('.bottle-canvas').style.display = 'none'; fallbackImg.style.visibility = 'visible'; };
+      }
+    }
+    const swapTexts = next => {
+      capEl.classList.add('out'); descEl.classList.add('out');
+      setTimeout(() => { capEl.textContent = AROMAS[next].caption; descEl.innerHTML = AROMAS[next].desc;
+        capEl.classList.remove('out'); descEl.classList.remove('out'); }, REDUCED ? 0 : 450);
+    };
+    const go = dir => {
+      if (busy) return; busy = true;
+      const next = (idx + dir + AROMAS.length) % AROMAS.length;
+      swapTexts(next);
+      if (morphScene && morphScene.ready) {
+        ENGINE.swapTexture(morphScene, 'uTo', AROMAS[next].img, ok => {
+          if (!ok) { idx = next; busy = false; return; }
+          const t0 = performance.now(), DUR = 1400;
+          const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+          const step = now => { const t = Math.min(1, (now - t0) / DUR); morphProgress = ease(t);
+            if (t < 1) requestAnimationFrame(step);
+            else ENGINE.swapTexture(morphScene, 'uFrom', AROMAS[next].img, () => { morphProgress = 0; idx = next; busy = false; }); };
+          requestAnimationFrame(step);
+        });
+      } else {
+        fallbackImg.style.opacity = 0;
+        setTimeout(() => { fallbackImg.src = AROMAS[next].img; fallbackImg.style.opacity = 1; idx = next; busy = false; }, 480);
+      }
+    };
+    activate(stage.querySelector('.car-next'), () => go(1));
+    activate(stage.querySelector('.car-prev'), () => go(-1));
+  }
 })();

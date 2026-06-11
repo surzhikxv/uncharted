@@ -98,7 +98,7 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* ============ 521:591 hero bg — crop of scene-canyon-lake ============ */
 .n591 {
   left: 0; top: 0; width: 1920px; height: 1043px;
-  background-image: url('public/images/adj/scene-canyon-lake-adj.png');
+  background-image: url('public/images/adj/scene-canyon-lake-adj.webp');
   background-size: 2115.55px 1190.63px;
   background-position: -71.23px -166.2px;
 }

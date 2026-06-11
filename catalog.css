@@ -15,7 +15,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: url('public/images/521-582.png') top center / 1920px auto repeat-y;
+  background: url('public/images/521-582.webp') top center / 1920px auto repeat-y;
   opacity: .85;
   pointer-events: none;
 }
@@ -263,7 +263,7 @@ html { scroll-behavior: smooth; }
     display: block;
     padding: 44px 20px 28px;
     text-align: center;
-    background: url('public/images/521-613.png') bottom center / cover;
+    background: url('public/images/521-613.webp') bottom center / cover;
   }
   .cat-footer-m-mark {
     font-family: 'Geometria', sans-serif;

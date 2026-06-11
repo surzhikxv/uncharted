@@ -64,7 +64,7 @@
       window.ENGINE = new GLEngine();
       const band = document.querySelector('canvas[data-shader="band"]');
       if (band) {
-        const sc = ENGINE.addScene(band, BAND_FRAG, { uTex: 'public/images/adj/521-607-adj.png' }, rect => ({
+        const sc = ENGINE.addScene(band, BAND_FRAG, { uTex: 'public/images/adj/521-607-adj.webp' }, rect => ({
           uScroll: Math.min(1, Math.max(0, 1 - (rect.top + rect.height / 2) / innerHeight)),
         }));
         if (sc) {
@@ -80,15 +80,15 @@
 
   // --- карусель ароматов ---
   const AROMAS = [
-    { caption: '/ MANGO BLISS', img: 'public/images/render/bottle-625.png', m: 'public/images/m/bottle-mango.webp',
+    { caption: '/ MANGO BLISS', img: 'public/images/render/bottle-625.webp', m: 'public/images/m/bottle-mango.webp',
       desc: '<span class="ts4">аромат MANGO BLISS</span><br><span class="ts6">— </span><span class="ts7">билет в неизведнанные<br>уголки тропиков мьянмы,<br>где сладкий аромат манго<br>переплетается с ежевикой,<br>иланг-илангом и ноткой<br>пачули</span>' },
-    { caption: '/ NAMIBIA DUNES', img: 'public/images/render/aromas/namibia-dunes.png', m: 'public/images/m/bottle-namibia.webp',
+    { caption: '/ NAMIBIA DUNES', img: 'public/images/render/aromas/namibia-dunes.webp', m: 'public/images/m/bottle-namibia.webp',
       desc: '<span class="ts4">аромат NAMIBIA DUNES</span><br><span class="ts6">— </span><span class="ts7">билет в пустыню НАМИБ<br>с бескрайними дюнами,<br>где сладкий апельсин тает в розовом перце, пряных специях и древесном кедре</span>' },
-    { caption: '/ ISLAY SMOKE', img: 'public/images/render/aromas/islay-smoke.png', m: 'public/images/m/bottle-islay.webp',
+    { caption: '/ ISLAY SMOKE', img: 'public/images/render/aromas/islay-smoke.webp', m: 'public/images/m/bottle-islay.webp',
       desc: '<span class="ts4">аромат ISLAY SMOKE</span><br><span class="ts6">— </span><span class="ts7">прогулка по ветренным шотландским холмам,<br>где в воздухе ощущается запах выдержанного виски и табачного дыма. Теплые ноты какао и амбры окутывают словно вечерний туман</span>' },
-    { caption: '/ CITRUS VETIVER', img: 'public/images/render/aromas/citrus-vetiver.png', m: 'public/images/m/bottle-citrus.webp',
+    { caption: '/ CITRUS VETIVER', img: 'public/images/render/aromas/citrus-vetiver.webp', m: 'public/images/m/bottle-citrus.webp',
       desc: '<span class="ts4">аромат CITRUS VETIVER</span><br><span class="ts6">— </span><span class="ts7">поход в густые леса мабу, где свежесть ветивера<br>и тепло ореховой коры сливаются со сладким ароматом лимонной карамели и бобов тонка</span>' },
-    { caption: '/ KAMCHATKA VEIL', img: 'public/images/render/aromas/kamchatka-veil.png', m: 'public/images/m/bottle-kamchatka.webp',
+    { caption: '/ KAMCHATKA VEIL', img: 'public/images/render/aromas/kamchatka-veil.webp', m: 'public/images/m/bottle-kamchatka.webp',
       desc: '<span class="ts4">аромат KAMCHATKA VEIL</span><br><span class="ts6">— </span><span class="ts7">путешествие на вершины вулканов камчатки, где каждый вздох наполнен пикантным черным перцем<br>и бодрящим бергамотом<br>с нежностью ванили<br>и белого чая</span>' },
   ];
   const MOBILE = document.documentElement.clientWidth <= 768;

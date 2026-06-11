@@ -25,6 +25,26 @@ body.modal-open { overflow: hidden; }
 .fade-swap { transition: opacity .45s ease, transform .45s ease; }
 .fade-swap.out { opacity: 0; transform: translateY(10px); }
 .bottle-fallback { transition: opacity .5s ease; }
+/* ===== Зерно хиро ===== */
+.hero-grain { left: 0; top: 0; width: 1920px; height: 1043px; mix-blend-mode: soft-light; pointer-events: none; }
+body:not(.webgl-on) .hero-grain { display: none; }
+/* ===== Reveal-анимации (только при body.anim — не reduced-motion) ===== */
+body.anim .rv { opacity: 0; transform: translateY(26px); transition: opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1); }
+body.anim .rv.in { opacity: 1; transform: none; }
+body.anim .card.in { transition-delay: 0ms; }
+body.anim .rv-letters span { display: inline-block; opacity: 0; transform: translateY(.16em);
+  transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+body.anim .rv-letters.in span { opacity: 1; transform: none; }
+/* ===== Каскад хиро ===== */
+body.anim .n594, body.anim .nav-link, body.anim .n609, body.anim .n610 { opacity: 0; transform: translateY(16px);
+  transition: opacity .9s cubic-bezier(.22,1,.36,1), transform .9s cubic-bezier(.22,1,.36,1); }
+body.anim.hero-in .n594 { opacity: 1; transform: none; }
+body.anim.hero-in .nav-link { opacity: 1; transform: none; transition-delay: .15s; }
+body.anim.hero-in .n609 { opacity: 1; transform: none; transition-delay: .3s; }
+body.anim.hero-in .n610 { opacity: 1; transform: none; transition-delay: .45s; }
+/* ===== Hover карточек ===== */
+.card { transition: transform .5s cubic-bezier(.22,1,.36,1), filter .5s; }
+.card:hover { transform: translateY(-6px); filter: drop-shadow(0 18px 28px rgba(120,60,30,.18)); }
 /* ===== Hover статики ===== */
 .btn { transition: background .3s, letter-spacing .3s; }
 .btn:hover { background: #A94A30; }

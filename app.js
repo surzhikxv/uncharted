@@ -62,6 +62,8 @@
           requestAnimationFrame(onReady);
         }
       }
+      const grain = document.querySelector('canvas[data-shader="grain"]');
+      if (grain) ENGINE.addScene(grain, GRAIN_FRAG, {}, () => ({}));
     } catch (e) { console.warn('WebGL off:', e); }
   }
 
@@ -124,5 +126,45 @@
     };
     activate(stage.querySelector('.car-next'), () => go(1));
     activate(stage.querySelector('.car-prev'), () => go(-1));
+  }
+
+  // --- анимации: каскад хиро, reveals, параллакс, побуквенный UNCHARTED ---
+  if (!REDUCED) {
+    document.body.classList.add('anim');
+    requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.add('hero-in')));
+    const revealSel = ['.n617','.n618','.n619','.n692','.card','.geldiag','.creamdiag',
+      '.lbl','.n725','.n726','.n729','.n620','.n621','.n622','.n623','.n624','.n629',
+      '.n631','.n632','.n633','.n634','.n635','.n636','.n637','.n638','.n639','.n657','.n658'];
+    const els = document.querySelectorAll('.page ' + revealSel.join(', .page '));
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .15 });
+    let cardN = 0;
+    els.forEach(el => { el.classList.add('rv');
+      if (el.classList.contains('card')) el.style.transitionDelay = (cardN++ * 120) + 'ms';
+      io.observe(el); });
+    // побуквенный UNCHARTED
+    const giant = document.querySelector('.n630');
+    if (giant) {
+      const word = giant.textContent;
+      giant.setAttribute('aria-label', word); giant.textContent = ''; giant.classList.add('rv-letters');
+      [...word].forEach((ch, i) => { const s = document.createElement('span'); s.textContent = ch;
+        s.setAttribute('aria-hidden', 'true'); s.style.transitionDelay = (i * 60) + 'ms'; giant.appendChild(s); });
+      new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { giant.classList.add('in'); o.disconnect(); } }), { threshold: .3 }).observe(giant);
+    }
+    // параллакс слоёв
+    const PARA = [['.n731', 26], ['.n690', 14], ['.n697', 12], ['.hero-right', 9], ['.hero-streak', 6]];
+    const items = PARA.map(([sel, amp]) => ({ el: document.querySelector(sel), amp, cur: 0 })).filter(i => i.el);
+    const paraTick = () => {
+      const vh = innerHeight;
+      items.forEach(it => {
+        const r = it.el.getBoundingClientRect();
+        const t = ((r.top + r.height / 2) - vh / 2) / vh;
+        const target = Math.max(-1, Math.min(1, t)) * it.amp;
+        it.cur += (target - it.cur) * .08;
+        it.el.style.transform = 'translate3d(0,' + it.cur.toFixed(2) + 'px,0)';
+      });
+      requestAnimationFrame(paraTick);
+    };
+    requestAnimationFrame(paraTick);
   }
 })();

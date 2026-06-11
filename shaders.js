@@ -119,4 +119,14 @@ void main(){
   outC = mix(a, b, m);
 }`;
 
-window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG; window.MORPH_FRAG = MORPH_FRAG;
+const GRAIN_FRAG = `#version 300 es
+precision highp float; in vec2 vUv; out vec4 outC;
+uniform float uTime; uniform vec2 uRes;
+${GL_NOISE}
+void main(){
+  float g = uc_hash(vUv * uRes + mod(uTime * 60., 1000.)) - .5;
+  float warm = (uc_noise(vUv * 3. + uTime * .03) - .5) * .06;
+  outC = vec4(vec3(.5 + g * .12 + warm), 1.);
+}`;
+
+window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG; window.MORPH_FRAG = MORPH_FRAG; window.GRAIN_FRAG = GRAIN_FRAG;

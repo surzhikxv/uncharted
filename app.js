@@ -142,6 +142,8 @@
             else ENGINE.swapTexture(morphScene, 'uFrom', AROMAS[next].img, () => { morphProgress = 0; idx = next; release(); }); };
           requestAnimationFrame(step);
         });
+      } else if (REDUCED) {
+        fallbackImg.src = AROMAS[next].img; idx = next; release();
       } else {
         fallbackImg.style.opacity = 0;
         setTimeout(() => { fallbackImg.src = AROMAS[next].img; fallbackImg.style.opacity = 1; idx = next; release(); }, 480);

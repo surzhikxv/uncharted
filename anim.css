@@ -53,3 +53,4 @@ body.anim.hero-in .n610 { opacity: 1; transform: none; transition-delay: .45s; }
 .nav-link { transition: color .25s; }
 .nav-link:hover { color: #C35B3F; }
 a.t.shop:hover, a.t.n645:hover, a.t.n646:hover, a.t.n640:hover { color: #C35B3F; transition: color .25s; }
+@media (prefers-reduced-motion: reduce) { .bottle-fallback, .fade-swap { transition: none; } }

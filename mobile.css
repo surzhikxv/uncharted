@@ -31,7 +31,7 @@
     overflow-x: hidden;
   }
   .m img { display: block; }
-  .m p, .m h2, .m ul { margin: 0; padding: 0; }
+  .m :where(p, h2, ul) { margin: 0; padding: 0; }
 
   /* ---------- общие ---------- */
   .m-btn {

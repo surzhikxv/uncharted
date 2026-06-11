@@ -122,7 +122,7 @@
     const swapTexts = next => {
       capEl.classList.add('out'); descEl.classList.add('out');
       setTimeout(() => { capEl.textContent = AROMAS[next].caption; descEl.innerHTML = AROMAS[next].desc;
-        capEl.classList.remove('out'); descEl.classList.remove('out'); }, REDUCED ? 0 : 450);
+        capEl.classList.remove('out'); descEl.classList.remove('out'); }, REDUCED ? 0 : 550);
     };
     const go = dir => {
       if (busy) return; busy = true;
@@ -164,6 +164,9 @@
       const back = 1 - mfront;
       const el = imgs[back];
       const swap = () => {
+        el.classList.remove('from-left', 'from-right');
+        el.classList.add(dir > 0 ? 'from-right' : 'from-left');
+        void el.offsetWidth; // фиксируем стартовое состояние до транзишена
         el.classList.add('is-on');
         el.removeAttribute('aria-hidden');
         imgs[mfront].classList.remove('is-on');
@@ -174,8 +177,8 @@
           mcap.textContent = AROMAS[next].caption;
           mdesc.innerHTML = AROMAS[next].desc.replace(/<br>/g, ' ');
           mcap.classList.remove('out'); mdesc.classList.remove('out');
-        }, REDUCED ? 0 : 450);
-        setTimeout(() => { mi = next; mbusy = false; }, REDUCED ? 0 : 850);
+        }, REDUCED ? 0 : 550);
+        setTimeout(() => { mi = next; mbusy = false; }, REDUCED ? 0 : 900);
       };
       el.alt = 'Флакон ' + AROMAS[next].caption.replace('/ ', '');
       if (el.src.endsWith(AROMAS[next].m)) { swap(); return; }

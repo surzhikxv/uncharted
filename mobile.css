@@ -257,9 +257,12 @@
     height: 100%;
     object-fit: contain;
     opacity: 0;
-    transition: opacity .8s ease;
+    transform: scale(.985);
+    transition: opacity .85s ease, transform .95s cubic-bezier(.22,1,.36,1);
   }
-  .m-car-img.is-on { opacity: 1; }
+  .m-car-img.from-right { transform: translateX(16px) scale(.985); }
+  .m-car-img.from-left { transform: translateX(-16px) scale(.985); }
+  .m-car-img.is-on { opacity: 1; transform: none; }
   @media (prefers-reduced-motion: reduce) { .m-car-img { transition: none; } }
 
   .m-car-arrow {

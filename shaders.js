@@ -56,11 +56,16 @@ class GLEngine {
   }
   swapTexture(scene, name, url, cb){ this._loadTex(scene.gl, url, (tex, w, h) => {
     if (!tex) { cb && cb(false); return; }
-    scene.textures[name].tex = tex; scene.texSizes[name] = [w, h]; cb && cb(true); }); }
+    const old = scene.textures[name].tex;
+    scene.textures[name].tex = tex; scene.texSizes[name] = [w, h];
+    if (old) scene.gl.deleteTexture(old);
+    cb && cb(true); }); }
+  // текстуры премультиплицированы: корректный морф прозрачных PNG (реальные флаконы из Figma)
   _loadTex(gl, url, cb){
     const img = new Image(); img.crossOrigin = 'anonymous';
     img.onload = () => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -88,7 +93,7 @@ class GLEngine {
     if (s.canvas.width !== w || s.canvas.height !== h) { s.canvas.width = w; s.canvas.height = h; }
     gl.viewport(0, 0, w, h); gl.useProgram(s.prog); gl.bindVertexArray(s.vao);
     gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     const locOf = n => { let l = s.uloc.get(n); if (l === undefined) { l = gl.getUniformLocation(s.prog, n); s.uloc.set(n, l); } return l; };
     const set = (n, v) => { const l = locOf(n); if (l === null) return;
       if (typeof v === 'number') gl.uniform1f(l, v); else if (v.length === 2) gl.uniform2f(l, v[0], v[1]); else gl.uniform3f(l, v[0], v[1], v[2]); };

@@ -90,6 +90,8 @@
         { uFrom: AROMAS[0].img, uTo: AROMAS[0].img }, () => ({ uProgress: morphProgress }));
       if (morphScene) {
         morphScene.onFail = () => { stage.querySelector('.bottle-canvas').style.display = 'none'; fallbackImg.style.visibility = 'visible'; };
+        const onMorphReady = () => { if (morphScene.ready) fallbackImg.style.visibility = 'hidden'; else if (!morphScene.failed) requestAnimationFrame(onMorphReady); };
+        requestAnimationFrame(onMorphReady);
       }
     }
     const swapTexts = next => {
@@ -99,21 +101,25 @@
     };
     const go = dir => {
       if (busy) return; busy = true;
+      const arrows = stage.querySelectorAll('.car-arrow');
+      arrows.forEach(a => a.disabled = true);
+      const release = () => { busy = false; arrows.forEach(a => a.disabled = false); };
       const next = (idx + dir + AROMAS.length) % AROMAS.length;
       swapTexts(next);
+      if (morphScene && !morphScene.failed && !morphScene.ready) { release(); return; }  // текстуры ещё грузятся
       if (morphScene && morphScene.ready) {
         ENGINE.swapTexture(morphScene, 'uTo', AROMAS[next].img, ok => {
-          if (!ok) { idx = next; busy = false; return; }
+          if (!ok) { idx = next; release(); return; }
           const t0 = performance.now(), DUR = 1400;
           const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
           const step = now => { const t = Math.min(1, (now - t0) / DUR); morphProgress = ease(t);
             if (t < 1) requestAnimationFrame(step);
-            else ENGINE.swapTexture(morphScene, 'uFrom', AROMAS[next].img, () => { morphProgress = 0; idx = next; busy = false; }); };
+            else ENGINE.swapTexture(morphScene, 'uFrom', AROMAS[next].img, () => { morphProgress = 0; idx = next; release(); }); };
           requestAnimationFrame(step);
         });
       } else {
         fallbackImg.style.opacity = 0;
-        setTimeout(() => { fallbackImg.src = AROMAS[next].img; fallbackImg.style.opacity = 1; idx = next; busy = false; }, 480);
+        setTimeout(() => { fallbackImg.src = AROMAS[next].img; fallbackImg.style.opacity = 1; idx = next; release(); }, 480);
       }
     };
     activate(stage.querySelector('.car-next'), () => go(1));

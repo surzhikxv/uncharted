@@ -92,11 +92,11 @@
   // --- карусель ароматов ---
   const AROMAS = [
     { caption: '/ MANGO BLISS', img: 'public/images/render/bottle-625.webp', m: 'public/images/m/bottle-mango.webp',
-      desc: '<span class="ts4">аромат MANGO BLISS</span><br><span class="ts6">— </span><span class="ts7">билет в неизведнанные<br>уголки тропиков мьянмы,<br>где сладкий аромат манго<br>переплетается с ежевикой,<br>иланг-илангом и ноткой<br>пачули</span>' },
+      desc: '<span class="ts4">аромат MANGO BLISS</span><br><span class="ts6">— </span><span class="ts7">билет в неизведанные<br>уголки тропиков мьянмы,<br>где сладкий аромат манго<br>переплетается с ежевикой,<br>иланг-илангом и ноткой<br>пачули</span>' },
     { caption: '/ NAMIBIA DUNES', img: 'public/images/render/aromas/namibia-dunes.webp', m: 'public/images/m/bottle-namibia.webp',
       desc: '<span class="ts4">аромат NAMIBIA DUNES</span><br><span class="ts6">— </span><span class="ts7">билет в пустыню НАМИБ<br>с бескрайними дюнами,<br>где сладкий апельсин тает в розовом перце, пряных специях и древесном кедре</span>' },
     { caption: '/ ISLAY SMOKE', img: 'public/images/render/aromas/islay-smoke.webp', m: 'public/images/m/bottle-islay.webp',
-      desc: '<span class="ts4">аромат ISLAY SMOKE</span><br><span class="ts6">— </span><span class="ts7">прогулка по ветренным шотландским холмам,<br>где в воздухе ощущается запах выдержанного виски и табачного дыма. Теплые ноты какао и амбры окутывают словно вечерний туман</span>' },
+      desc: '<span class="ts4">аромат ISLAY SMOKE</span><br><span class="ts6">— </span><span class="ts7">прогулка по ветреным шотландским холмам,<br>где в воздухе ощущается запах выдержанного виски и табачного дыма. Теплые ноты какао и амбры окутывают словно вечерний туман</span>' },
     { caption: '/ CITRUS VETIVER', img: 'public/images/render/aromas/citrus-vetiver.webp', m: 'public/images/m/bottle-citrus.webp',
       desc: '<span class="ts4">аромат CITRUS VETIVER</span><br><span class="ts6">— </span><span class="ts7">поход в густые леса мабу, где свежесть ветивера<br>и тепло ореховой коры сливаются со сладким ароматом лимонной карамели и бобов тонка</span>' },
     { caption: '/ KAMCHATKA VEIL', img: 'public/images/render/aromas/kamchatka-veil.webp', m: 'public/images/m/bottle-kamchatka.webp',
@@ -104,25 +104,51 @@
   ];
   const MOBILE = document.documentElement.clientWidth <= 768;
   AROMAS.forEach(a => { const i = new Image(); i.src = MOBILE ? a.m : a.img; });
+  // --- смена текста карусели: побуквенный каскад для подписи, направленный blur для описания ---
+  const cascadeCaption = (el, txt) => {
+    if (REDUCED) { el.textContent = txt; return; }
+    const mk = (t, cls) => [...t].map((ch, i) =>
+      '<span class="cl ' + cls + '" style="transition-delay:' + (i * 16) + 'ms">' + (ch === ' ' ? '&nbsp;' : ch) + '</span>').join('');
+    el.setAttribute('aria-label', txt);
+    el.innerHTML = mk(el.textContent, 'out-l');
+    requestAnimationFrame(() => el.querySelectorAll('.cl').forEach(sp => sp.classList.add('gone')));
+    setTimeout(() => {
+      el.innerHTML = mk(txt, 'in-l');
+      requestAnimationFrame(() => requestAnimationFrame(() =>
+        el.querySelectorAll('.cl').forEach(sp => sp.classList.add('here'))));
+      setTimeout(() => { el.textContent = txt; el.removeAttribute('aria-label'); }, 950);
+    }, 430);
+  };
+  const swapDescDir = (el, html, dir) => {
+    if (REDUCED) { el.innerHTML = html; return; }
+    el.style.setProperty('--sx', (dir * 26) + 'px');
+    el.classList.add('out');
+    setTimeout(() => {
+      el.innerHTML = html;
+      el.style.setProperty('--sx', (-dir * 26) + 'px');
+      void el.offsetWidth;
+      el.classList.remove('out');
+    }, 550);
+  };
+
   const capEl = document.querySelector('.n622'), descEl = document.querySelector('.n624');
   const stage = document.querySelector('.bottle-stage');
   if (stage && capEl && descEl) {
     capEl.classList.add('fade-swap'); descEl.classList.add('fade-swap');
-    let idx = 0, busy = false, morphScene = null, morphProgress = 0;
+    let idx = 0, busy = false, morphScene = null, morphProgress = 0, morphDir = 1;
     const fallbackImg = stage.querySelector('.bottle-fallback');
     if (window.ENGINE && !REDUCED) {
       morphScene = ENGINE.addScene(stage.querySelector('.bottle-canvas'), MORPH_FRAG,
-        { uFrom: AROMAS[0].img, uTo: AROMAS[0].img }, () => ({ uProgress: morphProgress }));
+        { uFrom: AROMAS[0].img, uTo: AROMAS[0].img }, () => ({ uProgress: morphProgress, uDir: morphDir }));
       if (morphScene) {
         morphScene.onFail = () => { stage.querySelector('.bottle-canvas').style.display = 'none'; fallbackImg.style.visibility = 'visible'; };
         const onMorphReady = () => { if (morphScene.ready) fallbackImg.style.visibility = 'hidden'; else if (!morphScene.failed) requestAnimationFrame(onMorphReady); };
         requestAnimationFrame(onMorphReady);
       }
     }
-    const swapTexts = next => {
-      capEl.classList.add('out'); descEl.classList.add('out');
-      setTimeout(() => { capEl.textContent = AROMAS[next].caption; descEl.innerHTML = AROMAS[next].desc;
-        capEl.classList.remove('out'); descEl.classList.remove('out'); }, REDUCED ? 0 : 550);
+    const swapTexts = (next, dir) => {
+      cascadeCaption(capEl, AROMAS[next].caption);
+      swapDescDir(descEl, AROMAS[next].desc, dir);
     };
     const go = dir => {
       if (busy) return; busy = true;
@@ -130,12 +156,13 @@
       arrows.forEach(a => a.disabled = true);
       const release = () => { busy = false; arrows.forEach(a => a.disabled = false); };
       const next = (idx + dir + AROMAS.length) % AROMAS.length;
-      swapTexts(next);
+      morphDir = dir;
+      swapTexts(next, dir);
       if (morphScene && !morphScene.failed && !morphScene.ready) { release(); return; }  // текстуры ещё грузятся
       if (morphScene && morphScene.ready) {
         ENGINE.swapTexture(morphScene, 'uTo', AROMAS[next].img, ok => {
           if (!ok) { idx = next; release(); return; }
-          const t0 = performance.now(), DUR = 1400;
+          const t0 = performance.now(), DUR = 1200;
           const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
           const step = now => { const t = Math.min(1, (now - t0) / DUR); morphProgress = ease(t);
             if (t < 1) requestAnimationFrame(step);
@@ -153,33 +180,65 @@
     activate(stage.querySelector('.car-prev'), () => go(-1));
   }
 
-  // --- мобильная карусель ароматов (CSS-кроссфейд вместо WebGL-морфа) ---
+  // --- мобильная карусель ароматов: WebGL-морф, фоллбек — направленный кроссфейд ---
   const mstage = document.querySelector('.m-car-stage');
   if (mstage) {
     const imgs = mstage.querySelectorAll('.m-car-img');
     const mcap = document.querySelector('.m-car-caption');
     const mdesc = document.querySelector('.m-car-desc');
     let mi = 0, mfront = 0, mbusy = false;
+    let mScene = null, mEng = null, mProg = 0, mDirU = 1;
+    if (window.GLEngine && !REDUCED && document.documentElement.clientWidth <= 768) {
+      try {
+        mEng = new GLEngine();
+        const cv = document.createElement('canvas');
+        cv.className = 'm-car-canvas';
+        mstage.appendChild(cv);
+        mScene = mEng.addScene(cv, MORPH_FRAG, { uFrom: AROMAS[0].m, uTo: AROMAS[0].m },
+          () => ({ uProgress: mProg, uDir: mDirU }));
+        if (mScene) {
+          mScene.onFail = () => { cv.remove(); mScene = null; };
+          const onR = () => {
+            if (mScene && mScene.ready) imgs.forEach(i => i.style.visibility = 'hidden');
+            else if (mScene && !mScene.failed) requestAnimationFrame(onR);
+          };
+          requestAnimationFrame(onR);
+        }
+      } catch (e) { mScene = null; }
+    }
     const mgo = dir => {
       if (mbusy) return; mbusy = true;
       const next = (mi + dir + AROMAS.length) % AROMAS.length;
+      mDirU = dir;
+      cascadeCaption(mcap, AROMAS[next].caption);
+      swapDescDir(mdesc, AROMAS[next].desc.replace(/<br>/g, ' '), dir);
+      if (mScene && mScene.ready) {
+        mEng.swapTexture(mScene, 'uTo', AROMAS[next].m, ok => {
+          if (!ok) { mi = next; mbusy = false; return; }
+          const t0 = performance.now(), DUR = 1150;
+          const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+          const step = now => {
+            const t = Math.min(1, (now - t0) / DUR);
+            mProg = ease(t);
+            if (t < 1) requestAnimationFrame(step);
+            else mEng.swapTexture(mScene, 'uFrom', AROMAS[next].m, () => { mProg = 0; mi = next; mbusy = false; });
+          };
+          requestAnimationFrame(step);
+        });
+        return;
+      }
+      // фоллбек: направленный кроссфейд картинок
       const back = 1 - mfront;
       const el = imgs[back];
       const swap = () => {
         el.classList.remove('from-left', 'from-right');
         el.classList.add(dir > 0 ? 'from-right' : 'from-left');
-        void el.offsetWidth; // фиксируем стартовое состояние до транзишена
+        void el.offsetWidth;
         el.classList.add('is-on');
         el.removeAttribute('aria-hidden');
         imgs[mfront].classList.remove('is-on');
         imgs[mfront].setAttribute('aria-hidden', 'true');
         mfront = back;
-        mcap.classList.add('out'); mdesc.classList.add('out');
-        setTimeout(() => {
-          mcap.textContent = AROMAS[next].caption;
-          mdesc.innerHTML = AROMAS[next].desc.replace(/<br>/g, ' ');
-          mcap.classList.remove('out'); mdesc.classList.remove('out');
-        }, REDUCED ? 0 : 550);
         setTimeout(() => { mi = next; mbusy = false; }, REDUCED ? 0 : 900);
       };
       el.alt = 'Флакон ' + AROMAS[next].caption.replace('/ ', '');

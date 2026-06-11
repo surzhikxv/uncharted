@@ -23,9 +23,13 @@ body.modal-open { overflow: hidden; }
 .car-prev:hover::before { transform: translate(-70%, -50%) rotate(-135deg); }
 .car-arrow:focus-visible::before { border-color: #7c2d12; }
 .fade-swap { transition: opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1),
-  filter .55s ease, letter-spacing .55s ease; }
-.fade-swap.out { opacity: 0; transform: translateY(14px); filter: blur(7px); }
-.n622.fade-swap.out { letter-spacing: .14em; }
+  filter .55s ease; }
+.fade-swap.out { opacity: 0; transform: translate(var(--sx, 0px), 10px); filter: blur(7px); }
+/* побуквенный каскад подписи аромата */
+.cl { display: inline-block; transition: opacity .36s ease, transform .45s cubic-bezier(.22,1,.36,1), filter .36s ease; }
+.cl.out-l.gone { opacity: 0; transform: translateY(-12px); filter: blur(4px); }
+.cl.in-l { opacity: 0; transform: translateY(14px); filter: blur(4px); }
+.cl.in-l.here { opacity: 1; transform: none; filter: none; }
 .bottle-fallback { transition: opacity .5s ease; }
 /* ===== Зерно хиро ===== */
 .hero-grain { left: 0; top: 0; width: 1920px; height: 1043px; mix-blend-mode: soft-light; pointer-events: none; }

@@ -105,18 +105,37 @@ class GLEngine {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 }
+// направленный жидкий морф: уходящий кадр сносится по направлению листания,
+// распадается на капли и «испаряется» вверх; новый собирается из жидкости
 const MORPH_FRAG = `#version 300 es
 precision highp float; in vec2 vUv; out vec4 outC;
-uniform sampler2D uFrom, uTo; uniform float uTime, uProgress;
+uniform sampler2D uFrom, uTo; uniform float uTime, uProgress, uDir;
 ${GL_NOISE}
 void main(){
-  float n = uc_noise(vUv * vec2(4.5, 8.) + uTime * .04);
-  float wave = sin(uProgress * 3.14159);
-  vec2 d = vec2(n - .5, (uc_noise(vUv * vec2(7., 3.) + 11.3) - .5) * 1.6) * .14 * wave;
-  vec4 a = texture(uFrom, vUv + d * uProgress);
-  vec4 b = texture(uTo,  vUv - d * (1. - uProgress));
-  float m = smoothstep(.2, .8, uProgress + (n - .5) * .35);
-  outC = mix(a, b, m);
+  float p = clamp(uProgress, 0., 1.);
+  // --- уходящий: ускоряющийся снос + турбулентность + капельная эрозия
+  float po = smoothstep(0., .9, p);
+  float acc = po * po;
+  vec2 adv = vec2(uDir * acc * .34, -acc * .10);
+  vec2 jit = (vec2(uc_noise(vUv * vec2(6., 10.) + uTime * .08),
+                   uc_noise(vUv * vec2(9., 6.) + 13.1)) - .5) * .17 * po;
+  vec4 A = texture(uFrom, vUv + adv + jit);
+  float nA = uc_noise(vUv * vec2(11., 17.) + 4.7) * .75
+           + uc_noise(vUv * vec2(23., 37.) + 9.2) * .25;
+  A *= smoothstep(p * 1.5 - .3, p * 1.5 + .12, nA);
+  // --- приходящий: жидкая сборка с обратной стороны
+  float q = 1. - p;
+  float qo = smoothstep(0., .9, q);
+  float acc2 = qo * qo;
+  vec2 adv2 = vec2(-uDir * acc2 * .26, acc2 * .07);
+  vec2 jit2 = (vec2(uc_noise(vUv * vec2(8., 12.) + 23.7),
+                    uc_noise(vUv * vec2(12., 8.) + 31.3)) - .5) * .15 * qo;
+  vec4 B = texture(uTo, vUv + adv2 + jit2);
+  float nB = uc_noise(vUv * vec2(10., 15.) + 8.9) * .75
+           + uc_noise(vUv * vec2(21., 33.) + 17.4) * .25;
+  B *= smoothstep(q * 1.5 - .3, q * 1.5 + .12, nB);
+  // премультиплированная композиция: уходящий поверх собирающегося
+  outC = A + B * (1. - A.a);
 }`;
 
 // течение струи геля: рефракция + бегущие блики внутри маски струи
@@ -136,18 +155,18 @@ void main(){
   float wob = (uc_noise(vec2(2.0, v * 46. - uTime * 1.15)) - .5)
             + (uc_noise(vec2(5.7, v * 90. - uTime * 2.1)) - .5) * .45;
   vec2 uv = vUv;
-  uv.x += wob * .0042 * m;
+  uv.x += wob * .0058 * m;
   vec3 c = texture(uTex, uv).rgb;
   // бегущие блики: два слоя на разных скоростях + медленное дыхание;
   // поток ускоряется книзу (физика падающей струи)
   float g1 = uc_noise(vec2(7.3, v * 26. - uTime * (1.3 + v * 1.4)));
   float g2 = uc_noise(vec2(3.1, v * 8. - uTime * .55));
   float g3 = uc_noise(vec2(11.7, v * 55. - uTime * (2.6 + v * 2.)));
-  float spec = pow(smoothstep(.5, .92, g1), 2.) * .45
-             + pow(smoothstep(.6, .95, g3), 3.) * .28
-             + (g2 - .5) * .14;
+  float spec = pow(smoothstep(.48, .9, g1), 2.) * .56
+             + pow(smoothstep(.58, .94, g3), 3.) * .36
+             + (g2 - .5) * .17;
   // блик чуть уже самой струи — стеклянная сердцевина
-  float corehl = smoothstep(.006, .0015, abs(dxn + wob * .003));
+  float corehl = smoothstep(.0072, .0015, abs(dxn + wob * .0035));
   c += spec * corehl * env;
   outC = vec4(c, 1.);
 }`;

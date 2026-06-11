@@ -205,6 +205,7 @@ body.anim .cat-card.rv-card:not(.in) { opacity: 0; transform: translateY(26px); 
 
 /* плавный якорный скролл к контактам */
 html { scroll-behavior: smooth; }
+@media (min-width: 769px) { html, body { overflow-x: hidden; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
 /* ============ Мобильная перестройка (≤768px) ============ */

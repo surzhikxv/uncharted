@@ -1,8 +1,9 @@
-/* ============================================================
-   UNCHARTED — mobile (<=768px). Desktop .page скрывается,
+/* ====================================================================
+   UNCHARTED — mobile (<=768px). Десктоп .page скрывается,
    показывается мобильное дерево .m (см. index.html).
-   Десктопные правила (styles.css) не трогаем.
-   ============================================================ */
+   Визуальный язык — с десктопа: Tenor Sans / Geometria,
+   #FAF5F1 / #C35B3F / #E38A71 / #313131, медленные мягкие анимации.
+   ==================================================================== */
 
 /* Десктоп / планшет-альбом: страница-постер масштабируется JS-ом (zoom).
    Страховка от 1px-хвоста при дробном zoom: */
@@ -13,456 +14,373 @@
 
 @media (max-width: 768px) {
   .page { display: none; }
+  body { background: #FAF5F1; }
 
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
-  /* глушим мобильную авто-инфляцию текста (font boosting) */
-  .m, .m * {
-    -webkit-text-size-adjust: none;
-    text-size-adjust: none;
-  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
-  /* ---------- 0. Глобальное ---------- */
+  .m, .m * { box-sizing: border-box; }
   .m {
-    --pad: clamp(20px, 5.5vw, 42px);
     font-family: 'Tenor Sans', sans-serif;
     color: #313131;
     background: #FAF5F1;
-    overflow-x: clip;
+    overflow-x: hidden;
   }
-  .m img { display: block; height: auto; }
-  .m .m-bg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  #m-about, #m-catalog, #m-contacts { scroll-margin-top: 64px; }
+  .m img { display: block; }
+  .m p, .m h2, .m ul { margin: 0; padding: 0; }
 
+  /* ---------- общие ---------- */
   .m-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    min-width: 200px;
+    padding: 17px 28px;
     background: #C35B3F;
     border-radius: 8px;
-    color: #fff;
     font-family: 'Tenor Sans', sans-serif;
     font-size: 16px;
-    letter-spacing: 0.08em;
+    letter-spacing: .06em;
     text-transform: uppercase;
+    color: #fff;
     text-decoration: none;
-    padding: 16px 32px;
+    transition: background .3s;
   }
+  .m-btn:active { background: #A94A30; }
 
-  /* ---------- 1. Шапка ---------- */
+  .m-h {
+    font-size: 27px;
+    line-height: 1.15;
+    font-weight: 400;
+    text-transform: uppercase;
+    color: #C35B3F;
+    letter-spacing: .03em;
+  }
+  .m-h2 {
+    font-size: 38px;
+    line-height: 1;
+    font-weight: 400;
+    text-transform: uppercase;
+    text-align: center;
+    color: #C35B3F;
+    letter-spacing: .04em;
+  }
+  .m-h2--dark { font-size: 30px; }
+
+  /* reveal-анимации (включаются только при body.anim) */
+  body.anim .m-rv {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1);
+  }
+  body.anim .m-rv.in { opacity: 1; transform: none; }
+
+  /* ---------- шапка ---------- */
   .m-header {
     position: sticky;
     top: 0;
     z-index: 50;
-    height: 56px;
-    padding: 0 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(250, 245, 241, 0.92);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    padding: 14px 20px;
+    background: rgba(250, 245, 241, .88);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
   }
-  .m-logo img { height: 34px; width: auto; }
-  .m-nav { display: flex; gap: 16px; }
+  .m-logo img { height: 38px; width: auto; }
+  .m-nav { display: flex; gap: 18px; }
   .m-nav a {
-    font-family: 'Tenor Sans', sans-serif;
-    font-weight: 400;
-    font-size: 12px;
+    font-size: 13px;
+    letter-spacing: .07em;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
     color: #313131;
     text-decoration: none;
   }
 
-  /* ---------- 2. Hero ---------- */
-  .m-hero {
-    position: relative;
-    height: max(100svh, 560px);
-    max-height: 860px;
-  }
-  .m-hero .m-bg { object-position: 62% 50%; }
+  /* ---------- хиро ---------- */
+  .m-hero { position: relative; min-height: calc(100svh - 66px); display: flex; }
+  .m-hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 100%; }
   .m-hero::before {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
-    z-index: 1;
-    background: linear-gradient(180deg, rgba(250,245,241,.85) 0%, rgba(250,245,241,0) 45%);
+    background: linear-gradient(180deg, rgba(250,245,241,.82) 0%, rgba(250,245,241,.45) 34%, rgba(250,245,241,0) 62%);
   }
-  .m-hero::after {
-    content: "";
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: 120px;
-    z-index: 1;
-    background: linear-gradient(0deg, #FAF5F1 0%, rgba(250,245,241,0) 100%);
-  }
-  .m-hero-content {
-    position: relative;
-    z-index: 2;
-    padding: 48px var(--pad) 0;
-  }
+  .m-hero-inner { position: relative; padding: 36px 24px 0; }
   .m-hero-text {
-    font-size: clamp(18px, 5vw, 30px);
-    line-height: 1.25;
-    letter-spacing: 0.04em;
+    max-width: 330px;
+    font-size: 21px;
+    line-height: 1.45;
+    letter-spacing: .035em;
     color: #313131;
-    max-width: 30ch;
-    margin: 0;
   }
-  .m-hero-content .m-btn { margin-top: 28px; }
+  .m-hero .m-btn { margin-top: 26px; }
+  /* каскад хиро в ритме десктопа */
+  body.anim .m-hero-text, body.anim .m-hero .m-btn {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .9s cubic-bezier(.22,1,.36,1), transform .9s cubic-bezier(.22,1,.36,1);
+  }
+  body.anim.hero-in .m-hero-text { opacity: 1; transform: none; transition-delay: .25s; }
+  body.anim.hero-in .m-hero .m-btn { opacity: 1; transform: none; transition-delay: .45s; }
 
-  /* ---------- 3. Интро ---------- */
-  .m-intro { background: #FAF5F1; padding: 56px var(--pad) 0; }
-  .m-intro-texts { display: grid; gap: 32px; }
-  .m-intro-texts p {
-    margin: 0;
-    font-size: clamp(20px, 5.6vw, 34px);
-    line-height: 1.25;
-    letter-spacing: 0.04em;
+  /* ---------- интро ---------- */
+  .m-intro {
+    padding: 64px 24px 56px;
+    background: url('public/images/m/texture.webp') top center / 100% auto repeat-y;
+  }
+  .m-intro p {
+    font-size: 19px;
+    line-height: 1.5;
+    letter-spacing: .03em;
     color: #000;
   }
+  .m-intro p + p { margin-top: 26px; }
   .m-brand { color: #B23D0F; }
-  .m-slab {
-    margin: 40px calc(var(--pad) * -1) 0;
-    width: calc(100% + var(--pad) * 2);
-    height: auto;
-  }
 
-  /* ---------- 4. Каталог ---------- */
-  .m-catalog {
-    background: #FAF5F1 url('public/images/bg-texture.png') center top / cover no-repeat;
-    padding: 40px 0 56px;
-  }
-  .m-cards {
-    display: flex;
-    gap: 16px;
-    padding: 0 var(--pad);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-  .m-cards::-webkit-scrollbar { display: none; }
-  .m-card {
-    flex: 0 0 clamp(220px, 64vw, 320px);
-    scroll-snap-align: center;
-  }
-  .m-card img { width: 100%; height: auto; }
-  .m-buy {
-    margin-top: 14px;
+  /* ---------- фотолента ---------- */
+  .m-band img {
     width: 100%;
-    padding: 14px;
-    font-size: 15px;
-    box-sizing: border-box;
+    height: 188px;
+    object-fit: cover;
+    object-position: 50% 38%;
   }
 
-  /* ---------- 5. Свойства гелей и кремов ---------- */
-  .m-props {
-    position: relative;
-    background: #FAF5F1;
-    padding: 64px 0 72px;
-  }
-  .m-pump {
-    position: absolute;
-    top: -28px;
-    left: clamp(-40px, -8vw, -20px);
-    width: clamp(100px, 28vw, 200px);
-    z-index: 2;
-    pointer-events: none;
-  }
-  .m-props-title {
-    margin: 0;
-    padding: 0 var(--pad) 0 30vw;
-    text-align: right;
-    color: #C35B3F;
-    font-weight: 400;
-    text-transform: uppercase;
-    font-size: clamp(26px, 7.2vw, 52px);
-    line-height: 1.1;
-  }
-  .m-diag--gel .m-diag-pic {
-    padding-left: 26vw;
+  /* ---------- тизер каталога ---------- */
+  .m-teaser {
+    padding: 56px 20px 64px;
+    background: url('public/images/m/texture.webp') top center / 100% auto repeat-y;
     text-align: center;
-    margin-top: 28px;
   }
-  .m-diag--gel .m-diag-pic img,
-  .m-diag--cream img {
-    width: clamp(210px, 58vw, 400px);
-    margin: 0 auto;
-  }
-  .m-diag-name {
-    margin: 14px 0 0;
-    text-transform: uppercase;
-    font-size: clamp(18px, 5vw, 30px);
-    color: #313131;
-  }
-  .m-diag--cream { margin-top: 56px; text-align: center; }
-  .m-lbls {
+  .m-teaser-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px 18px;
-    padding: 24px var(--pad) 0;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .m-teaser-card { border-radius: 14px; overflow: hidden; }
+  .m-teaser-card img { width: 100%; height: auto; }
+  .m-teaser-btn { margin-top: 30px; }
+
+  /* ---------- свойства ---------- */
+  .m-props { padding: 64px 24px 8px; }
+  .m-diag { margin-top: 44px; text-align: center; }
+  .m-diag:first-of-type { margin-top: 36px; }
+  .m-diag-img { width: 220px; margin: 0 auto; }
+  .m-diag-name {
+    margin-top: 6px;
+    font-size: 23px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .m-diag-list {
+    margin-top: 22px;
+    list-style: none;
     text-align: left;
   }
-  .m-lbls p {
-    margin: 0;
-    font-size: clamp(14px, 3.9vw, 20px);
-    line-height: 1.25;
-    color: #313131;
-    padding-top: 10px;
-    border-top: 1px solid #C35B3F;
-  }
-  .m-lbl-wide { grid-column: 1 / -1; }
-  .m-lbls--geo p { font-family: 'Geometria', sans-serif; font-weight: 400; }
-
-  /* ---------- 6. Берег + цитата + планета ---------- */
-  .m-shore {
+  .m-diag-list li {
     position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    min-height: clamp(460px, 124vw, 820px);
+    padding: 12px 0 12px 26px;
+    font-size: 16.5px;
+    line-height: 1.35;
+    border-bottom: 1px solid rgba(195, 91, 63, .25);
   }
-  .m-shore-bg { object-position: center bottom; }
-  .m-shore::before {
-    content: "";
+  .m-diag-list li:last-child { border-bottom: 0; }
+  .m-diag-list li::before {
+    content: '';
     position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(180deg, #FAF5F1 0%, rgba(250,245,241,0) 30%);
+    left: 2px;
+    top: 19px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #C35B3F;
   }
-  .m-planet {
-    position: absolute;
-    top: clamp(16px, 6vw, 48px);
-    right: clamp(-90px, -22vw, -50px);
-    width: clamp(150px, 44vw, 320px);
-    z-index: 2;
-  }
+  .m-diag-list--geo li { font-family: 'Geometria', sans-serif; font-weight: 400; }
+
+  /* ---------- берег + цитата ---------- */
+  .m-shore { position: relative; margin-top: 56px; min-height: 420px; display: flex; align-items: center; }
+  .m-shore-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .m-quote {
     position: relative;
-    z-index: 3;
-    margin: 0;
-    padding: clamp(110px, 34vw, 220px) 24px 0;
-    text-align: center;
-    font-size: clamp(24px, 6.7vw, 50px);
-    line-height: 1.15;
-    letter-spacing: -0.01em;
-    color: #C35B3F;
-  }
-  .m-giant {
-    margin: 0;
-    margin-top: auto;
-    position: relative;
-    z-index: 4;
+    padding: 60px 30px;
     width: 100%;
     text-align: center;
+    font-size: 24px;
+    line-height: 1.3;
+    letter-spacing: .01em;
+    color: #C35B3F;
+    background: linear-gradient(180deg, rgba(250,245,241,0) 0%, rgba(250,245,241,.78) 18%, rgba(250,245,241,.78) 82%, rgba(250,245,241,0) 100%);
+  }
+
+  /* ---------- ароматы ---------- */
+  .m-aromas {
+    padding: 40px 0 64px;
+    background: #FAF5F1 url('public/images/m/aromas-bg.webp') top center / 100% auto repeat-y;
+    overflow: hidden;
+  }
+  .m-giant {
     font-family: 'Geometria', sans-serif;
     font-weight: 500;
-    font-size: 15.4vw;
-    line-height: 0.9;
+    font-size: 14.8vw;
+    letter-spacing: .01em;
+    line-height: .9;
+    text-align: center;
     text-transform: uppercase;
     color: #E38A71;
-    transform: translateY(46%);
+    white-space: nowrap;
   }
-  .m-rock {
-    position: absolute;
-    bottom: clamp(-130px, -33vw, -90px);
-    left: clamp(-110px, -26vw, -64px);
-    width: clamp(140px, 37vw, 300px);
-    z-index: 2;
-  }
+  .m-aromas .m-h2 { margin-top: 28px; }
 
-  /* ---------- 7. Ароматы ---------- */
-  .m-aromas {
+  .m-car {
     position: relative;
-    z-index: 1;
-    padding-top: 9vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 36px;
   }
-  .m-aromas-bg { object-position: center top; }
-  .m-aromas-title {
+  .m-car-stage {
     position: relative;
-    z-index: 2;
-    margin: 0;
-    text-align: center;
-    font-weight: 400;
-    font-size: clamp(36px, 10vw, 76px);
-    color: #C35B3F;
-    text-transform: uppercase;
+    width: 218px;
+    height: 534px;
+    touch-action: pan-y;
   }
-  .m-bottle-stage { position: relative; margin-top: 32px; z-index: 2; }
-  .m-bottle { width: clamp(170px, 48vw, 330px); margin-left: clamp(8px, 6vw, 60px); }
-  .m-bottle-note {
+  .m-car-img {
     position: absolute;
-    top: 28%;
-    right: var(--pad);
-    width: 40vw;
-    margin: 0;
-    font-size: clamp(13px, 3.6vw, 19px);
-    line-height: 1.35;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #313131;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0;
+    transition: opacity .8s ease;
   }
-  .m-accent { color: #C35B3F; }
-  .m-bottle-caption {
-    margin: 12px 0 0;
-    text-align: center;
-    font-size: clamp(16px, 4.4vw, 26px);
-    color: #C35B3F;
-  }
-  .m-scents {
+  .m-car-img.is-on { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .m-car-img { transition: none; } }
+
+  .m-car-arrow {
     position: relative;
-    z-index: 2;
-    padding: 44px var(--pad) 64px;
+    width: 52px;
+    height: 52px;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
   }
-  .m-scents-title {
-    margin: 0;
-    font-size: clamp(22px, 6.1vw, 40px);
+  .m-car-arrow::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 18px; height: 18px;
+    border-top: 2px solid #C35B3F;
+    border-right: 2px solid #C35B3F;
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  .m-car-prev::before { transform: translate(-50%, -50%) rotate(-135deg); }
+  .m-car-arrow[disabled] { opacity: .35; pointer-events: none; }
+
+  .m-car-caption {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 24px;
+    letter-spacing: .04em;
     color: #C35B3F;
     text-transform: uppercase;
   }
-  .m-scents-sub {
-    margin: 10px 0 0;
-    max-width: 34ch;
-    font-size: clamp(13px, 3.6vw, 19px);
-    line-height: 1.35;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #313131;
-  }
-  .m-mango {
-    margin: 28px 0 0;
+  .m-car-desc {
+    margin: 18px auto 0;
+    padding: 0 30px;
+    max-width: 420px;
+    text-align: center;
     font-family: 'Geometria', sans-serif;
     font-weight: 300;
-    font-size: clamp(13px, 3.6vw, 19px);
-    line-height: 1.35;
-    letter-spacing: 0.1em;
+    font-size: 15.5px;
+    line-height: 1.5;
+    letter-spacing: .08em;
     text-transform: uppercase;
-    color: #313131;
   }
-  .m-mango-name {
+  .m-car-desc .ts4 {
     font-family: 'Tenor Sans', sans-serif;
-    font-weight: 400;
-    font-size: clamp(18px, 5vw, 28px);
-    letter-spacing: 0.1em;
+    font-size: 17px;
+    letter-spacing: .1em;
     color: #C35B3F;
+  }
+  .m-car-desc .ts6, .m-car-desc .ts7 { font-family: 'Tenor Sans', sans-serif; }
+
+  .m-scents { margin-top: 52px; padding: 0 24px; text-align: center; }
+  .m-scents-h { font-size: 30px; line-height: 1; text-transform: uppercase; color: #C35B3F; }
+  .m-scents-t {
+    margin: 14px auto 0;
+    max-width: 360px;
+    font-size: 15px;
+    line-height: 1.45;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .m-scents-q {
+    margin: 26px auto 0;
+    max-width: 340px;
+    font-size: 15px;
+    line-height: 1.45;
+    letter-spacing: .05em;
+    text-transform: uppercase;
   }
 
-  /* ---------- 8. UNCHARTED — ЭТО ---------- */
-  .m-eto { position: relative; }
-  .m-eto .m-bg { object-position: right center; }
-  .m-eto-panel {
-    position: relative;
-    padding: 56px var(--pad) 64px;
-    background: rgba(250, 245, 241, 0.88);
-  }
-  .m-eto-title {
-    margin: 0;
-    text-align: center;
-    font-weight: 400;
-    font-size: clamp(28px, 7.8vw, 56px);
-    color: #C35B3F;
-  }
-  .m-theses { display: grid; gap: 36px; margin-top: 36px; }
-  .m-thesis-title {
-    margin: 0;
-    font-size: clamp(22px, 6.1vw, 40px);
-    color: #C35B3F;
-  }
-  .m-thesis-text {
-    margin: 12px 0 0;
-    font-size: clamp(15px, 4.2vw, 22px);
-    line-height: 1.35;
-    letter-spacing: 0.03em;
-    color: #313131;
-  }
-  .m-eto-view { position: relative; height: clamp(120px, 34vw, 260px); }
+  /* ---------- UNCHARTED — ЭТО ---------- */
+  .m-eto { padding: 64px 24px 0; }
+  .m-thesis { margin-top: 36px; }
+  .m-thesis-h { font-size: 21px; line-height: 1.2; color: #C35B3F; letter-spacing: .03em; }
+  .m-thesis-t { margin-top: 10px; font-size: 16.5px; line-height: 1.5; letter-spacing: .02em; }
+  .m-eto-view { margin: 52px -24px 0; }
+  .m-eto-view img { width: 100%; height: 300px; object-fit: cover; object-position: 50% 70%; }
 
-  /* ---------- 9. Футер ---------- */
+  /* ---------- футер ---------- */
   .m-footer {
-    background: #FAF5F1 url('public/images/bg-texture.png') center top / cover no-repeat;
-    padding: 48px var(--pad) 28px;
+    padding: 48px 24px 28px;
+    background: url('public/images/m/footer.webp') bottom center / cover;
   }
   .m-wordmark {
-    margin: 0;
     font-family: 'Geometria', sans-serif;
     font-weight: 500;
+    font-size: 34px;
     text-transform: uppercase;
-    font-size: clamp(34px, 9.4vw, 68px);
-    line-height: 0.9;
     color: #313131;
   }
-  .m-foot-groups { display: grid; gap: 36px; margin-top: 36px; }
-  .m-foot-h {
-    margin: 0 0 16px;
-    text-transform: uppercase;
-    font-size: clamp(16px, 4.4vw, 22px);
-    color: #313131;
-  }
-  .m-foot-mail { margin: 0; font-size: clamp(15px, 4.2vw, 20px); }
+  .m-foot-groups { display: flex; flex-direction: column; gap: 34px; margin-top: 34px; }
+  .m-foot-h { font-size: 18px; text-transform: uppercase; letter-spacing: .04em; }
+  .m-foot-mail { display: inline-block; margin-top: 14px; font-size: 16px; color: #313131; text-decoration: none; }
   .m-foot-row {
     display: flex;
-    gap: 12px;
     align-items: center;
-    margin: 14px 0 0;
-    font-size: clamp(15px, 4.2vw, 20px);
-  }
-  .m-foot-row img { width: 32px; height: 32px; }
-  .m-foot-row.m-geo { font-family: 'Geometria', sans-serif; font-weight: 400; }
-  .m-letu { position: relative; width: 32px; height: 32px; flex: 0 0 32px; display: block; }
-  .m-letu img { width: 32px; height: 32px; }
-  .m-letu .m-letu-glyph {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 25px;
-    height: auto;
-  }
-  .m-foot-note {
-    margin: 12px 0 0;
-    font-family: 'Geometria', sans-serif;
-    font-weight: 400;
-    font-size: 12px;
-    line-height: 1.3;
-  }
-  .m-foot-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
     gap: 12px;
-    font-size: clamp(15px, 4.2vw, 20px);
+    margin-top: 14px;
+    font-size: 16px;
+    color: #313131;
+    text-decoration: none;
   }
-  .m-copy {
-    margin-top: 40px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(49, 49, 49, 0.2);
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
+  .m-foot-row img { width: 30px; height: 30px; }
+  .m-geo { font-family: 'Geometria', sans-serif; font-weight: 400; }
+  .m-letu { position: relative; display: inline-flex; width: 30px; height: 30px; }
+  .m-letu-glyph {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 19px !important; height: 10px !important;
   }
-  .m-copy img { width: 14px; height: 14px; }
-  .m-copy p {
-    margin: 0;
-    font-family: 'Geometria', sans-serif;
-    font-weight: 400;
-    font-size: 12px;
-    line-height: 1.3;
-  }
+  .m-foot-note { margin-top: 12px; font-size: 11.5px; line-height: 1.4; color: #8a7a6e; max-width: 250px; }
+  .m-foot-list { list-style: none; }
+  .m-foot-list li { margin-top: 12px; font-size: 15px; }
+  .m-foot-list li:first-child { margin-top: 14px; }
+  .m-copy { margin-top: 40px; }
+  .m-copy p { font-family: 'Geometria', sans-serif; font-size: 12.5px; color: #6f655e; }
   .m-up { text-transform: uppercase; }
-  .m-legal {
-    margin-left: auto !important;
-    text-align: right;
-    max-width: 55%;
-  }
+  .m-legal { margin-top: 8px; line-height: 1.45; }
+
+  /* модалка КУПИТЬ — стили в anim.css, на мобилке чуть плотнее */
+  .buy-card { padding: 38px 26px 28px; }
 }

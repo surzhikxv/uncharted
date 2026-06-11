@@ -80,18 +80,19 @@
 
   // --- карусель ароматов ---
   const AROMAS = [
-    { caption: '/ MANGO BLISS', img: 'public/images/render/bottle-625.png',
+    { caption: '/ MANGO BLISS', img: 'public/images/render/bottle-625.png', m: 'public/images/m/bottle-mango.webp',
       desc: '<span class="ts4">аромат MANGO BLISS</span><br><span class="ts6">— </span><span class="ts7">билет в неизведнанные<br>уголки тропиков мьянмы,<br>где сладкий аромат манго<br>переплетается с ежевикой,<br>иланг-илангом и ноткой<br>пачули</span>' },
-    { caption: '/ NAMIBIA DUNES', img: 'public/images/render/aromas/namibia-dunes.png',
+    { caption: '/ NAMIBIA DUNES', img: 'public/images/render/aromas/namibia-dunes.png', m: 'public/images/m/bottle-namibia.webp',
       desc: '<span class="ts4">аромат NAMIBIA DUNES</span><br><span class="ts6">— </span><span class="ts7">билет в пустыню НАМИБ<br>с бескрайними дюнами,<br>где сладкий апельсин тает в розовом перце, пряных специях и древесном кедре</span>' },
-    { caption: '/ ISLAY SMOKE', img: 'public/images/render/aromas/islay-smoke.png',
+    { caption: '/ ISLAY SMOKE', img: 'public/images/render/aromas/islay-smoke.png', m: 'public/images/m/bottle-islay.webp',
       desc: '<span class="ts4">аромат ISLAY SMOKE</span><br><span class="ts6">— </span><span class="ts7">прогулка по ветренным шотландским холмам,<br>где в воздухе ощущается запах выдержанного виски и табачного дыма. Теплые ноты какао и амбры окутывают словно вечерний туман</span>' },
-    { caption: '/ CITRUS VETIVER', img: 'public/images/render/aromas/citrus-vetiver.png',
+    { caption: '/ CITRUS VETIVER', img: 'public/images/render/aromas/citrus-vetiver.png', m: 'public/images/m/bottle-citrus.webp',
       desc: '<span class="ts4">аромат CITRUS VETIVER</span><br><span class="ts6">— </span><span class="ts7">поход в густые леса мабу, где свежесть ветивера<br>и тепло ореховой коры сливаются со сладким ароматом лимонной карамели и бобов тонка</span>' },
-    { caption: '/ KAMCHATKA VEIL', img: 'public/images/render/aromas/kamchatka-veil.png',
+    { caption: '/ KAMCHATKA VEIL', img: 'public/images/render/aromas/kamchatka-veil.png', m: 'public/images/m/bottle-kamchatka.webp',
       desc: '<span class="ts4">аромат KAMCHATKA VEIL</span><br><span class="ts6">— </span><span class="ts7">путешествие на вершины вулканов камчатки, где каждый вздох наполнен пикантным черным перцем<br>и бодрящим бергамотом<br>с нежностью ванили<br>и белого чая</span>' },
   ];
-  AROMAS.forEach(a => { const i = new Image(); i.src = a.img; });
+  const MOBILE = document.documentElement.clientWidth <= 768;
+  AROMAS.forEach(a => { const i = new Image(); i.src = MOBILE ? a.m : a.img; });
   const capEl = document.querySelector('.n622'), descEl = document.querySelector('.n624');
   const stage = document.querySelector('.bottle-stage');
   if (stage && capEl && descEl) {
@@ -137,6 +138,61 @@
     };
     activate(stage.querySelector('.car-next'), () => go(1));
     activate(stage.querySelector('.car-prev'), () => go(-1));
+  }
+
+  // --- мобильная карусель ароматов (CSS-кроссфейд вместо WebGL-морфа) ---
+  const mstage = document.querySelector('.m-car-stage');
+  if (mstage) {
+    const imgs = mstage.querySelectorAll('.m-car-img');
+    const mcap = document.querySelector('.m-car-caption');
+    const mdesc = document.querySelector('.m-car-desc');
+    let mi = 0, mfront = 0, mbusy = false;
+    const mgo = dir => {
+      if (mbusy) return; mbusy = true;
+      const next = (mi + dir + AROMAS.length) % AROMAS.length;
+      const back = 1 - mfront;
+      const el = imgs[back];
+      const swap = () => {
+        el.classList.add('is-on');
+        el.removeAttribute('aria-hidden');
+        imgs[mfront].classList.remove('is-on');
+        imgs[mfront].setAttribute('aria-hidden', 'true');
+        mfront = back;
+        mcap.classList.add('out'); mdesc.classList.add('out');
+        setTimeout(() => {
+          mcap.textContent = AROMAS[next].caption;
+          mdesc.innerHTML = AROMAS[next].desc.replace(/<br>/g, ' ');
+          mcap.classList.remove('out'); mdesc.classList.remove('out');
+        }, REDUCED ? 0 : 450);
+        setTimeout(() => { mi = next; mbusy = false; }, REDUCED ? 0 : 850);
+      };
+      el.alt = 'Флакон ' + AROMAS[next].caption.replace('/ ', '');
+      if (el.src.endsWith(AROMAS[next].m)) { swap(); return; }
+      el.onload = swap;
+      el.onerror = () => { mbusy = false; };
+      el.src = AROMAS[next].m;
+      if (el.complete && el.naturalWidth) { el.onload = null; swap(); }
+    };
+    activate(document.querySelector('.m-car-prev'), () => mgo(-1));
+    activate(document.querySelector('.m-car-next'), () => mgo(1));
+    let x0 = null;
+    mstage.addEventListener('pointerdown', e => { x0 = e.clientX; });
+    mstage.addEventListener('pointerup', e => {
+      if (x0 === null) return;
+      const dx = e.clientX - x0; x0 = null;
+      if (Math.abs(dx) > 40) mgo(dx < 0 ? 1 : -1);
+    });
+  }
+
+  // --- мобильные scroll-reveal'ы ---
+  if (!REDUCED) {
+    const mrv = document.querySelectorAll('.m-rv');
+    if (mrv.length) {
+      const mio = new IntersectionObserver(es => es.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('in'); mio.unobserve(e.target); }
+      }), { threshold: .12 });
+      mrv.forEach(el => mio.observe(el));
+    }
   }
 
   // --- каталог: живые фильтры + появление карточек ---

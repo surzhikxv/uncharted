@@ -137,7 +137,11 @@
       '.n631','.n632','.n633','.n634','.n635','.n636','.n637','.n638','.n639','.n657','.n658'];
     const els = document.querySelectorAll('.page ' + revealSel.join(', .page '));
     const io = new IntersectionObserver(es => es.forEach(e => {
-      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .15 });
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        if (e.target.style.transitionDelay) setTimeout(() => { e.target.style.transitionDelay = ''; }, 1000);
+        io.unobserve(e.target);
+      } }), { threshold: .15 });
     let cardN = 0;
     els.forEach(el => { el.classList.add('rv');
       if (el.classList.contains('card')) el.style.transitionDelay = (cardN++ * 120) + 'ms';
@@ -149,7 +153,11 @@
       giant.setAttribute('aria-label', word); giant.textContent = ''; giant.classList.add('rv-letters');
       [...word].forEach((ch, i) => { const s = document.createElement('span'); s.textContent = ch;
         s.setAttribute('aria-hidden', 'true'); s.style.transitionDelay = (i * 60) + 'ms'; giant.appendChild(s); });
-      new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { giant.classList.add('in'); o.disconnect(); } }), { threshold: .3 }).observe(giant);
+      new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) {
+        giant.classList.add('in');
+        setTimeout(() => { giant.textContent = word; giant.removeAttribute('aria-label'); }, 1400);
+        o.disconnect();
+      } }), { threshold: .3 }).observe(giant);
     }
     // параллакс слоёв
     const PARA = [['.n731', 26], ['.n690', 14], ['.n697', 12], ['.hero-right', 9], ['.hero-streak', 6]];
@@ -158,8 +166,10 @@
       const vh = innerHeight;
       items.forEach(it => {
         const r = it.el.getBoundingClientRect();
+        if (r.bottom < -60 || r.top > vh + 60) return;           // вне экрана — не трогаем
         const t = ((r.top + r.height / 2) - vh / 2) / vh;
         const target = Math.max(-1, Math.min(1, t)) * it.amp;
+        if (Math.abs(target - it.cur) < .02) return;             // дошли — не пишем каждый кадр
         it.cur += (target - it.cur) * .08;
         it.el.style.transform = 'translate3d(0,' + it.cur.toFixed(2) + 'px,0)';
       });

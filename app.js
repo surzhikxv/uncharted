@@ -59,7 +59,7 @@
   addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
 
   // --- WebGL band ---
-  if (!REDUCED && window.GLEngine) {
+  if (!REDUCED && window.GLEngine && document.documentElement.clientWidth > 768) {
     try {
       window.ENGINE = new GLEngine();
       const band = document.querySelector('canvas[data-shader="band"]');

@@ -119,6 +119,39 @@ void main(){
   outC = mix(a, b, m);
 }`;
 
+// течение струи геля: рефракция + бегущие блики внутри маски струи
+const FLOW_FRAG = `#version 300 es
+precision highp float; in vec2 vUv; out vec4 outC;
+uniform sampler2D uTex; uniform float uTime;
+${GL_NOISE}
+void main(){
+  float v = vUv.y;
+  // осевая линия струи (по геометрии pump-697: 310px@505 → 300px@1290 при 473×1553)
+  float xc = .6554 - .042 * (v - .325);
+  float dxn = vUv.x - xc;
+  float core = smoothstep(.0125, .0035, abs(dxn));
+  float env = smoothstep(.318, .345, v) * (1. - smoothstep(.76, .835, v));
+  float m = core * env;
+  // рефракция: медленная вертикальная волна, бегущая вниз
+  float wob = (uc_noise(vec2(2.0, v * 46. - uTime * 1.15)) - .5)
+            + (uc_noise(vec2(5.7, v * 90. - uTime * 2.1)) - .5) * .45;
+  vec2 uv = vUv;
+  uv.x += wob * .0042 * m;
+  vec3 c = texture(uTex, uv).rgb;
+  // бегущие блики: два слоя на разных скоростях + медленное дыхание;
+  // поток ускоряется книзу (физика падающей струи)
+  float g1 = uc_noise(vec2(7.3, v * 26. - uTime * (1.3 + v * 1.4)));
+  float g2 = uc_noise(vec2(3.1, v * 8. - uTime * .55));
+  float g3 = uc_noise(vec2(11.7, v * 55. - uTime * (2.6 + v * 2.)));
+  float spec = pow(smoothstep(.5, .92, g1), 2.) * .45
+             + pow(smoothstep(.6, .95, g3), 3.) * .28
+             + (g2 - .5) * .14;
+  // блик чуть уже самой струи — стеклянная сердцевина
+  float corehl = smoothstep(.006, .0015, abs(dxn + wob * .003));
+  c += spec * corehl * env;
+  outC = vec4(c, 1.);
+}`;
+
 const GRAIN_FRAG = `#version 300 es
 precision highp float; in vec2 vUv; out vec4 outC;
 uniform float uTime; uniform vec2 uRes;
@@ -129,4 +162,4 @@ void main(){
   outC = vec4(vec3(.5 + g * .12 + warm), 1.);
 }`;
 
-window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG; window.MORPH_FRAG = MORPH_FRAG; window.GRAIN_FRAG = GRAIN_FRAG;
+window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG; window.MORPH_FRAG = MORPH_FRAG; window.GRAIN_FRAG = GRAIN_FRAG; window.FLOW_FRAG = FLOW_FRAG;

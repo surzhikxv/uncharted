@@ -155,8 +155,11 @@
   <!-- 521:698 gradient blur -->
   <div class="abs n698"></div>
 
-  <!-- 521:697 gel pump (baked incl. blur band) -->
-  <img class="abs n697" src="public/images/render/pump-697.webp" alt="" loading="lazy">
+  <!-- 521:697 gel pump + WebGL-течение струи -->
+  <div class="abs n697 pump-stage">
+    <img class="pump-fallback" src="public/images/render/pump-697.webp" alt="" loading="lazy">
+    <canvas class="pump-canvas" data-shader="flow"></canvas>
+  </div>
 
   <!-- 521:731 planet -->
   <img class="abs n731" src="public/images/render/planet-731.webp" alt="" loading="lazy">

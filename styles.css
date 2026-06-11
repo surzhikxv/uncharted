@@ -291,3 +291,6 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 
 /* 521:731 planet */
 .n731 { left: 1372px; top: 3761px; width: 548px; height: 1249px; }
+
+/* струя геля: канвас-течение поверх запечённой помпы */
+.pump-stage .pump-fallback, .pump-stage .pump-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }

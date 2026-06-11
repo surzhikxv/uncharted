@@ -75,6 +75,17 @@
       }
       const grain = document.querySelector('canvas[data-shader="grain"]');
       if (grain) ENGINE.addScene(grain, GRAIN_FRAG, {}, () => ({}));
+      // течение струи геля на помпе
+      const flow = document.querySelector('canvas[data-shader="flow"]');
+      if (flow) {
+        const fsc = ENGINE.addScene(flow, FLOW_FRAG, { uTex: 'public/images/render/pump-697.webp' }, () => ({}));
+        if (fsc) {
+          const fb = document.querySelector('.pump-fallback');
+          fsc.onFail = () => { flow.style.display = 'none'; fb.style.visibility = 'visible'; };
+          const onFlowReady = () => { if (fsc.ready) fb.style.visibility = 'hidden'; else if (!fsc.failed) requestAnimationFrame(onFlowReady); };
+          requestAnimationFrame(onFlowReady);
+        }
+      }
     } catch (e) { console.warn('WebGL off:', e); }
   }
 

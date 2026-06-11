@@ -143,9 +143,13 @@
         io.unobserve(e.target);
       } }), { threshold: .15 });
     let cardN = 0;
-    els.forEach(el => { el.classList.add('rv');
+    els.forEach(el => {
+      const m = getComputedStyle(el).transform;
+      if (m && m !== 'none') { const ty = parseFloat(m.split(',').pop()); if (ty) el.style.setProperty('--ty', ty + 'px'); }
+      el.classList.add('rv');
       if (el.classList.contains('card')) el.style.transitionDelay = (cardN++ * 120) + 'ms';
-      io.observe(el); });
+      io.observe(el);
+    });
     // побуквенный UNCHARTED
     const giant = document.querySelector('.n630');
     if (giant) {

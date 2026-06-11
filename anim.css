@@ -29,8 +29,8 @@ body.modal-open { overflow: hidden; }
 .hero-grain { left: 0; top: 0; width: 1920px; height: 1043px; mix-blend-mode: soft-light; pointer-events: none; }
 body:not(.webgl-on) .hero-grain { display: none; }
 /* ===== Reveal-анимации (только при body.anim — не reduced-motion) ===== */
-body.anim .rv { opacity: 0; transform: translateY(26px); transition: opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1); }
-body.anim .rv.in { opacity: 1; transform: none; }
+body.anim .rv { opacity: 0; transform: translateY(calc(26px + var(--ty, 0px))); transition: opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1); }
+body.anim .rv.in { opacity: 1; transform: translateY(var(--ty, 0px)); }
 body.anim .rv-letters span { display: inline-block; opacity: 0; transform: translateY(.16em);
   transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
 body.anim .rv-letters.in span { opacity: 1; transform: none; }

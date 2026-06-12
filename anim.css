@@ -31,21 +31,23 @@ body.modal-open { overflow: hidden; }
 /* канвас вязкой среды: флакон + полётное поле направо через описание аромата
    (CSS-габариты = sim 1250×1083 × 0.82 — блок ужат под один экран) */
 .fluid-canvas { position: absolute; left: 705px; top: 5660px; width: 1025px; height: 888px; pointer-events: none; }
-/* смыв описания потоком капель (только листание вперёд) */
+/* смыв описания рукой воды (только листание вперёд): --washP каждый кадр
+   ставит app.js по фронту листа из бреши — маска съедает буквы ровно под
+   янтарём, блок сносит и смазывает по направлению потока */
 .n624.washing {
-  -webkit-mask-image: linear-gradient(97deg, transparent 38%, #000 58%);
-  mask-image: linear-gradient(97deg, transparent 38%, #000 58%);
-  -webkit-mask-size: 300% 100%; mask-size: 300% 100%;
-  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  transition: none;
+  -webkit-mask-image: linear-gradient(99deg, transparent calc(var(--washP, 0) * 118% - 18%), #000 calc(var(--washP, 0) * 118% + 1%));
+  mask-image: linear-gradient(99deg, transparent calc(var(--washP, 0) * 118% - 18%), #000 calc(var(--washP, 0) * 118% + 1%));
+  transform: translateX(calc(var(--washP, 0) * 54px)) skewX(calc(var(--washP, 0) * -4deg));
+  filter: blur(calc(var(--washP, 0) * 3px));
+  will-change: transform, filter;
 }
-@keyframes washOut {
-  from { -webkit-mask-position: 100% 0; mask-position: 100% 0; transform: none; filter: none; }
-  to   { -webkit-mask-position: 0% 0;   mask-position: 0% 0;   transform: translateX(44px); filter: blur(4px); }
+/* новый текст осаждается, когда вода прошла: проявление из мокрого стекла */
+@keyframes washResolve {
+  from { opacity: 0; filter: blur(8px); transform: translateX(-14px); }
+  to   { opacity: 1; filter: none;      transform: none; }
 }
-@keyframes washIn {
-  from { -webkit-mask-position: 0% 0;   mask-position: 0% 0;   transform: translateX(-26px); filter: blur(3px); }
-  to   { -webkit-mask-position: 100% 0; mask-position: 100% 0; transform: none; filter: none; }
-}
+.n624.wash-in { animation: washResolve .6s cubic-bezier(.25,.5,.3,1) both; }
 /* побуквенный каскад подписи аромата */
 .cl { display: inline-block; transition: opacity .36s ease, transform .45s cubic-bezier(.22,1,.36,1), filter .36s ease; }
 .cl.out-l.gone { opacity: 0; transform: translateY(-12px); filter: blur(4px); }

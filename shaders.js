@@ -210,6 +210,9 @@ precision highp float; in vec2 vUv; out vec4 outC;
 uniform sampler2D uTexA, uTexB, uField, uMask;
 uniform vec2 uSimRes, uGrid; uniform float uMix, uTime, uOffX, uTexW, uWash, uLevel, uBreach, uFlow, uReach;
 uniform vec4 uVessel;
+// огибающая верхней кромки листа (16 узлов по 50px от стенки), прогресс налива
+// и огибающая «стеклянного» вида пустого сосуда на время перехода
+uniform float uTopE[16]; uniform float uFill, uGlass;
 ${GL_NOISE}
 // поле на сетке: бикубический B-сплайн через 4 аппаратных билинейных тапа —
 // C1-гладкий, без «накачки» градиента с частотой сетки (она давала муар-плетёнку)
@@ -265,51 +268,61 @@ void main(){
   vec2 src = px - D;
   vec2 tuv = vec2((src.x - uOffX) / uTexW, src.y / uSimRes.y);
   // ватерлиния: уровень дышит полем ряби и капиллярно прилипает к стенкам
-  // (у кромки силуэта m→0.5 — линия подползает вверх)
-  float capil = 1. - smoothstep(.54, .9, m);
-  float lvl = uLevel + F.z * 2.2 - capil * 7.;
+  // (у кромки силуэта m→0.5 — линия подползает вверх); при наливе по линии
+  // бежит мягкая рябь, оседающая к концу подъёма — поверхность успокаивается
+  float capil = 1. - smoothstep(.55, .9, m);
+  float rise = (sin(px.x * .034 + uTime * 8.6) + .55 * sin(px.x * .013 - uTime * 6.1)) * 2.6
+             * smoothstep(.02, .14, uFill) * (1. - smoothstep(.6, .94, uFill));
+  float lvl = uLevel + F.z * 2.2 - capil * 5.5 + rise;
   float below = smoothstep(lvl - 2.5, lvl + 2.5, px.y);
   // ===== струя из бреши: у листа СВОЁ тело (за силуэтом текстуры нет) =====
-  // тёплая янтарная полупрозрачная вода: верхняя кромка — честная огибающая
-  // всех струй y = уровень + ξ, нити-струйки несутся по потоку, яркий мениск
-  // ведущей кромки, с фронта срываются капли
+  // тёплая янтарная полупрозрачная вода. Верхняя кромка — НЕ текущий уровень:
+  // вода на удалении ξ вылетела раньше (уровень был выше) и успела упасть —
+  // CPU ведёт 16 узлов огибающей по истории уровня (uTopE), поэтому язык
+  // каскада держится у текста, пока фронт его пересекает, а не тонет с уровнем
   vec4 jet = vec4(0.);
   float xi = px.x - uVessel.z;
-  if (uFlow > .004 && xi > -10.) {
-    // у стенки лист во всю открытую брешь (от ватерлинии до дна), верхняя
-    // кромка — диагональ вправо-вниз: треугольный каскад, утекающий за канвас
-    float yT = lvl + xi * .5
-             + (uc_noise(vec2(px.x * .013, uTime * 1.9)) - .5) * 34.;
-    float yB = uVessel.y + 4. + xi * .1 + (uc_noise(vec2(px.x * .011 + 7., uTime * 1.4)) - .5) * 22.;
-    float front = 1. - smoothstep(uReach - 70., uReach + 30., xi);
-    float sheet = smoothstep(yT - 8., yT + 8., px.y) * (1. - smoothstep(yB - 12., yB + 12., px.y))
-                * front * clamp(uFlow * 1.6, 0., 1.);
+  if (uFlow > .004 && xi > -14.) {
+    float kn = clamp(xi / 50., 0., 14.99);
+    int k0 = int(kn); float kf = kn - float(k0);
+    float yT = mix(uTopE[k0], uTopE[k0 + 1], kf)
+             + (uc_noise(vec2(px.x * .012, uTime * 1.7)) - .5) * 14.;
+    // низ: вода растекается по базе флакона вправо, к подписи
+    float yB = uVessel.y + 8. + (uc_noise(vec2(px.x * .009 + 7., uTime * 1.2)) - .5) * 12.;
+    float front = 1. - smoothstep(uReach - 60., uReach + 26., xi);
+    float on = clamp(uFlow * 1.8, 0., 1.) * smoothstep(-14., 22., xi);
+    float band = smoothstep(yT - 6., yT + 10., px.y) * (1. - smoothstep(yB - 14., yB + 6., px.y));
+    float sheet = band * front * on;
     // нити-струйки: два масштаба шума, унесённого по потоку
-    float s1 = uc_noise(vec2((px.x - uTime * 620.) * .021, px.y * .05));
-    float s2 = uc_noise(vec2((px.x - uTime * 950.) * .043, px.y * .11 + 4.2));
-    float str = .55 + .5 * s1 + .35 * (s2 - .5);
-    // тело плотнее у верхней кромки — лист виден с ребра
-    float topw = exp(-pow((px.y - yT) / 26., 2.));
-    float a = sheet * (.30 + .42 * topw) * str;
-    vec3 amber = vec3(.78, .45, .16) * (.95 + .4 * topw);
-    float menF = exp(-pow((xi - uReach) / 16., 2.)) * sheet;
-    float menT = exp(-pow((px.y - yT) / 3.2, 2.)) * front * clamp(uFlow * 1.5, 0., 1.)
-               * step(-2., xi);
-    vec3 jrgb = amber * a + vec3(1., .94, .82) * (menF * .65 + menT * .5);
-    float ja = a + menF * .5 + menT * .38;
-    // капли: срываются с ведущего угла листа и летят по параболам
+    float s1 = uc_noise(vec2((px.x - uTime * 640.) * .02, px.y * .05));
+    float s2 = uc_noise(vec2((px.x - uTime * 980.) * .041, px.y * .1 + 4.2));
+    float str = .62 + .42 * s1 + .3 * (s2 - .5);
+    // тело плотнее у верхней кромки (лист виден с ребра) и в накате по базе
+    float topw = exp(-pow((px.y - yT) / 30., 2.));
+    float botw = exp(-pow((px.y - yB) / 36., 2.)) * .5;
+    float a = sheet * (.34 + .34 * topw + .2 * botw) * str;
+    vec3 amber = vec3(.80, .47, .17) * (.92 + .42 * topw);
+    // мениски: яркое ребро верхней кромки + ведущий фронт листа
+    float menT = exp(-pow((px.y - yT) / 3.4, 2.)) * front * on;
+    float menF = exp(-pow((xi - uReach) / 14., 2.)) * band * on;
+    vec3 jrgb = amber * a + vec3(1., .95, .84) * (menT * .55 + menF * .6);
+    float ja = a + menT * .42 + menF * .5;
+    // капли: срываются с ведущей кромки и летят по параболам перед фронтом
     for (int di = 0; di < 3; di++) {
       float fi = float(di);
-      float ph = fract(uTime * (.9 + fi * .31) + fi * .41);
-      float dxp = uReach + 24. + ph * 110. + fi * 17.;
-      vec2 dp = vec2(uVessel.z + dxp, lvl + dxp * .5 + ph * ph * 170. - fi * 26.);
+      float ph = fract(uTime * (.85 + fi * .27) + fi * .37);
+      float dxp = uReach + 20. + ph * 130. + fi * 23.;
+      float kdn = clamp(dxp / 50., 0., 14.99);
+      int kd = int(kdn);
+      float yTd = mix(uTopE[kd], uTopE[kd + 1], kdn - float(kd));
+      vec2 dp = vec2(uVessel.z + dxp, yTd + 26. + ph * ph * 210. - fi * 18.);
       float dd = length(px - dp);
-      float dr = 6.5 - ph * 3.;
-      float da = exp(-dd * dd / (dr * dr)) * (1. - ph) * clamp(uFlow * 1.4, 0., 1.);
-      jrgb += (vec3(.9, .6, .3) + vec3(.6) * exp(-pow((dd - dr * .4) / 1.6, 2.))) * da;
-      ja += da * .85;
+      float dr = 7. - ph * 3.2;
+      float da = exp(-dd * dd / (dr * dr)) * (1. - ph) * clamp(uFlow * 1.6, 0., 1.);
+      jrgb += (vec3(.92, .62, .3) + vec3(.55) * exp(-pow((dd - dr * .45) / 1.7, 2.))) * da;
+      ja += da * .8;
     }
-    jet = vec4(jrgb, min(ja, .92));
+    jet = vec4(jrgb, min(ja, .9));
   }
   // помпа — твёрдое тело: выше плеча сосуда ничего не течёт и не осушается
   float pumpM = ins * (1. - smoothstep(uVessel.x - 6., uVessel.x + 6., px.y));
@@ -358,13 +371,16 @@ void main(){
   // струя поверх (вне силуэта col там пуст, над текстом — полупрозрачный янтарь)
   jet *= (1. - ins) * (1. - pumpM);
   col = col * (1. - jet.a) + jet;
-  // ватерлиния: чёткий яркий блик на стыке вода/воздух (в покое спрятана за
-  // плечом, под помпой); считается только в полосе ±10px — дёшево
+  // ватерлиния: чёткий яркий мениск на стыке вода/воздух + тёмная полоска
+  // преломления толщи сразу под линией (линия читается объёмной); в покое
+  // спрятана за плечом, под помпой; считается только в узкой полосе — дёшево
   float dl = px.y - lvl;
-  if (abs(dl) < 10.) {
-    float wl = exp(-pow(dl / 2.4, 2.)) * ins * (1. - pumpM);
-    col.rgb += wl * .44 * vec3(1., .965, .9);
-    col.a   += wl * .26;
+  if (abs(dl) < 13.) {
+    float g8 = ins * (1. - pumpM);
+    float wl = exp(-pow(dl / 2.1, 2.)) * g8;
+    float us = exp(-pow((dl - 5.) / 3.6, 2.)) * g8 * below;
+    col.rgb += wl * .5 * vec3(1., .96, .89) + vec3(.32, .22, .15) * us * .16;
+    col.a   += wl * .3 + us * .16;
   }
   // стеклянные стенки: тончайший тёплый контур (пик альфы маски на склоне 0↔1),
   // отзывается свечением на удары волн; правая стенка ТАЕТ в брешь на время
@@ -372,20 +388,34 @@ void main(){
   float wb = m * (1. - m);
   if (wb > .02) {
     float wall = pow(wb * 4., 1.7);
+    // на время перехода контур шире и плотнее: одна непрерывная линия обнимает
+    // ВЕСЬ предмет (помпа + горло + плечи + тело) и держит опустевшее стекло;
+    // к покою спадает до прежнего тончайшего штриха — статика не меняется
+    wall = mix(wall, pow(min(wb * 4.4, 1.), 1.15), uGlass);
     float gap = uBreach * smoothstep(uVessel.z - 30., uVessel.z + 4., px.x)
               * smoothstep(uVessel.x + 26., uVessel.x + 70., px.y);
     wall *= (1. - gap) * (.6 + 1.5 * min(1., abs(F.z) * .3));
-    col.rgb += vec3(.86, .42, .27) * wall * .33;
-    col.a   += wall * .3;
+    col.rgb += vec3(.86, .42, .27) * wall * (.33 + .4 * uGlass);
+    col.a   += wall * (.3 + .42 * uGlass);
   }
-  // опустевшая часть — СТЕКЛО, не белая дыра: вертикальные блики у стенок
-  // (кромка толщины), мягкий вертикальный хайлайт по телу, едва заметный тон
+  // опустевшая часть — СТЕКЛО, не белая дыра: тело чуть плотнее страницы,
+  // тёмные кромки толщины у стенок, два вертикальных блика, свет от плеча
+  // и свежесмоченная плёнка над уходящей линией; всё гаснет с uGlass к покою
   float air = ins * (1. - below) * (1. - pumpM);
   if (air > .003) {
-    float edgeBand = 1. - smoothstep(.5, .95, m);
-    float hl = exp(-pow((px.x - (uVessel.z - 330.)) / 42., 2.));
-    col.rgb += (vec3(.97, .93, .88) * (edgeBand * .07 + hl * .035) + vec3(.93, .84, .76) * .018) * air;
-    col.a   += air * (.035 + edgeBand * .07 + hl * .03);
+    float edge = 1. - smoothstep(.5, .93, m);
+    float xb = clamp((px.x - uVessel.w) / max(uVessel.z - uVessel.w, 1.), 0., 1.);
+    float hlL = exp(-pow((xb - .16) / .05, 2.));
+    float hlR = exp(-pow((xb - .88) / .07, 2.)) * .6;
+    float topg = 1. - smoothstep(uVessel.x, uVessel.x + 300., px.y);
+    float wet = clamp(uFlow * 2., 0., 1.) * exp(-max(0., lvl - px.y) / 120.);
+    float ge = uGlass * .9 + .1;
+    col.rgb += (vec3(.45, .37, .31) * (edge * .2)
+             +  vec3(1., .97, .92) * (hlL * .2 + hlR * .1 + topg * .05)
+             +  vec3(.78, .71, .64) * .12) * air * ge
+             +  vec3(.46, .30, .18) * wet * .12 * air;
+    col.a   += ((edge * .24 + hlL * .14 + hlR * .07 + topg * .05 + .12) * ge
+             + wet * .14) * air;
   }
   outC = col;
 }`;
@@ -407,8 +437,12 @@ class FluidBottle {
     this.h = new Float32Array(n); this.hv = new Float32Array(n);    // рябь: высота поверхности и её скорость (волновое уравнение)
     this._dropAt = 0;
     // сосуд: уровень воды (px, в покое выше контура = полон), брешь правой
-    // стенки, напор истечения и дальность фронта струи
+    // стенки, напор истечения и дальность фронта струи; налив и стекло —
+    // огибающие фаз перехода; история уровня кормит верхнюю кромку листа
     this.level = -100; this.breach = 0; this.flow = 0; this.reach = 0;
+    this.fill = 0; this.glass = 0;
+    this.topE = new Float32Array(16);
+    this.lvlHist = new Float32Array(96); this._histI = 0;
     this.ins = null; this.nb = null; this.ves = null;
     this.tmp = new Float32Array(n);
     this.fieldBuf = new Float32Array(n * 4);
@@ -463,10 +497,12 @@ class FluidBottle {
     gl.uniform1f(U('uTexW'), c.texW);
     gl.uniform1i(U('uTexA'), 0); gl.uniform1i(U('uTexB'), 1); gl.uniform1i(U('uField'), 2);
     gl.uniform1i(U('uMask'), 3);
-    gl.uniform4f(U('uVessel'), this.ves.top, this.ves.bot, this.ves.wall, 0);
+    gl.uniform4f(U('uVessel'), this.ves.top, this.ves.bot, this.ves.wall, this.ves.left);
     this.uMixU = U('uMix'); this.uTimeU = U('uTime'); this.uWashU = U('uWash');
     this.uLevelU = U('uLevel'); this.uBreachU = U('uBreach');
     this.uFlowU = U('uFlow'); this.uReachU = U('uReach');
+    this.uFillU = U('uFill'); this.uGlassU = U('uGlass');
+    this.uTopEU = U('uTopE[0]') || U('uTopE');
   }
   _loadTex(url, cb){
     const gl = this.gl;
@@ -524,18 +560,19 @@ class FluidBottle {
     };
     for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++)
       ins[j * gw + i] = at((i + .5) * cw, (j + .5) * ch) > 127 ? 1 : 0;
-    // геометрия: плечо тела (первая почти-максимальная ширина), дно, правая стенка
-    const rowW = new Array(gh).fill(0), rowR = new Array(gh).fill(0);
+    // геометрия: плечо тела (первая почти-максимальная ширина), дно, обе стенки
+    const rowW = new Array(gh).fill(0), rowR = new Array(gh).fill(0), rowL = new Array(gh).fill(0);
     let maxW = 0;
-    for (let j = 0; j < gh; j++) { let w = 0, r = 0;
-      for (let i = 0; i < gw; i++) if (ins[j * gw + i]) { w++; r = i; }
-      rowW[j] = w; rowR[j] = r; if (w > maxW) maxW = w; }
+    for (let j = 0; j < gh; j++) { let w = 0, r = 0, l = -1;
+      for (let i = 0; i < gw; i++) if (ins[j * gw + i]) { w++; r = i; if (l < 0) l = i; }
+      rowW[j] = w; rowR[j] = r; rowL[j] = l < 0 ? 0 : l; if (w > maxW) maxW = w; }
     let topJ = 0, botJ = gh - 1;
     for (let j = 0; j < gh; j++) if (rowW[j] >= maxW * .8) { topJ = j; break; }
     for (let j = gh - 1; j >= 0; j--) if (rowW[j] > 0) { botJ = j; break; }
-    let ws = 0, wc = 0;
-    for (let j = topJ + 2; j <= botJ - 2; j++) { ws += (rowR[j] + .5) * cw; wc++; }
-    this.ves = { top: (topJ + .5) * ch, bot: (botJ + .5) * ch, wall: wc ? ws / wc : offX + texW };
+    let ws = 0, wc = 0, ls = 0;
+    for (let j = topJ + 2; j <= botJ - 2; j++) { ws += (rowR[j] + .5) * cw; ls += (rowL[j] + .5) * cw; wc++; }
+    this.ves = { top: (topJ + .5) * ch, bot: (botJ + .5) * ch,
+      wall: wc ? ws / wc : offX + texW, left: wc ? ls / wc : offX };
     // соседи волнового шага: стенка сосуда отражает (Нейман) в обе стороны,
     // внутри и снаружи волны живут свободно, через стенку — нет
     const il = new Int32Array(n), ir = new Int32Array(n), ru = new Int32Array(n), rd = new Int32Array(n);
@@ -570,6 +607,7 @@ class FluidBottle {
       if (this.failed) { cb && cb(false); return; }
       this.curIdx = 0; this.nextIdx = 0;
       this.level = this.ves.top - 16;          // покой: тело полно, линия спрятана под помпой
+      this.lvlHist.fill(this.level);
       this.ready = true;
       this._last = performance.now();
       const tick = now => { this._frame(now); requestAnimationFrame(tick); };
@@ -600,13 +638,21 @@ class FluidBottle {
     this.cur.vy += ((y - this.cur.y) / dt - this.cur.vy) * k;
     this.cur.x = x; this.cur.y = y; this.cur.t = now;
   }
-  // листание: запускает таймлайн форсинга в _step (вперёд — унос вправо, назад — колыхание)
+  // листание: запускает таймлайн форсинга в _step (вперёд — слив в брешь, назад — колыхание)
   transition(dir, nextIdx){
     if (!this.tex[nextIdx] || !this.ready) return;
     if (this.mix >= 1) this.curIdx = this.nextIdx;     // прошлый переход дорисован
     this.nextIdx = nextIdx;
     this.dir = dir;
     this.mix = 0; this.transT = 0; this._snapped = false; this.reach = 0;
+    this.lvlHist.fill(this.level); this._histI = 0;    // история уровня — с чистого листа
+  }
+  // история уровня (ячейка = подшаг 16.7мс ≈ 1.6с глубины): верхняя кромка
+  // листа — вода, вылетевшая РАНЬШЕ, когда уровень был выше, и успевшая упасть
+  _pushLvl(v){ this._histI = (this._histI + 1) % 96; this.lvlHist[this._histI] = v; }
+  _lvlAgo(sec){
+    const back = Math.min(95, Math.round(sec / .0167));
+    return this.lvlHist[(this._histI - back + 96) % 96];
   }
   _frame(now){
     if (!this.ready || this.failed) return;
@@ -635,11 +681,12 @@ class FluidBottle {
   _step(dt, now){
     this.transT += dt;
     const fwd = this.dir > 0, T = this.transT;
-    // кроссфейд текстур: вперёд — у «дна» опустошения (сосуд почти пуст,
+    // кроссфейд текстур: вперёд — в «мёртвой точке» опустошения (сосуд пуст,
     // подмена невидима, налив поднимает уже новую воду); назад — под колыхание
-    this.mix = Math.min(1, Math.max(0, fwd ? (T - .72) / .33 : (T - .3) / .42));
-    // огибающая большой волны: утончение плёнки разрешено только здесь
-    this.wash = Math.min(1, Math.sin(Math.min(T / (fwd ? 1.75 : 1.1), 1) * Math.PI) * 1.5) * (fwd ? 1 : .45);
+    this.mix = Math.min(1, Math.max(0, fwd ? (T - .78) / .2 : (T - .3) / .42));
+    // огибающая большой волны: утончение плёнки разрешено только здесь;
+    // вперёд она живёт ТОЛЬКО на сливе — налив зеркально спокоен (без мути)
+    this.wash = Math.min(1, Math.sin(Math.min(T / (fwd ? 1.05 : 1.1), 1) * Math.PI) * 1.5) * (fwd ? 1 : .45);
     // сосуд: брешь правой стенки открывается → напор Торричелли гонит воду в
     // струю, уровень падает (быстро → медленно, h ∝ (1−t)²), у дна — подмена,
     // налив поднимает новую воду, стенка восстанавливается
@@ -653,29 +700,40 @@ class FluidBottle {
         else if (tt < .86) { const q = 1 - tt / .86; lf = q * q; }
         else { const s = Math.min(1, (tt - .86) / .64); lf = s * s * (3 - 2 * s); }
         this.level = this.ves.bot - (this.ves.bot - full) * lf;
-        // сосуд пуст — мгновенно и невидимо распрямляем поле смещений:
+        // сосуд пуст — мгновенно и невидимо гасим ВСЁ поле (смещения И рябь):
         // налив поднимет НОВУЮ воду ровным горизонтальным уровнем, без
-        // остаточного перекоса столба от слива
+        // остаточного перекоса столба и без звона от слива
         if (tt >= .86 && !this._snapped) {
           this._snapped = true;
           this.dx.fill(0); this.dy.fill(0); this.vx.fill(0); this.vy.fill(0);
+          this.h.fill(0); this.hv.fill(0);
         }
         const drain = tt > 0 && tt < .86;
         this.flow = drain ? this.breach * Math.sqrt(Math.max(0, (this.ves.bot - this.level) / (this.ves.bot - this.ves.top))) : 0;
         if (T < .05) this.reach = 0;
-        if (drain) this.reach = Math.min(1300, this.reach + (380 + 900 * this.flow) * dt);
-        // налив: лёгкая рябь у поднимающейся ватерлинии
-        if (tt >= .86 && lf < .995 && Math.random() < .28)
-          this._splash(130 + Math.random() * 350, this.level + 8, .75, 1.6, true);
+        // фронт листа: ~480мс на пересечение блока описания (ξ 66…670)
+        if (drain) this.reach = Math.min(1300, this.reach + (620 + 1260 * this.flow) * dt);
+        this.fill = tt >= .86 ? Math.min(1, (tt - .86) / .64) : 0;
+        // налив: редкие МЯГКИЕ всплески у ватерлинии — жизнь, не кипение
+        if (tt >= .86 && lf < .99 && Math.random() < .07)
+          this._splash(this.ves.left + 30 + Math.random() * Math.max(40, this.ves.wall - this.ves.left - 60),
+            this.level + 6, .3, 2.0, true);
+        // стекло и усиленный контур держат флакон, пока он пуст
+        this.glass = Math.min(1, Math.max(0, (T - .08) / .2)) * (1 - Math.min(1, Math.max(0, (T - 1.5) / .3)));
+        this._pushLvl(this.level);
       } else {
         this.breach = 0; this.flow = 0; this.level = this.ves.top - 16;
+        this.fill = 0; this.glass = 0;
       }
     }
     if (this.mix >= 1 && this.curIdx !== this.nextIdx) {
       this.curIdx = this.nextIdx;
-      // вода «дозванивает» после прихода нового флакона: пара затухающих колец
-      this._splash(180 + Math.random() * 240, 320 + Math.random() * 420, 3.2, 3.0, true);
-      this._splash(220 + Math.random() * 200, 480 + Math.random() * 300, 2.2, 2.2, true);
+      // назад вода «дозванивает» парой затухающих колец; вперёд налив спокоен —
+      // его рябь у линии уже достаточно живая, кольца ломали бы ровный уровень
+      if (!fwd) {
+        this._splash(180 + Math.random() * 240, 320 + Math.random() * 420, 3.2, 3.0, true);
+        this._splash(220 + Math.random() * 200, 480 + Math.random() * 300, 2.2, 2.2, true);
+      }
     }
     // затухание скорости курсора, когда он не движется
     if (now - this.cur.t > 90) { this.cur.vx *= Math.pow(.8, dt * 60); this.cur.vy *= Math.pow(.8, dt * 60); }
@@ -698,17 +756,19 @@ class FluidBottle {
         for (let i = 0; i < gw; i++) {
           const sx = (i + .5) * cw, k = r + i;
           if (fwd) {
-            // прорыв стенки: напор по Торричелли — нижним слоям сильный выброс
-            // вправо, верх ОСЕДАЕТ вниз вслед за уровнем. Внутри сосуда поток
-            // приглушён (вода стекается к бреши, но столб остаётся сплошным —
-            // неразрывность), снаружи уносится свободно
-            const depth = sy / simH;
-            const p = T - Math.max(0, 525 - sx) / 525 * .16 - b * .06 - .03;
-            if (p > -.3 && p < .6) {
-              const g = Math.exp(-p * p / .02) * dt / .25;
-              const inV = this.ins && this.ins[k] ? .35 : 1;
-              vx[k] += (300 + 2600 * Math.pow(depth, .8)) * (.85 + b * .3) * g * inV;
-              vy[k] += (1500 * (1 - depth) + 200) * g * inV;
+            // прорыв стенки: напор по Торричелли — нижним слоям выброс вправо,
+            // верх ОСЕДАЕТ вниз вслед за уровнем; столб остаётся сплошным
+            // (неразрывность). СНАРУЖИ среду не гоняем вовсе: у вытекшего листа
+            // собственное янтарное тело в шейдере, а фото из силуэта не
+            // выносится — пейзаж не размазывается пятном по странице
+            if (this.ins && this.ins[k]) {
+              const depth = sy / simH;
+              const p = T - Math.max(0, 525 - sx) / 525 * .16 - b * .06 - .03;
+              if (p > -.3 && p < .6) {
+                const g = Math.exp(-p * p / .02) * dt / .25;
+                vx[k] += (300 + 2600 * Math.pow(depth, .8)) * (.85 + b * .3) * g * .35;
+                vy[k] += (1500 * (1 - depth) + 200) * g * .35;
+              }
             }
           } else {
             // назад: мягкий толчок влево, слои колышутся вразнобой
@@ -722,11 +782,10 @@ class FluidBottle {
         }
       }
       // рябь потока: редкие КОГЕРЕНТНЫЕ всплески-пакеты (не белый шум по
-      // ячейкам — он шинкует фото в конфетти) по зоне течения
+      // ячейкам — он шинкует фото в конфетти) по воде сосуда, только на сливе
       const env = Math.sin(Math.min(T / 1.3, 1) * Math.PI);
       if (fwd) {
-        if (Math.random() < .95) this._splash(80 + Math.random() * 520, 150 + Math.random() * 850, (4.5 + 4.5 * Math.random()) * env, 1.4 + Math.random() * .9, true);
-        if (T > .25 && Math.random() < .9) this._splash(520 + Math.random() * 560, 350 + Math.random() * 650, (5. + 5. * Math.random()) * env, 1.6 + Math.random(), false);
+        if (T < .95 && Math.random() < .8) this._splash(80 + Math.random() * 440, 150 + Math.random() * 850, (3.5 + 3.5 * Math.random()) * env, 1.4 + Math.random() * .9, true);
       } else if (Math.random() < .6) {
         this._splash(60 + Math.random() * 460, 150 + Math.random() * 850, (1.1 + 1.1 * Math.random()) * env, 1.5 + Math.random() * .8, true);
       }
@@ -762,27 +821,16 @@ class FluidBottle {
     // масса уходит единым потоком; в покое и под курсором вода изотропна
     this._blur(vx, Math.min(1, (active ? 14 : 8) * dt), Math.min(1, (active ? 9 : 8) * dt));
     this._blur(vy, Math.min(1, (active ? 10 : 8) * dt), Math.min(1, (active ? 5 : 8) * dt));
-    // пружина к покою + затухание + интеграция смещения;
-    // гравитация: вытекшее за стенку (dx>60) падает к строке текста, смывая её
-    const grav = fwd && active && T < 1.5;
+    // пружина к покою + затухание + интеграция смещения
     const n = gw * gh;
     const insA = this.ins;
     for (let k = 0; k < n; k++) {
-      const inV = insA ? insA[k] : 0;
-      if (grav && !inV && dx[k] > 60) {
-        const out = Math.min(1, (dx[k] - 60) / 240);
-        const sy = (((k / gw) | 0) + .5) * ch;
-        const fall = Math.max(0, Math.min(1, (920 - sy) / 450));
-        // свободное падение струи с турбулентной дрожью + растекание по «полу»
-        vy[k] += (1900 * fall + Math.sin(sy * .02 + this.transT * 8) * 220) * dt * out;
-        vx[k] += 1100 * dt * out * (.4 + .6 * Math.min(1, sy / 700));
-      }
       vx[k] = (vx[k] - ks * dx[k] * dt) * damp;
       vy[k] = (vy[k] - ks * dy[k] * dt) * damp;
       // неразрывность: внутри сосуда пейзаж — ЕДИНОЕ тело (лёгкий снос к бреши,
-      // не эвакуация; видимый уход массы — это падение уровня), снаружи поток
-      // уносится на всю длину струи
-      const lx = inV ? 70 : 1500, ly = inV ? 50 : 560;
+      // не эвакуация; видимый уход массы — это падение уровня); снаружи фото
+      // не живёт вовсе — за стенкой рисуется только собственное тело струи
+      const lx = insA && insA[k] ? 70 : 90, ly = insA && insA[k] ? 50 : 60;
       dx[k] = Math.max(-lx, Math.min(lx, dx[k] + vx[k] * dt));
       dy[k] = Math.max(-ly, Math.min(ly, dy[k] + vy[k] * dt));
     }
@@ -882,6 +930,16 @@ class FluidBottle {
     gl.uniform1f(this.uBreachU, this.breach);
     gl.uniform1f(this.uFlowU, this.flow);
     gl.uniform1f(this.uReachU, this.reach);
+    gl.uniform1f(this.uFillU, this.fill);
+    gl.uniform1f(this.uGlassU, this.glass);
+    // огибающая верхней кромки листа: узел k на ξ=50k px от стенки — уровень
+    // в момент вылета этой воды (тем же законом скорости, что и фронт) + падение
+    const vf = Math.max(240, 620 + 1260 * this.flow);
+    for (let k = 0; k < 16; k++) {
+      const dtk = k * 50 / vf;
+      this.topE[k] = this._lvlAgo(dtk) + 950 * dtk * dtk;
+    }
+    gl.uniform1fv(this.uTopEU, this.topE);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 }

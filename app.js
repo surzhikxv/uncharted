@@ -250,31 +250,40 @@
       document.addEventListener('visibilitychange', () => { if (!document.hidden) autoArm(); });
       autoArm();
     }
-    // смыв описания: маска уходит слева направо вслед каплям, новая надпись проявляется потоком
+    // смыв описания ведёт САМА вода: каждый кадр маска и снос букв привязаны
+    // к фронту листа из бреши (fluid.ves.wall + fluid.reach, sim-px → page-px);
+    // буквы намокают ровно когда их накрывает янтарь, уносятся по потоку и
+    // растворяются позади фронта; новый текст проявляется после его прохода
     const washDesc = (el, html) => {
+      const t0 = performance.now();
+      const L = 1186, W = 496;                       // дизайн-сетка .n624
+      const front = () => fluid && fluid.transT < 3
+        ? 705 + (fluid.ves.wall + fluid.reach) * .82
+        : L + Math.max(0, performance.now() - t0 - 230) / 480 * W;   // страховка без воды
       el.classList.add('washing');
-      el.style.animation = 'washOut .58s cubic-bezier(.5,.1,.75,.5) forwards';
-      setTimeout(() => {
-        el.innerHTML = html;
-        el.style.animation = 'washIn .72s cubic-bezier(.25,.4,.3,1) forwards';
-        setTimeout(() => { el.classList.remove('washing'); el.style.animation = ''; }, 760);
-      }, 600);
+      el.style.setProperty('--washP', '0');
+      let swapped = false;
+      const tick = () => {
+        if (swapped) return;
+        const p = Math.min(1.2, (front() - L) / W);
+        if (p > 0) el.style.setProperty('--washP', p.toFixed(4));
+        if (p >= 1.06 || performance.now() - t0 > 1600) {
+          swapped = true;                            // фронт прошёл блок — буквы унесены
+          el.innerHTML = html;
+          el.classList.remove('washing');
+          el.style.removeProperty('--washP');
+          el.classList.add('wash-in');               // новый текст осаждается за водой
+          setTimeout(() => el.classList.remove('wash-in'), 680);
+          return;
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
     };
     const swapTexts = (next, dir) => {
       cascadeCaption(capEl, AROMAS[next].caption);
-      if (dir > 0 && fluid) {
-        // смыв запускает САМА вода: ждём, когда фронт листа из бреши дойдёт
-        // до описания (fluid.reach — sim-px от стенки), страховка по времени
-        const t0 = performance.now();
-        const watch = () => {
-          if (!fluid || fluid.reach > 30 || performance.now() - t0 > 1100) {
-            washDesc(descEl, AROMAS[next].desc);
-          } else requestAnimationFrame(watch);
-        };
-        requestAnimationFrame(watch);
-      } else {
-        swapDescDir(descEl, AROMAS[next].desc, dir);
-      }
+      if (dir > 0 && fluid) washDesc(descEl, AROMAS[next].desc);
+      else swapDescDir(descEl, AROMAS[next].desc, dir);
     };
     const go = dir => {
       if (busy) return; busy = true;

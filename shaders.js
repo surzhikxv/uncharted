@@ -193,14 +193,15 @@ void main(){
   outC = vec4(c, 1.);
 }`;
 
-// ===== Флакон — сплошная вязкая среда (гель/мёд) =====
-// Никаких частиц: фуллскрин-шейдер деформирует фото полем смещений D(uv),
-// которое живёт на CPU-сетке ~80×70 как вязкая жидкость (инерция + диффузия
-// соседей + пружина к покою). Зазоры невозможны по построению: сэмплинг
-// uv - D(uv) непрерывен при любом гладком D. Курсор вмешивает скорость в поле
-// (тягучий след, как ложкой по мёду); листание вперёд — стаггер-импульс вправо:
-// изображение утекает на текст описания и вязко возвращается уже с новой
-// текстурой; назад — мягкое колыхание с кроссфейдом.
+// ===== Флакон — вода =====
+// Два слоя физики на одной CPU-сетке 104×120:
+// 1) булк-поток D (смещение + пружина к покою) — ТОЛЬКО для большого слива
+//   листания: композиция «прорыв дамбы» (напор по Торричелли, оседание столба);
+// 2) рябь h — честное волновое уравнение (∂²h/∂t² = c²∇²h, сила от соседей,
+//   а не пружина к месту!): возмущения бегут кольцами, курсор — движущийся
+//   источник волн с кильватером. Сэмплинг фото: uv − D − ∇h·k (рефракция,
+//   вода = линза), сверху блики по гребням, каустика ∝ −∇²h, лёгкий Френель —
+//   свет, а не варп, делает воду водой.
 const FB_VERT = `#version 300 es
 in vec2 aPos; out vec2 vUv;
 void main(){ vUv = aPos * .5 + .5; vUv.y = 1. - vUv.y; gl_Position = vec4(aPos, 0., 1.); }`;
@@ -236,44 +237,59 @@ vec4 smpl(vec2 tuv, float stag, float lod){
   return mix(A, B, m * m * (3. - 2. * m)) * b.x * b.y;
 }
 void main(){
-  vec4 F = fld(vUv);
+  vec2 e = 1. / uGrid;
+  // пять бикубических тапов: центр + крест — дают и градиенты смещения,
+  // и наклон/кривизну высотного поля ряби (F.z = h, F.w = |v| среды)
+  vec4 F  = fld(vUv);
+  vec4 FL = fld(vUv - vec2(e.x, 0.)), FR = fld(vUv + vec2(e.x, 0.));
+  vec4 FU = fld(vUv - vec2(0., e.y)), FD = fld(vUv + vec2(0., e.y));
   vec2 px = vUv * uSimRes;
-  // волнение покоя: горизонтальные слои дышат каждый со своей амплитудой
-  // (rowAmp постоянен вдоль строки, плавен между строками)
-  float rowAmp = .6 + .9 * uc_noise(vec2(px.y * .045, 7.3));
+  // волнение покоя: едва заметное изотропное дыхание (вода слоями не дышит)
   vec2 idle = vec2(
-    (sin(px.y * .006 - uTime * .8 + px.x * .003) + .6 * sin(px.y * .021 + uTime * .45)) * 1.3 * rowAmp,
-    cos(px.x * .005 - uTime * .55 + px.y * .004) * .55);
-  vec2 D = F.xy + idle;
-  // капиллярная рябь в движении (~|D|): прямые смазанные кромки текстуры гнутся
-  // органическими язычками; в покое строго ноль
-  float act = min(1., length(F.xy) * .02);
-  D.y += (sin(px.x * .018 + uTime * 2.6) * 6. + sin(px.x * .047 - uTime * 3.7) * 2.5) * act;
-  D.x += sin(px.y * .03 + uTime * 3.1) * 5. * act;
+    (sin(px.y * .006 - uTime * .8 + px.x * .003) + .6 * sin(px.y * .021 + uTime * .45)) * .9,
+    cos(px.x * .005 - uTime * .55 + px.y * .004) * .45);
+  vec2 cell = uSimRes * e;
+  // наклон и кривизна водной поверхности (h — волновое уравнение на CPU)
+  vec2 gh = vec2(FR.z - FL.z, FD.z - FU.z) / (2. * cell);
+  float lap = FR.z + FL.z + FU.z + FD.z - 4. * F.z;
+  // рефракция: вода — линза, фон смещается по наклону поверхности (n≈1.33);
+  // картинка локально сжимается/растягивается, оставаясь РЕЗКОЙ; в большой
+  // волне листания рябь читается сквозь поток сильнее
+  vec2 D = F.xy + idle + gh * (90. + 70. * uWash);
   vec2 src = px - D;
   vec2 tuv = vec2((src.x - uOffX) / uTexW, src.y / uSimRes.y);
-  // градиенты поля: деформация среды
-  vec2 e = 1. / uGrid;
-  float dDx = (fld(vUv + vec2(e.x, 0.)).x - fld(vUv - vec2(e.x, 0.)).x) / (2. * e.x * uSimRes.x);
-  float dDy = (fld(vUv + vec2(0., e.y)).y - fld(vUv - vec2(0., e.y)).y) / (2. * e.y * uSimRes.y);
+  float dDx = (FR.x - FL.x) / (2. * cell.x);
+  float dDy = (FD.y - FU.y) / (2. * cell.y);
   float area = abs((1. - dDx) * (1. - dDy));   // якобиан обратного отображения
-  float speed = length(F.zw);
-  // взволнованность воды: скорость потока + локальная деформация
-  float agit = clamp(speed * .0045 + (abs(dDx) + abs(dDy)) * 1.4, 0., 1.);
-  // мип-блюр: сквозь неспокойную воду картинка мутнеет (плюс честный
-  // lod по footprint — сжатые зоны не алиасят при textureLod)
+  float agit = clamp(F.w * .0045 + (abs(dDx) + abs(dDy)) * 1.4, 0., 1.);
+  // блюр — только честный анти-алиасинг по footprint и чуть аэрации в большой
+  // волне: вода в сантиметровом слое кристально прозрачна, муть = гель
   vec2 ts = vec2(uTexW, uSimRes.y);
   vec2 fx = dFdx(tuv) * ts, fy = dFdy(tuv) * ts;
-  float lod = .5 * log2(max(max(dot(fx, fx), dot(fy, fy)), 1.)) + agit * 1.7;
+  float lod = .5 * log2(max(max(dot(fx, fx), dot(fy, fy)), 1.)) + agit * .55 * uWash;
   vec4 col = smpl(tuv, uc_noise(vUv * vec2(6., 5.)), lod);
-  // утончение растянутой плёнки — ТОЛЬКО в большой волне листания (uWash):
-  // от курсора вода не «просвечивает» бежевым пятном
+  // утончение растянутой плёнки — ТОЛЬКО в большой волне листания (uWash)
   float thin = clamp(pow(min(area, 1.), .7), .04, 1.);
   col *= mix(1., thin, uWash);
-  // никаких белёсых бликов и прозрачности от курсора: глубина воды читается
-  // лёгким потемнением взволнованных и сжатых зон
-  col.rgb *= 1. - .07 * agit * (1. - uWash);
   col.rgb *= 1. - .09 * clamp(area - 1., 0., 1.5) / 1.5;
+  col.rgb *= 1. + .10 * clamp(1. - area, 0., 1.) * uWash;   // сжатый поток слегка светится
+  // ===== свет — главный признак воды =====
+  // на глади (наклон и кривизна ~0) световые члены пропускаются целиком:
+  // в покое pow не считается — дёшево даже на софтверном GL
+  float ripple = abs(gh.x) + abs(gh.y) + abs(lap) * .1;
+  if (ripple > .0012) {
+    vec3 N = normalize(vec3(-gh * 7., 1.));
+    vec3 Hh = normalize(normalize(vec3(-.42, -.55, .72)) + vec3(0., 0., 1.));
+    // тонкие нити бликов бегут по гребням; константа глади вычтена — покой не светится
+    float gl = max(pow(max(dot(N, Hh), 0.), 110.) - pow(Hh.z, 110.), 0.);
+    // каустика: схождение лучей ∝ −∇²h — за гребнем светлеет, во впадине темнеет;
+    // света больше, чем тени (вода сверкает, а не пачкает)
+    float ca = clamp(-lap * .55, -.45, .95);
+    // Френель: наклонённая вода ловит тёплое отражение страницы
+    float fr = pow(min(1., length(gh) * 6.3), 3.);
+    col.rgb *= 1. + .24 * ca;
+    col.rgb += (gl * 1.05 * vec3(1.0, .975, .94) + fr * .10 * vec3(.98, .955, .93)) * col.a;
+  }
   outC = col;
 }`;
 
@@ -291,6 +307,8 @@ class FluidBottle {
     const n = this.cfg.gw * this.cfg.gh;
     this.vx = new Float32Array(n); this.vy = new Float32Array(n);   // скорость среды, px/s
     this.dx = new Float32Array(n); this.dy = new Float32Array(n);   // накопленное смещение, px
+    this.h = new Float32Array(n); this.hv = new Float32Array(n);    // рябь: высота поверхности и её скорость (волновое уравнение)
+    this._dropAt = 0;
     this.tmp = new Float32Array(n);
     this.fieldBuf = new Float32Array(n * 4);
     // у каждого горизонтального слоя — свой характер: байес фазы и темперамента,
@@ -318,7 +336,7 @@ class FluidBottle {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(p, 'aPos');
     gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    // поле смещений/скоростей: RGBA16F (xy=D px, zw=v px/s), LINEAR — бикубика в шейдере
+    // поле среды: RGBA16F (xy=D px, z=h ряби, w=|v| px/s), LINEAR — бикубика в шейдере
     this.fieldTex = gl.createTexture();
     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, this.fieldTex);
     gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA16F, c.gw, c.gh);
@@ -432,7 +450,12 @@ class FluidBottle {
     this.mix = Math.min(1, Math.max(0, fwd ? (T - .45) / .45 : (T - .3) / .42));
     // огибающая большой волны: утончение плёнки разрешено только здесь
     this.wash = Math.min(1, Math.sin(Math.min(T / (fwd ? 1.75 : 1.1), 1) * Math.PI) * 1.5) * (fwd ? 1 : .45);
-    if (this.mix >= 1 && this.curIdx !== this.nextIdx) this.curIdx = this.nextIdx;
+    if (this.mix >= 1 && this.curIdx !== this.nextIdx) {
+      this.curIdx = this.nextIdx;
+      // вода «дозванивает» после прихода нового флакона: пара затухающих колец
+      this._splash(180 + Math.random() * 240, 320 + Math.random() * 420, 3.2, 3.0);
+      this._splash(220 + Math.random() * 200, 480 + Math.random() * 300, 2.2, 2.2);
+    }
     // затухание скорости курсора, когда он не движется
     if (now - this.cur.t > 90) { this.cur.vx *= Math.pow(.8, dt * 60); this.cur.vy *= Math.pow(.8, dt * 60); }
     const { gw, gh, simW, simH } = this.cfg;
@@ -475,30 +498,45 @@ class FluidBottle {
           }
         }
       }
+      // рябь потока: редкие КОГЕРЕНТНЫЕ всплески-пакеты (не белый шум по
+      // ячейкам — он шинкует фото в конфетти) по зоне течения
+      const env = Math.sin(Math.min(T / 1.3, 1) * Math.PI);
+      if (fwd) {
+        if (Math.random() < .95) this._splash(80 + Math.random() * 520, 150 + Math.random() * 850, (4.5 + 4.5 * Math.random()) * env, 1.4 + Math.random() * .9);
+        if (T > .25 && Math.random() < .9) this._splash(520 + Math.random() * 560, 350 + Math.random() * 650, (5. + 5. * Math.random()) * env, 1.6 + Math.random());
+      } else if (Math.random() < .6) {
+        this._splash(60 + Math.random() * 460, 150 + Math.random() * 850, (1.1 + 1.1 * Math.random()) * env, 1.5 + Math.random() * .8);
+      }
     }
-    // курсор: вязкое вмешивание скорости в поле (медленный тягучий след);
-    // сила ~ скорости курсора — неподвижная «ложка» поле не держит
+    // курсор: вода — не мёд. Лёгкое (втрое слабее прежнего, изотропное)
+    // увлечение толщи даёт тягучесть, но главное — курсор работает движущимся
+    // ИСТОЧНИКОМ ВОЛН: позади остаётся кильватерный след, при остановке —
+    // расходящиеся кольца (конус Маха возникает сам из движущегося штампа)
     if (this.cur.x > -8e3) {
       const cx = this.cur.x, cy = this.cur.y;
       const cvx = Math.max(-2200, Math.min(2200, this.cur.vx)), cvy = Math.max(-2200, Math.min(2200, this.cur.vy));
       const spd = Math.hypot(cvx, cvy);
-      const R = 190, drag = Math.min(1, 8 * dt) * Math.min(1, spd / 260);
+      const R = 160, drag = Math.min(1, 8 * dt) * Math.min(1, spd / 260) * .3;
       const i0 = Math.max(0, Math.floor((cx - R) / cw)), i1 = Math.min(gw - 1, Math.ceil((cx + R) / cw));
       const j0 = Math.max(0, Math.floor((cy - R) / ch)), j1 = Math.min(gh - 1, Math.ceil((cy + R) / ch));
-      const rb = this.rowBias;
       for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
         const ddx = (i + .5) * cw - cx, ddy = (j + .5) * ch - cy;
         const g = Math.exp(-3 * (ddx * ddx + ddy * ddy) / (R * R)) * drag;
         const k = j * gw + i;
-        // слои воды увлекаются горизонтально, каждый по своему темпераменту
-        vx[k] += (cvx * (.75 + rb[j] * .55) - vx[k]) * g;
-        vy[k] += (cvy * .4 - vy[k]) * g;
+        vx[k] += (cvx * .45 - vx[k]) * g;
+        vy[k] += (cvy * .22 - vy[k]) * g;
       }
+      if (spd > 50) this._splash(cx, cy, Math.min(1, spd / 950) * 230 * dt, 2.1);
     }
-    // вязкость: внутри слоя сильная, между слоями слабая (ламинарный сдвиг);
-    // в большой волне связь слоёв сильнее — масса уходит единым потоком
-    this._blur(vx, Math.min(1, 14 * dt), Math.min(1, (active ? 9 : 3) * dt));
-    this._blur(vy, Math.min(1, 10 * dt), Math.min(1, 5 * dt));
+    // покой: редкая капля — едва заметное расходящееся кольцо оживляет гладь
+    if (T > 3.5 && now > this._dropAt) {
+      this._dropAt = now + 2400 + Math.random() * 2800;
+      this._splash(140 + Math.random() * 360, 240 + Math.random() * 640, 1.7, 2.6);
+    }
+    // вязкость: слоистая (ламинарный сдвиг) ТОЛЬКО в большой волне листания —
+    // масса уходит единым потоком; в покое и под курсором вода изотропна
+    this._blur(vx, Math.min(1, (active ? 14 : 8) * dt), Math.min(1, (active ? 9 : 8) * dt));
+    this._blur(vy, Math.min(1, (active ? 10 : 8) * dt), Math.min(1, (active ? 5 : 8) * dt));
     // пружина к покою + затухание + интеграция смещения;
     // гравитация: вытекшее за стенку (dx>60) падает к строке текста, смывая её
     const grav = fwd && active && T < 1.5;
@@ -517,10 +555,60 @@ class FluidBottle {
       dx[k] = Math.max(-1500, Math.min(1500, dx[k] + vx[k] * dt));
       dy[k] = Math.max(-560, Math.min(560, dy[k] + vy[k] * dt));
     }
-    // диффузия смещения: по x держит слой гладким, по y — лишь слегка
-    // склеивает слои (в полёте сильнее, чтобы силуэт не резался на полосы)
-    this._blur(dx, Math.min(1, 5 * dt), Math.min(1, (active ? 5 : 1.1) * dt));
-    this._blur(dy, Math.min(1, 4 * dt), Math.min(1, (active ? 5 : 2) * dt));
+    // диффузия смещения: в полёте чуть анизотропна (слой един, силуэт не
+    // режется на полосы), в покое — изотропна
+    this._blur(dx, Math.min(1, (active ? 5 : 4) * dt), Math.min(1, (active ? 5 : 4) * dt));
+    this._blur(dy, Math.min(1, 4 * dt), Math.min(1, (active ? 5 : 4) * dt));
+    // рябь: два прохода волнового уравнения за подшаг — капиллярные кольца
+    // быстрые и мелкие (одного прохода мало: c упирается в CFL ячейки)
+    this._waveStep(); this._waveStep();
+  }
+  // волновое уравнение на поле высоты h: восстанавливающая сила приходит от
+  // РАЗНОСТИ С СОСЕДЯМИ (давление), не от пружины к месту покоя — поэтому
+  // возмущения бегут расходящимися кольцами, перехлёстываются и отражаются,
+  // а не колышутся на месте (желе). kx/ky выровнены под неквадратную ячейку
+  // (~12.0×9.0 px), их сумма — чуть ниже предела устойчивости CFL (.84 < 1)
+  _waveStep(){
+    const { gw, gh, simW, simH } = this.cfg;
+    const cw = simW / gw, ch = simH / gh;
+    const s = .84 / (1 / (cw * cw) + 1 / (ch * ch));
+    const kx = s / (cw * cw), ky = s / (ch * ch);
+    const h = this.h, hv = this.hv;
+    for (let j = 0; j < gh; j++) {
+      const r = j * gw, ru = j > 0 ? r - gw : r, rd = j < gh - 1 ? r + gw : r;
+      for (let i = 0; i < gw; i++) {
+        const il = i > 0 ? i - 1 : i, ir = i < gw - 1 ? i + 1 : i;
+        const c = h[r + i];
+        hv[r + i] = (hv[r + i] + kx * (h[r + il] + h[r + ir] - 2 * c) + ky * (h[ru + i] + h[rd + i] - 2 * c)) * .984;
+      }
+    }
+    // поглощающая кромка: волны не отражаются от невидимых стен канваса
+    const rl = (gh - 1) * gw;
+    for (let i = 0; i < gw; i++) { hv[i] *= .82; hv[i + gw] *= .91; hv[rl + i] *= .82; hv[rl - gw + i] *= .91; }
+    for (let j = 0; j < gh; j++) { const r = j * gw; hv[r] *= .82; hv[r + 1] *= .91; hv[r + gw - 1] *= .82; hv[r + gw - 2] *= .91; }
+    // ε-утечка уровня: впрыски не накапливают дрейф среднего
+    for (let k = 0, n = gw * gh; k < n; k++) h[k] = (h[k] + hv[k]) * .9985;
+  }
+  // капля/источник: штамп скорости с нулевой суммой по окну (гауссиана минус
+  // её среднее) — вокруг вмятины поднимается валик, уровень не дрейфует
+  _splash(x, y, amp, R){
+    const { gw, gh, simW, simH } = this.cfg;
+    const cw = simW / gw, ch = simH / gh;
+    const ci = x / cw - .5, cj = y / ch - .5;
+    const W = Math.ceil(R) + 1;
+    const i0 = Math.max(0, Math.round(ci - W)), i1 = Math.min(gw - 1, Math.round(ci + W));
+    const j0 = Math.max(0, Math.round(cj - W)), j1 = Math.min(gh - 1, Math.round(cj + W));
+    if (i1 <= i0 || j1 <= j0) return;
+    let s = 0, cnt = 0;
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+      const ddx = i - ci, ddy = j - cj;
+      s += Math.exp(-(ddx * ddx + ddy * ddy) / (R * R)); cnt++;
+    }
+    const m = s / cnt, hv = this.hv;
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+      const ddx = i - ci, ddy = j - cj;
+      hv[j * gw + i] -= amp * (Math.exp(-(ddx * ddx + ddy * ddy) / (R * R)) - m);
+    }
   }
   _render(now){
     const gl = this.gl, rect = this.cv.getBoundingClientRect();
@@ -531,7 +619,8 @@ class FluidBottle {
     const { gw, gh } = this.cfg, n = gw * gh, f = this.fieldBuf;
     for (let k = 0; k < n; k++) {
       f[k * 4] = this.dx[k]; f[k * 4 + 1] = this.dy[k];
-      f[k * 4 + 2] = this.vx[k]; f[k * 4 + 3] = this.vy[k];
+      f[k * 4 + 2] = this.h[k];
+      f[k * 4 + 3] = Math.sqrt(this.vx[k] * this.vx[k] + this.vy[k] * this.vy[k]);
     }
     gl.viewport(0, 0, w, h);
     gl.useProgram(this.prog); gl.bindVertexArray(this.vao);

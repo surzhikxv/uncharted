@@ -207,7 +207,7 @@ void main(){ vUv = aPos * .5 + .5; vUv.y = 1. - vUv.y; gl_Position = vec4(aPos, 
 const FB_FRAG = `#version 300 es
 precision highp float; in vec2 vUv; out vec4 outC;
 uniform sampler2D uTexA, uTexB, uField;
-uniform vec2 uSimRes, uGrid; uniform float uMix, uTime, uOffX, uTexW;
+uniform vec2 uSimRes, uGrid; uniform float uMix, uTime, uOffX, uTexW, uWash;
 ${GL_NOISE}
 // поле на сетке: бикубический B-сплайн через 4 аппаратных билинейных тапа —
 // C1-гладкий, без «накачки» градиента с частотой сетки (она давала муар-плетёнку)
@@ -228,10 +228,10 @@ vec4 fld(vec2 uv){
        + texture(uField, vec2(t1.x, t1.y)) * g1.x * g1.y;
 }
 // стаггер кроссфейда — в ЭКРАННЫХ координатах: в зонах сжатия текстуры
-// шум не превращается в пиксельную «шахматку»
-vec4 smpl(vec2 tuv, float stag){
+// шум не превращается в пиксельную «шахматку»; lod — мип-блюр взволнованной воды
+vec4 smpl(vec2 tuv, float stag, float lod){
   vec2 b = smoothstep(vec2(0.), vec2(.012, .025), tuv) * smoothstep(vec2(1.), vec2(.988, .975), tuv);
-  vec4 A = texture(uTexA, tuv), B = texture(uTexB, tuv);
+  vec4 A = textureLod(uTexA, tuv, lod), B = textureLod(uTexB, tuv, lod);
   float m = clamp((uMix - stag * .5) / .5, 0., 1.);
   return mix(A, B, m * m * (3. - 2. * m)) * b.x * b.y;
 }
@@ -245,26 +245,38 @@ void main(){
   vec2 D = F.xy + idle;
   // капиллярная рябь в движении (~|D|): прямые смазанные кромки текстуры гнутся
   // органическими язычками; в покое строго ноль
-  float act = min(1., length(F.xy) * .012);
+  float act = min(1., length(F.xy) * .02);
   D.y += (sin(px.x * .018 + uTime * 2.6) * 9. + sin(px.x * .047 - uTime * 3.7) * 4.) * act;
   D.x += sin(px.y * .03 + uTime * 3.1) * 5. * act;
   vec2 src = px - D;
   vec2 tuv = vec2((src.x - uOffX) / uTexW, src.y / uSimRes.y);
-  vec4 col = smpl(tuv, uc_noise(vUv * vec2(6., 5.)));
-  // градиенты поля: «толщина» среды и глянец складок
+  // градиенты поля: деформация среды
   vec2 e = 1. / uGrid;
   float dDx = (fld(vUv + vec2(e.x, 0.)).x - fld(vUv - vec2(e.x, 0.)).x) / (2. * e.x * uSimRes.x);
   float dDy = (fld(vUv + vec2(0., e.y)).y - fld(vUv - vec2(0., e.y)).y) / (2. * e.y * uSimRes.y);
   float area = abs((1. - dDx) * (1. - dDy));   // якобиан обратного отображения
-  // растяжение (area<1) — плёнка тоньше и прозрачнее, сильно растянутая почти
-  // исчезает (резкие края текстуры не дают «глитч-штрихов»); сжатие — чуть темнее
-  float thin = clamp(pow(min(area, 1.), .7), .04, 1.);
-  col *= thin;
-  col.rgb *= 1. - .10 * clamp(area - 1., 0., 1.5) / 1.5;
-  // тёплый глянец на движущихся складках геля — едва заметный
-  float fold = clamp(abs(dDx) * 1.2 - .12, 0., 1.);
   float speed = length(F.zw);
-  col.rgb += col.a * fold * min(speed * .0012, .22) * vec3(1.0, .975, .94) * .35;
+  // взволнованность воды: скорость потока + локальная деформация
+  float agit = clamp(speed * .0045 + (abs(dDx) + abs(dDy)) * 1.4, 0., 1.);
+  // мип-блюр: сквозь неспокойную воду картинка мутнеет (плюс честный
+  // lod по footprint — сжатые зоны не алиасят при textureLod)
+  vec2 ts = vec2(uTexW, uSimRes.y);
+  vec2 fx = dFdx(tuv) * ts, fy = dFdy(tuv) * ts;
+  float lod = .5 * log2(max(max(dot(fx, fx), dot(fy, fy)), 1.)) + agit * 2.6;
+  vec4 col = smpl(tuv, uc_noise(vUv * vec2(6., 5.)), lod);
+  // утончение растянутой плёнки — ТОЛЬКО в большой волне листания (uWash):
+  // от курсора вода не «просвечивает» бежевым пятном
+  float thin = clamp(pow(min(area, 1.), .7), .04, 1.);
+  col *= mix(1., thin, uWash);
+  // стеклянная прозрачность взволнованной воды — едва заметная
+  col *= 1. - .10 * agit * (1. - uWash);
+  // толща при сжатии чуть темнее
+  col.rgb *= 1. - .09 * clamp(area - 1., 0., 1.5) / 1.5;
+  // вода: блик по гребням (сжатие = горб) и тонкие каустики на склонах
+  float div = dDx + dDy;
+  float crest = clamp(-div * 2.4, 0., 1.);
+  float caust = exp(-pow((abs(div) - .28) * 5.5, 2.));
+  col.rgb += col.a * agit * (pow(crest, 3.) * .16 + caust * .06) * vec3(1.0, .99, .96);
   outC = col;
 }`;
 
@@ -275,7 +287,7 @@ class FluidBottle {
     const gl = this.gl = canvas.getContext('webgl2', { alpha: true, antialias: false, premultipliedAlpha: true });
     this.ready = false; this.failed = !gl;
     if (this.failed) return;
-    this.mix = 1; this.transT = 9e9; this.dir = 1;
+    this.mix = 1; this.transT = 9e9; this.dir = 1; this.wash = 0;
     this.cur = { x: -9e3, y: -9e3, vx: 0, vy: 0, t: 0 };
     this.visible = false;
     this.tex = [];
@@ -317,7 +329,7 @@ class FluidBottle {
     gl.uniform1f(U('uOffX'), c.offX);
     gl.uniform1f(U('uTexW'), c.texW);
     gl.uniform1i(U('uTexA'), 0); gl.uniform1i(U('uTexB'), 1); gl.uniform1i(U('uField'), 2);
-    this.uMixU = U('uMix'); this.uTimeU = U('uTime');
+    this.uMixU = U('uMix'); this.uTimeU = U('uTime'); this.uWashU = U('uWash');
   }
   _loadTex(url, cb){
     const gl = this.gl;
@@ -414,6 +426,8 @@ class FluidBottle {
     const fwd = this.dir > 0, T = this.transT;
     // кроссфейд текстур — в максимуме смаза (вперёд) или коротко под колыхание (назад)
     this.mix = Math.min(1, Math.max(0, fwd ? (T - .55) / .5 : (T - .3) / .42));
+    // огибающая большой волны: утончение плёнки разрешено только здесь
+    this.wash = Math.min(1, Math.sin(Math.min(T / (fwd ? 1.75 : 1.1), 1) * Math.PI) * 1.5) * (fwd ? 1 : .45);
     if (this.mix >= 1 && this.curIdx !== this.nextIdx) this.curIdx = this.nextIdx;
     // затухание скорости курсора, когда он не движется
     if (now - this.cur.t > 90) { this.cur.vx *= Math.pow(.8, dt * 60); this.cur.vy *= Math.pow(.8, dt * 60); }
@@ -424,8 +438,9 @@ class FluidBottle {
     const active = T < 3;
     const rt = Math.min(1, Math.max(0, (T - .85) / .85));
     const ramp = rt * rt * (3 - 2 * rt);
-    const ks = active ? 2.2 + 15 * ramp : 11;
-    const damp = Math.exp(-(active ? 2.0 + 3.6 * ramp : 4.8) * dt);
+    // в покое пружина и трение мягче — след курсора живёт дольше (тягучая вода)
+    const ks = active ? 2.2 + 15 * ramp : 7.5;
+    const damp = Math.exp(-(active ? 2.0 + 3.6 * ramp : 3.4) * dt);
     // форсинг листания: когерентная волна импульсов (стаггер по x)
     if (T < 1.1) {
       for (let j = 0; j < gh; j++) {
@@ -460,15 +475,15 @@ class FluidBottle {
       const cx = this.cur.x, cy = this.cur.y;
       const cvx = Math.max(-2200, Math.min(2200, this.cur.vx)), cvy = Math.max(-2200, Math.min(2200, this.cur.vy));
       const spd = Math.hypot(cvx, cvy);
-      const R = 170, drag = Math.min(1, 7 * dt) * Math.min(1, spd / 500);
+      const R = 190, drag = Math.min(1, 8 * dt) * Math.min(1, spd / 260);
       const i0 = Math.max(0, Math.floor((cx - R) / cw)), i1 = Math.min(gw - 1, Math.ceil((cx + R) / cw));
       const j0 = Math.max(0, Math.floor((cy - R) / ch)), j1 = Math.min(gh - 1, Math.ceil((cy + R) / ch));
       for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
         const ddx = (i + .5) * cw - cx, ddy = (j + .5) * ch - cy;
         const g = Math.exp(-3 * (ddx * ddx + ddy * ddy) / (R * R)) * drag;
         const k = j * gw + i;
-        vx[k] += (cvx * .85 - vx[k]) * g;
-        vy[k] += (cvy * .85 - vy[k]) * g;
+        vx[k] += (cvx - vx[k]) * g;
+        vy[k] += (cvy - vy[k]) * g;
       }
     }
     // вязкая диффузия скорости: соседи увлекаются — среда сплошная
@@ -512,6 +527,7 @@ class FluidBottle {
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.uniform1f(this.uMixU, this.mix);
     gl.uniform1f(this.uTimeU, now / 1000);
+    gl.uniform1f(this.uWashU, this.wash);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 }

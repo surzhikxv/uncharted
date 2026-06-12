@@ -137,32 +137,23 @@
   const stage = document.querySelector('.bottle-stage');
   if (stage && capEl && descEl) {
     capEl.classList.add('fade-swap'); descEl.classList.add('fade-swap');
-    let idx = 0, busy = false, morphScene = null, splashScene = null, morphProgress = 0, morphDir = 1;
+    let idx = 0, busy = false, particles = null;
     const fallbackImg = stage.querySelector('.bottle-fallback');
-    if (window.ENGINE && !REDUCED) {
-      morphScene = ENGINE.addScene(stage.querySelector('.bottle-canvas'), MORPH_FRAG,
-        { uFrom: AROMAS[0].img, uTo: AROMAS[0].img }, () => ({ uProgress: morphProgress, uDir: morphDir }));
-      if (morphScene) {
-        morphScene.onFail = () => { stage.querySelector('.bottle-canvas').style.display = 'none'; fallbackImg.style.visibility = 'visible'; };
-        const onMorphReady = () => { if (morphScene.ready) fallbackImg.style.visibility = 'hidden'; else if (!morphScene.failed) requestAnimationFrame(onMorphReady); };
-        requestAnimationFrame(onMorphReady);
-        // капли-частички пейзажа, смывающие описание (листание вперёд)
-        const sCv = document.createElement('canvas');
-        sCv.className = 'splash-canvas';
-        document.querySelector('.page').appendChild(sCv);
-        splashScene = ENGINE.addScene(sCv, SPLASH_FRAG, { uTex: AROMAS[0].img },
-          () => ({ uProgress: morphProgress, uDir: morphDir }));
-        if (splashScene) splashScene.onFail = () => { sCv.remove(); splashScene = null; };
-        // отладочный хук для покадровой съёмки (спит без ?morphdbg в URL)
-        if (location.search.indexOf('morphdbg') >= 0) {
-          window.__morphdbg = {
-            ready: () => !!(morphScene && morphScene.ready),
-            prep: (n, dir) => { morphDir = dir; window.__mdPrepped = false; ENGINE.swapTexture(morphScene, 'uTo', AROMAS[n].img, () => { window.__mdPrepped = true; }); },
-            prepped: () => !!window.__mdPrepped,
-            set: p => { morphProgress = p; },
-          };
-        }
-      }
+    // флакон из частиц: пейзаж разбит на ~30к вязких «капель» (см. ParticleBottle)
+    if (window.ParticleBottle && !REDUCED && !MOBILE) {
+      const pCv = document.createElement('canvas');
+      pCv.className = 'particle-canvas';
+      document.querySelector('.page').appendChild(pCv);
+      const pb = new ParticleBottle(pCv);
+      if (pb.failed) { pCv.remove(); }
+      else pb.init(AROMAS.map(a => a.img), ok => {
+        if (ok) {
+          particles = pb;
+          fallbackImg.style.visibility = 'hidden';
+          stage.querySelector('.bottle-canvas').style.display = 'none';
+          if (location.search.indexOf('morphdbg') >= 0) window.__pb = pb;   // для покадровой QA-съёмки
+        } else pCv.remove();
+      });
     }
     // автоплей: вперёд каждые 7с, пока секция на экране, вкладка активна и курсор не на карусели;
     // любое листание (ручное или авто) перезапускает отсчёт
@@ -196,8 +187,8 @@
     };
     const swapTexts = (next, dir) => {
       cascadeCaption(capEl, AROMAS[next].caption);
-      if (dir > 0 && splashScene && !splashScene.failed) {
-        setTimeout(() => washDesc(descEl, AROMAS[next].desc), 350);   // капли долетели до текста
+      if (dir > 0 && particles) {
+        setTimeout(() => washDesc(descEl, AROMAS[next].desc), 480);   // волна частиц долетела до текста
       } else {
         swapDescDir(descEl, AROMAS[next].desc, dir);
       }
@@ -209,22 +200,10 @@
       arrows.forEach(a => a.disabled = true);
       const release = () => { busy = false; arrows.forEach(a => a.disabled = false); };
       const next = (idx + dir + AROMAS.length) % AROMAS.length;
-      morphDir = dir;
       swapTexts(next, dir);
-      if (morphScene && !morphScene.failed && !morphScene.ready) { release(); return; }  // текстуры ещё грузятся
-      if (morphScene && morphScene.ready) {
-        ENGINE.swapTexture(morphScene, 'uTo', AROMAS[next].img, ok => {
-          if (!ok) { idx = next; release(); return; }
-          const t0 = performance.now(), DUR = 1350;
-          const ease = t => .5 - .5 * Math.cos(Math.PI * t);   // ровный темп: фронт не простаивает
-          const step = now => { const t = Math.min(1, (now - t0) / DUR); morphProgress = ease(t);
-            if (t < 1) requestAnimationFrame(step);
-            else ENGINE.swapTexture(morphScene, 'uFrom', AROMAS[next].img, () => {
-              morphProgress = 0; idx = next; release();
-              if (splashScene && !splashScene.failed) ENGINE.swapTexture(splashScene, 'uTex', AROMAS[next].img);
-            }); };
-          requestAnimationFrame(step);
-        });
+      if (particles) {
+        particles.transition(dir, next);
+        setTimeout(() => { idx = next; release(); }, 1900);
       } else if (REDUCED) {
         fallbackImg.src = AROMAS[next].img; idx = next; release();
       } else {

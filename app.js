@@ -137,7 +137,7 @@
   const stage = document.querySelector('.bottle-stage');
   if (stage && capEl && descEl) {
     capEl.classList.add('fade-swap'); descEl.classList.add('fade-swap');
-    let idx = 0, busy = false, morphScene = null, morphProgress = 0, morphDir = 1;
+    let idx = 0, busy = false, morphScene = null, splashScene = null, morphProgress = 0, morphDir = 1;
     const fallbackImg = stage.querySelector('.bottle-fallback');
     if (window.ENGINE && !REDUCED) {
       morphScene = ENGINE.addScene(stage.querySelector('.bottle-canvas'), MORPH_FRAG,
@@ -146,6 +146,13 @@
         morphScene.onFail = () => { stage.querySelector('.bottle-canvas').style.display = 'none'; fallbackImg.style.visibility = 'visible'; };
         const onMorphReady = () => { if (morphScene.ready) fallbackImg.style.visibility = 'hidden'; else if (!morphScene.failed) requestAnimationFrame(onMorphReady); };
         requestAnimationFrame(onMorphReady);
+        // капли-частички пейзажа, смывающие описание (листание вперёд)
+        const sCv = document.createElement('canvas');
+        sCv.className = 'splash-canvas';
+        document.querySelector('.page').appendChild(sCv);
+        splashScene = ENGINE.addScene(sCv, SPLASH_FRAG, { uTex: AROMAS[0].img },
+          () => ({ uProgress: morphProgress, uDir: morphDir }));
+        if (splashScene) splashScene.onFail = () => { sCv.remove(); splashScene = null; };
         // отладочный хук для покадровой съёмки (спит без ?morphdbg в URL)
         if (location.search.indexOf('morphdbg') >= 0) {
           window.__morphdbg = {
@@ -157,12 +164,47 @@
         }
       }
     }
+    // автоплей: вперёд каждые 7с, пока секция на экране, вкладка активна и курсор не на карусели;
+    // любое листание (ручное или авто) перезапускает отсчёт
+    const AUTO_MS = 7000;
+    let autoTimer = 0, autoHover = false, autoVisible = false;
+    const autoArm = () => {
+      clearTimeout(autoTimer);
+      if (REDUCED) return;
+      autoTimer = setTimeout(() => {
+        if (autoVisible && !autoHover && !document.hidden && !busy) go(1); else autoArm();
+      }, AUTO_MS);
+    };
+    if (!REDUCED) {
+      new IntersectionObserver(es => es.forEach(e => { autoVisible = e.isIntersecting; }), { threshold: .35 }).observe(stage);
+      [stage, descEl].forEach(el => {
+        el.addEventListener('pointerenter', () => { autoHover = true; });
+        el.addEventListener('pointerleave', () => { autoHover = false; });
+      });
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) autoArm(); });
+      autoArm();
+    }
+    // смыв описания: маска уходит слева направо вслед каплям, новая надпись проявляется потоком
+    const washDesc = (el, html) => {
+      el.classList.add('washing');
+      el.style.animation = 'washOut .58s cubic-bezier(.5,.1,.75,.5) forwards';
+      setTimeout(() => {
+        el.innerHTML = html;
+        el.style.animation = 'washIn .72s cubic-bezier(.25,.4,.3,1) forwards';
+        setTimeout(() => { el.classList.remove('washing'); el.style.animation = ''; }, 760);
+      }, 600);
+    };
     const swapTexts = (next, dir) => {
       cascadeCaption(capEl, AROMAS[next].caption);
-      swapDescDir(descEl, AROMAS[next].desc, dir);
+      if (dir > 0 && splashScene && !splashScene.failed) {
+        setTimeout(() => washDesc(descEl, AROMAS[next].desc), 350);   // капли долетели до текста
+      } else {
+        swapDescDir(descEl, AROMAS[next].desc, dir);
+      }
     };
     const go = dir => {
       if (busy) return; busy = true;
+      autoArm();
       const arrows = stage.querySelectorAll('.car-arrow');
       arrows.forEach(a => a.disabled = true);
       const release = () => { busy = false; arrows.forEach(a => a.disabled = false); };
@@ -177,7 +219,10 @@
           const ease = t => .5 - .5 * Math.cos(Math.PI * t);   // ровный темп: фронт не простаивает
           const step = now => { const t = Math.min(1, (now - t0) / DUR); morphProgress = ease(t);
             if (t < 1) requestAnimationFrame(step);
-            else ENGINE.swapTexture(morphScene, 'uFrom', AROMAS[next].img, () => { morphProgress = 0; idx = next; release(); }); };
+            else ENGINE.swapTexture(morphScene, 'uFrom', AROMAS[next].img, () => {
+              morphProgress = 0; idx = next; release();
+              if (splashScene && !splashScene.failed) ENGINE.swapTexture(splashScene, 'uTex', AROMAS[next].img);
+            }); };
           requestAnimationFrame(step);
         });
       } else if (REDUCED) {
@@ -217,8 +262,26 @@
         }
       } catch (e) { mScene = null; }
     }
+    // мобильный автоплей: те же 7с, пауза пока палец на карусели
+    let mTimer = 0, mVis = false, mTouch = false;
+    const mArm = () => {
+      clearTimeout(mTimer);
+      if (REDUCED || !MOBILE) return;
+      mTimer = setTimeout(() => {
+        if (mVis && !mTouch && !document.hidden && !mbusy) mgo(1); else mArm();
+      }, 7000);
+    };
+    if (!REDUCED && MOBILE) {
+      new IntersectionObserver(es => es.forEach(e => { mVis = e.isIntersecting; }), { threshold: .35 }).observe(mstage);
+      mstage.addEventListener('pointerdown', () => { mTouch = true; });
+      mstage.addEventListener('pointerup', () => { mTouch = false; });
+      mstage.addEventListener('pointercancel', () => { mTouch = false; });
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) mArm(); });
+      mArm();
+    }
     const mgo = dir => {
       if (mbusy) return; mbusy = true;
+      mArm();
       const next = (mi + dir + AROMAS.length) % AROMAS.length;
       mDirU = dir;
       cascadeCaption(mcap, AROMAS[next].caption);

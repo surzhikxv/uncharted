@@ -25,6 +25,23 @@ body.modal-open { overflow: hidden; }
 .fade-swap { transition: opacity .65s cubic-bezier(.22,1,.36,1), transform .65s cubic-bezier(.22,1,.36,1),
   filter .65s ease; }
 .fade-swap.out { opacity: 0; transform: translate(var(--sx, 0px), 12px) skewX(var(--sk, 0deg)); filter: blur(9px); }
+/* канвас капель: из флакона направо через описание аромата */
+.splash-canvas { position: absolute; left: 1080px; top: 6250px; width: 840px; height: 480px; pointer-events: none; }
+/* смыв описания потоком капель (только листание вперёд) */
+.n624.washing {
+  -webkit-mask-image: linear-gradient(97deg, transparent 38%, #000 58%);
+  mask-image: linear-gradient(97deg, transparent 38%, #000 58%);
+  -webkit-mask-size: 300% 100%; mask-size: 300% 100%;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+}
+@keyframes washOut {
+  from { -webkit-mask-position: 100% 0; mask-position: 100% 0; transform: none; filter: none; }
+  to   { -webkit-mask-position: 0% 0;   mask-position: 0% 0;   transform: translateX(44px); filter: blur(4px); }
+}
+@keyframes washIn {
+  from { -webkit-mask-position: 0% 0;   mask-position: 0% 0;   transform: translateX(-26px); filter: blur(3px); }
+  to   { -webkit-mask-position: 100% 0; mask-position: 100% 0; transform: none; filter: none; }
+}
 /* побуквенный каскад подписи аромата */
 .cl { display: inline-block; transition: opacity .36s ease, transform .45s cubic-bezier(.22,1,.36,1), filter .36s ease; }
 .cl.out-l.gone { opacity: 0; transform: translateY(-12px); filter: blur(4px); }

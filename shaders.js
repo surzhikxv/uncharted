@@ -193,6 +193,59 @@ void main(){
   outC = vec4(c, 1.);
 }`;
 
+// капли-частички пейзажа: при листании вперёд вылетают из флакона направо
+// и потоком смывают описание аромата; метаболы с водяным бликом, цвет — из текстуры флакона
+const SPLASH_FRAG = `#version 300 es
+precision highp float; in vec2 vUv; out vec4 outC;
+uniform sampler2D uTex; uniform float uTime, uProgress, uDir; uniform vec2 uRes;
+${GL_NOISE}
+void main(){
+  float p = clamp(uProgress, 0., 1.);
+  if (uDir < .5 || p < .005 || p > .995) { outC = vec4(0.); return; }
+  float ar = uRes.x / max(uRes.y, 1.);
+  vec2 q = vec2(vUv.x * ar, vUv.y);
+  float field = 0.;
+  vec3 colSum = vec3(0.); float wSum = 1e-5;
+  for (int i = 0; i < 16; i++) {
+    float fi = float(i);
+    float h0 = uc_hash(vec2(fi, 1.7));
+    float h1 = uc_hash(vec2(fi, 9.3));
+    float h2 = uc_hash(vec2(fi, 4.1));
+    float h3 = uc_hash(vec2(fi, 13.7));
+    float st = .06 + h0 * .34;                 // когда капля срывается
+    float du = .42 + h1 * .20;                 // длительность полёта
+    float t = clamp((p - st) / du, 0., 1.);
+    if (t <= 0. || t >= 1.) continue;
+    float x = mix(.02 * ar + h2 * .12, ar * (.50 + h3 * .55), t);
+    float y = .28 + h3 * .46 + sin(t * 3.14159 * (1. + h1)) * .03 + t * t * .08;
+    float r = (.024 + h1 * .028) * (1. - .30 * t);
+    // каплевидность: впереди круглая, сзади тянется хвост, к концу смазывается
+    vec2 d = q - vec2(x, y);
+    float sx = d.x < 0. ? (1.9 + t * 2.8 + h0) : 1.25;
+    d.x /= sx;
+    float k = r / max(length(d), 1e-4);
+    float fade = smoothstep(0., .12, t) * (1. - smoothstep(.70, 1., t));
+    float wgt = k * k * fade;
+    field += wgt;
+    // цвет — только тёплая полоса дюн (без тёмных деревьев у дна)
+    colSum += texture(uTex, vec2(.35 + h2 * .40, .36 + h3 * .30)).rgb * wgt;
+    wSum += wgt;
+  }
+  float a = smoothstep(.85, 1.25, field);
+  if (a <= 0.) { outC = vec4(0.); return; }
+  vec3 col = colSum / wSum;
+  // водяной объём: широкий блик сверху-слева + тёмный ободок (линза)
+  vec3 n = normalize(vec3(-dFdx(field), -dFdy(field), .35));
+  vec3 L = normalize(vec3(-.45, -.55, .72));
+  float spec = pow(max(dot(n, L), 0.), 5.);
+  float rim = 1. - smoothstep(.85, 1.6, field);  // у границы капли
+  col = mix(col, col * .82, rim * .5);           // ободок-линза
+  col = mix(col, vec3(.92, .72, .50), .12);      // тёплый тон геля
+  col += spec * .5 + pow(spec, 3.) * .25;
+  a *= .80;                                       // полупрозрачная вода
+  outC = vec4(col * a, a);
+}`;
+
 const GRAIN_FRAG = `#version 300 es
 precision highp float; in vec2 vUv; out vec4 outC;
 uniform float uTime; uniform vec2 uRes;
@@ -203,4 +256,4 @@ void main(){
   outC = vec4(vec3(.5 + g * .12 + warm), 1.);
 }`;
 
-window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG; window.MORPH_FRAG = MORPH_FRAG; window.GRAIN_FRAG = GRAIN_FRAG; window.FLOW_FRAG = FLOW_FRAG;
+window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG; window.MORPH_FRAG = MORPH_FRAG; window.GRAIN_FRAG = GRAIN_FRAG; window.FLOW_FRAG = FLOW_FRAG; window.SPLASH_FRAG = SPLASH_FRAG;

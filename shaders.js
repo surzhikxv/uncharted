@@ -199,57 +199,74 @@ void main(){
 // при листании вперёд волной слева направо улетает на текст описания и смывает его,
 // затем стекает обратно домой уже с цветами нового аромата.
 const PB_VERT = `#version 300 es
-in vec2 aPos; in vec4 aColA; in vec4 aColB; in vec2 aRnd;
-uniform vec2 uSimRes; uniform float uPx, uMix;
-out vec4 vCol; out float vGrain;
+in vec2 aPos; in vec2 aUV; in float aSize; in vec2 aRnd;
+uniform vec2 uSimRes, uTexSize; uniform float uPx, uMix;
+out vec2 vUVc; out float vUVh, vMix, vSize;
 void main(){
   vec2 ndc = aPos / uSimRes * 2. - 1.;
   gl_Position = vec4(ndc.x, -ndc.y, 0., 1.);
   float m = clamp((uMix - aRnd.y * .35) / .65, 0., 1.);
-  m = m * m * (3. - 2. * m);
-  vCol = mix(aColA, aColB, m);
-  vGrain = .90 + aRnd.x * .20;
-  gl_PointSize = max((4.4 + aRnd.x * 2.6) * uPx, 1.5);
+  vMix = m * m * (3. - 2. * m);
+  vUVc = aUV;                                  // центр чанка в uv текстуры
+  vUVh = (aSize * .5 + .45) / uTexSize.y;      // полуразмер с нахлёстом (текстура непрерывна — швов нет)
+  vSize = aSize;
+  gl_PointSize = (aSize + .9) * uPx;
 }`;
 const PB_FRAG = `#version 300 es
-precision mediump float; in vec4 vCol; in float vGrain; out vec4 outC;
+precision highp float;
+in vec2 vUVc; in float vUVh, vMix, vSize;
+uniform sampler2D uTexA, uTexB; uniform vec2 uTexSize;
+out vec4 outC;
 void main(){
-  vec2 d = gl_PointCoord - .5;
-  float a = smoothstep(.5, .30, length(d)) * vCol.a;
-  if (a <= 0.) discard;
-  vec3 c = vCol.rgb * vGrain;
-  c += smoothstep(.5, .08, length(d + vec2(.14, .14))) * .07;  // водяной мини-блик
-  outC = vec4(c * a, a);
+  float aspect = uTexSize.y / uTexSize.x;
+  vec2 uv = vUVc + (gl_PointCoord - .5) * 2. * vUVh * vec2(aspect, 1.);
+  if (uv.x < 0. || uv.x > 1. || uv.y < 0. || uv.y > 1.) discard;
+  outC = mix(texture(uTexA, uv), texture(uTexB, uv), vMix);
 }`;
 
 class ParticleBottle {
   constructor(canvas, cfg){
     this.cv = canvas;
-    this.cfg = Object.assign({ texW: 442, texH: 1083, offX: 83, simW: 1250, simH: 1083, step: 4 }, cfg);
+    this.cfg = Object.assign({ texW: 442, texH: 1083, offX: 83, simW: 1250, simH: 1083 }, cfg);
     const gl = this.gl = canvas.getContext('webgl2', { alpha: true, antialias: false, premultipliedAlpha: true });
     this.ready = false; this.failed = !gl;
     if (this.failed) return;
-    const c = this.cfg;
-    this.nx = Math.floor(c.texW / c.step); this.ny = Math.floor(c.texH / c.step);
-    const N = this.N = this.nx * this.ny;
-    this.pos = new Float32Array(N * 2); this.vel = new Float32Array(N * 2);
-    this.home = new Float32Array(N * 2); this.rnd = new Float32Array(N * 2);
-    this.idel = new Float32Array(N); this.ivx = new Float32Array(N); this.ivy = new Float32Array(N);
-    for (let i = 0, k = 0; i < this.ny; i++) for (let j = 0; j < this.nx; j++, k++) {
-      const x = c.offX + j * c.step + c.step / 2, y = i * c.step + c.step / 2;
-      this.home[k*2] = this.pos[k*2] = x; this.home[k*2+1] = this.pos[k*2+1] = y;
-      this.rnd[k*2] = Math.random(); this.rnd[k*2+1] = Math.random();
-    }
     this.mix = 1; this.transT = 9e9;
     this.cur = { x: -9e3, y: -9e3, vx: 0, vy: 0, t: 0 };
     this.visible = false;
-    this.aromaCols = [];
-    this._initGL();
+    this.tex = [];
     new IntersectionObserver(es => es.forEach(e => { this.visible = e.isIntersecting; }), { rootMargin: '60px' }).observe(canvas);
     addEventListener('pointermove', e => this._onMove(e), { passive: true });
   }
-  _initGL(){
-    const gl = this.gl;
+  // квадродерево «склеек»: чанки 16/8/4px, чанк живёт если под ним есть непрозрачные пиксели
+  _buildChunks(alpha){
+    const c = this.cfg, W = c.texW, H = c.texH;
+    const has = (x0, y0, s) => {
+      for (let y = y0; y < y0 + s && y < H; y += 2) {
+        const row = y * W;
+        for (let x = x0; x < x0 + s && x < W; x += 2) if (alpha[(row + x) * 4 + 3] > 24) return true;
+      }
+      return false;
+    };
+    const out = [];
+    const put = (x0, y0, s) => out.push(x0 + s / 2, y0 + s / 2, s);
+    for (let y0 = 0; y0 < H; y0 += 16) for (let x0 = 0; x0 < W; x0 += 16) {
+      if (!has(x0, y0, 16)) continue;
+      if (Math.random() < .30) { put(x0, y0, 16); continue; }
+      for (let qy = 0; qy < 2; qy++) for (let qx = 0; qx < 2; qx++) {
+        const x8 = x0 + qx * 8, y8 = y0 + qy * 8;
+        if (!has(x8, y8, 8)) continue;
+        if (Math.random() < .55) { put(x8, y8, 8); continue; }
+        for (let ry = 0; ry < 2; ry++) for (let rx = 0; rx < 2; rx++) {
+          const x4 = x8 + rx * 4, y4 = y8 + ry * 4;
+          if (has(x4, y4, 4)) put(x4, y4, 4);
+        }
+      }
+    }
+    return out;
+  }
+  _initGL(chunks){
+    const gl = this.gl, c = this.cfg;
     const mk = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh);
       if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
     const p = this.prog = gl.createProgram();
@@ -257,60 +274,86 @@ class ParticleBottle {
     gl.linkProgram(p);
     if (!gl.getProgramParameter(p, gl.LINK_STATUS)) { this.failed = true; return; }
     gl.useProgram(p);
+    const N = this.N = chunks.length / 3;
+    this.pos = new Float32Array(N * 2); this.vel = new Float32Array(N * 2);
+    this.home = new Float32Array(N * 2); this.rnd = new Float32Array(N * 2);
+    this.im = new Float32Array(N);                      // «лёгкость»: мелкие чанки подвижнее
+    this.idel = new Float32Array(N); this.ivx = new Float32Array(N); this.ivy = new Float32Array(N);
+    const uv = new Float32Array(N * 2), size = new Float32Array(N);
+    for (let k = 0; k < N; k++) {
+      const cx = chunks[k*3], cy = chunks[k*3+1], s = chunks[k*3+2];
+      this.home[k*2] = this.pos[k*2] = c.offX + cx;
+      this.home[k*2+1] = this.pos[k*2+1] = cy;
+      uv[k*2] = cx / c.texW; uv[k*2+1] = cy / c.texH;
+      size[k] = s;
+      this.im[k] = Math.sqrt(4 / s);
+      this.rnd[k*2] = Math.random(); this.rnd[k*2+1] = Math.random();
+    }
     this.vao = gl.createVertexArray(); gl.bindVertexArray(this.vao);
-    const attr = (name, buf, size, type, norm, dynamic) => {
+    const attr = (name, buf, n, dynamic) => {
       const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
       gl.bufferData(gl.ARRAY_BUFFER, buf, dynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
       const loc = gl.getAttribLocation(p, name);
-      gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, type, norm, 0, 0);
+      gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0);
       return b;
     };
-    this.bPos = attr('aPos', this.pos, 2, gl.FLOAT, false, true);
-    this.bRnd = attr('aRnd', this.rnd, 2, gl.FLOAT, false, false);
-    const empty = new Uint8Array(this.N * 4);
-    this.bColA = attr('aColA', empty, 4, gl.UNSIGNED_BYTE, true, false);
-    this.bColB = attr('aColB', empty, 4, gl.UNSIGNED_BYTE, true, false);
-    this.uSimRes = gl.getUniformLocation(p, 'uSimRes');
-    this.uPx = gl.getUniformLocation(p, 'uPx');
-    this.uMix = gl.getUniformLocation(p, 'uMix');
+    this.bPos = attr('aPos', this.pos, 2, true);
+    attr('aUV', uv, 2, false);
+    attr('aSize', size, 1, false);
+    attr('aRnd', this.rnd, 2, false);
+    const U = n => gl.getUniformLocation(p, n);
+    this.uSimRes = U('uSimRes'); this.uTexSize = U('uTexSize');
+    this.uPx = U('uPx'); this.uMixU = U('uMix');
+    this.uTexA = U('uTexA'); this.uTexB = U('uTexB');
+    gl.uniform2f(this.uTexSize, c.texW, c.texH);
   }
-  // пиксели ароматов: рисуем в офскрин 442×1083 и берём цвет в центре каждого чанка
+  _loadTex(url, cb){
+    const gl = this.gl;
+    const img = new Image(); img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      cb(t, img);
+    };
+    img.onerror = () => cb(null);
+    img.src = url;
+  }
+  // загрузка ароматов: GL-текстуры + альфа-карта первого для раскладки чанков
   init(urls, cb){
     const c = this.cfg;
-    const cnv = document.createElement('canvas'); cnv.width = c.texW; cnv.height = c.texH;
-    const ctx = cnv.getContext('2d', { willReadFrequently: true });
-    let left = urls.length, bad = false;
-    urls.forEach((url, ai) => {
-      const img = new Image(); img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        ctx.clearRect(0, 0, c.texW, c.texH);
-        ctx.drawImage(img, 0, 0, c.texW, c.texH);
-        const d = ctx.getImageData(0, 0, c.texW, c.texH).data;
-        const cols = new Uint8Array(this.N * 4);
-        for (let i = 0, k = 0; i < this.ny; i++) for (let j = 0; j < this.nx; j++, k++) {
-          const px = j * c.step + (c.step >> 1), py = i * c.step + (c.step >> 1);
-          const o = (py * c.texW + px) * 4;
-          cols[k*4] = d[o]; cols[k*4+1] = d[o+1]; cols[k*4+2] = d[o+2];
-          cols[k*4+3] = d[o+3] < 24 ? 0 : d[o+3];
+    let left = urls.length, bad = false, alphaDone = false;
+    const tryFinish = () => {
+      if (left > 0 || !alphaDone) return;
+      if (bad || this.failed || !this._alpha) { this.failed = true; cb && cb(false); return; }
+      try { this._initGL(this._buildChunks(this._alpha)); } catch (e) { this.failed = true; }
+      if (this.failed) { cb && cb(false); return; }
+      this.curIdx = 0; this.nextIdx = 0;
+      this.ready = true;
+      this._last = performance.now();
+      const tick = now => { this._frame(now); requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+      cb && cb(true);
+    };
+    urls.forEach((url, ai) => this._loadTex(url, (t, img) => {
+      if (!t) bad = true;
+      else {
+        this.tex[ai] = t;
+        if (ai === 0) {
+          const cnv = document.createElement('canvas'); cnv.width = c.texW; cnv.height = c.texH;
+          const ctx = cnv.getContext('2d', { willReadFrequently: true });
+          ctx.drawImage(img, 0, 0, c.texW, c.texH);
+          this._alpha = ctx.getImageData(0, 0, c.texW, c.texH).data;
+          alphaDone = true;
         }
-        this.aromaCols[ai] = cols;
-        if (--left === 0) this._finishInit(bad, cb);
-      };
-      img.onerror = () => { bad = true; if (--left === 0) this._finishInit(bad, cb); };
-      img.src = url;
-    });
-  }
-  _finishInit(bad, cb){
-    if (bad || this.failed) { this.failed = true; cb && cb(false); return; }
-    const gl = this.gl;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.bColA); gl.bufferData(gl.ARRAY_BUFFER, this.aromaCols[0], gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.bColB); gl.bufferData(gl.ARRAY_BUFFER, this.aromaCols[0], gl.STATIC_DRAW);
-    this._curCols = this.aromaCols[0];
-    this.ready = true;
-    this._last = performance.now();
-    const tick = now => { this._frame(now); requestAnimationFrame(tick); };
-    requestAnimationFrame(tick);
-    cb && cb(true);
+      }
+      if (ai === 0 && !this._alpha) alphaDone = true;
+      left--; tryFinish();
+    }));
   }
   _onMove(e){
     const r = this.cv.getBoundingClientRect();
@@ -324,29 +367,26 @@ class ParticleBottle {
     this.cur.vy += ((y - (this.cur.y > -8e3 ? this.cur.y : y)) / dt - this.cur.vy) * k;
     this.cur.x = x; this.cur.y = y; this.cur.t = now;
   }
-  // листание: волна импульсов + подмена целевых цветов
+  // листание: волна импульсов + кроссфейд текстур (uMix со стаггером в вершиннике)
   transition(dir, nextIdx){
-    const cols = this.aromaCols[nextIdx];
-    if (!cols || !this.ready) return;
-    const gl = this.gl;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.bColA); gl.bufferData(gl.ARRAY_BUFFER, this._curCols, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.bColB); gl.bufferData(gl.ARRAY_BUFFER, cols, gl.STATIC_DRAW);
-    this._curCols = cols;
+    if (!this.tex[nextIdx] || !this.ready) return;
+    if (this.mix >= 1) this.curIdx = this.nextIdx;     // прошлый переход дорисован
+    this.nextIdx = nextIdx;
     this.mix = 0; this.transT = 0;
     const c = this.cfg, N = this.N;
     for (let k = 0; k < N; k++) {
       const hx = this.home[k*2] - c.offX, hy = this.home[k*2+1];
-      const r0 = this.rnd[k*2], r1 = this.rnd[k*2+1];
+      const r0 = this.rnd[k*2], r1 = this.rnd[k*2+1], im = this.im[k];
       if (dir > 0) {                                  // вперёд: когерентная волна слева направо на текст
         this.idel[k] = (hx / c.texW) * .28 + r0 * .05;
-        this.ivx[k] = 2100 + Math.sin(hy * .017 + r0 * 2.) * 130 + r1 * 180;
+        this.ivx[k] = (2100 + Math.sin(hy * .017 + r0 * 2.) * 130 + r1 * 180) * (.55 + .45 * im);
         // лёгкая воронка к строке описания (sim y ~840), без сжатия в полосы
         const fy = (840 - hy) * (.18 + r0 * .08);
-        this.ivy[k] = Math.max(-170, Math.min(170, fy)) + (r1 - .5) * 60;
+        this.ivy[k] = (Math.max(-170, Math.min(170, fy)) + (r1 - .5) * 60) * (.55 + .45 * im);
       } else {                                        // назад: мягкое колыхание влево, без полёта
         this.idel[k] = ((c.texW - hx) / c.texW) * .14 + r0 * .05;
-        this.ivx[k] = -(170 + r1 * 90);
-        this.ivy[k] = (r0 - .5) * 70;
+        this.ivx[k] = -(170 + r1 * 90) * im;
+        this.ivy[k] = (r0 - .5) * 70 * im;
       }
     }
   }
@@ -365,7 +405,8 @@ class ParticleBottle {
     // затухание скорости курсора, когда он не движется
     if (now - this.cur.t > 90) { this.cur.vx *= Math.pow(.8, dt * 60); this.cur.vy *= Math.pow(.8, dt * 60); }
 
-    const N = this.N, pos = this.pos, vel = this.vel, home = this.home;
+    if (this.mix >= 1 && this.curIdx !== this.nextIdx) this.curIdx = this.nextIdx;
+    const N = this.N, pos = this.pos, vel = this.vel, home = this.home, im = this.im;
     const idel = this.idel, ivx = this.ivx, ivy = this.ivy;
     const cx = this.cur.x, cy = this.cur.y;
     const cvx = Math.max(-2600, Math.min(2600, this.cur.vx)), cvy = Math.max(-2600, Math.min(2600, this.cur.vy));
@@ -385,18 +426,20 @@ class ParticleBottle {
         idel[k] -= dt;
         if (idel[k] <= 0) { vx += ivx[k]; vy += ivy[k]; }
       }
-      // курсор: вязкое увлечение + расталкивание
+      const imk = im[k];
+      // курсор: вязкое увлечение + расталкивание (мелкие склейки подвижнее)
       const dx = x - cx, dy = y - cy;
       const d2 = dx * dx + dy * dy;
       if (d2 < R2) {
         const d = Math.sqrt(d2) || 1;
-        const f = 1 - d / R;
+        const f = (1 - d / R) * imk;
         vx += (cvx * 10 * dt + dx / d * 750 * dt) * f;
         vy += (cvy * 10 * dt + dy / d * 750 * dt) * f;
       }
-      // идл-дыхание воды: едва заметное когерентное колыхание
-      vx += Math.sin(y * .013 + tw * .9 + x * .004) * 9 * dt;
-      vy += Math.cos(x * .011 + tw * .7) * 7 * dt;
+      // едва заметный wave: медленная бегущая волна по изображению
+      const hxk = home[i2], hyk = home[i2+1];
+      vx += Math.sin(hyk * .006 - tw * 1.05 + hxk * .003) * 11 * dt * imk;
+      vy += Math.cos(hxk * .005 - tw * .65 + hyk * .004) * 6 * dt * imk;
       // вязкая пружина к дому
       vx += (home[i2] - x) * spring;
       vy += (home[i2+1] - y) * spring;
@@ -416,9 +459,12 @@ class ParticleBottle {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bPos); gl.bufferSubData(gl.ARRAY_BUFFER, 0, pos);
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex[this.curIdx]);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.tex[this.nextIdx]);
+    gl.uniform1i(this.uTexA, 0); gl.uniform1i(this.uTexB, 1);
     gl.uniform2f(this.uSimRes, this.cfg.simW, this.cfg.simH);
     gl.uniform1f(this.uPx, w / this.cfg.simW);
-    gl.uniform1f(this.uMix, this.mix);
+    gl.uniform1f(this.uMixU, this.mix);
     gl.drawArrays(gl.POINTS, 0, N);
   }
 }

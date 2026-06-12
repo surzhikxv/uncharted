@@ -87,16 +87,20 @@ body.anim.hero-in .cat-title { opacity: 1; transform: none; transition-delay: .3
 .cat-filter-vol { white-space: nowrap; }
 
 /* ---- сетка карточек ---- */
+/* WebKit-фикс: zoom не масштабирует grid-треки 1fr (карточки вылезают вправо,
+   overflow:hidden их режет — «справа обрезано и не листается»). Фикс-px flex
+   масштабируется zoom корректно. */
 .cat-grid {
   flex: 1;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
   gap: 64px 24px;
   list-style: none;
   margin: 0;
   padding: 0 0 140px;
 }
-.cat-card { display: flex; flex-direction: column; }
+.cat-card { display: flex; flex-direction: column; width: 332px; }
 .cat-card[hidden] { display: none; }
 body.anim .cat-card {
   transition: opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1);
@@ -252,7 +256,8 @@ html { scroll-behavior: smooth; }
   .cat-filter::before { display: none; }
   .cat-filter.is-active { background: #C35B3F; border-color: #C35B3F; color: #fff; }
 
-  .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 32px 12px; padding-bottom: 64px; }
+  .cat-grid { gap: 32px 12px; padding-bottom: 64px; }
+  .cat-card { width: calc((100% - 12px) / 2); }
   .cat-photo { border-radius: 12px; }
   .cat-name { margin-top: 14px; font-size: 15px; letter-spacing: .06em; }
   .cat-type { margin-top: 5px; font-size: 12.5px; }

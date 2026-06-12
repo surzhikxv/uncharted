@@ -238,15 +238,17 @@ vec4 smpl(vec2 tuv, float stag, float lod){
 void main(){
   vec4 F = fld(vUv);
   vec2 px = vUv * uSimRes;
-  // едва заметное волнение покоя (~2px), аналитическое — всегда гладкое
+  // волнение покоя: горизонтальные слои дышат каждый со своей амплитудой
+  // (rowAmp постоянен вдоль строки, плавен между строками)
+  float rowAmp = .6 + .9 * uc_noise(vec2(px.y * .045, 7.3));
   vec2 idle = vec2(
-    sin(px.y * .006 - uTime * .8 + px.x * .003) + .5 * sin(px.y * .013 + uTime * .5),
-    cos(px.x * .005 - uTime * .55 + px.y * .004)) * vec2(1.25, .8);
+    (sin(px.y * .006 - uTime * .8 + px.x * .003) + .6 * sin(px.y * .021 + uTime * .45)) * 1.3 * rowAmp,
+    cos(px.x * .005 - uTime * .55 + px.y * .004) * .55);
   vec2 D = F.xy + idle;
   // капиллярная рябь в движении (~|D|): прямые смазанные кромки текстуры гнутся
   // органическими язычками; в покое строго ноль
   float act = min(1., length(F.xy) * .02);
-  D.y += (sin(px.x * .018 + uTime * 2.6) * 9. + sin(px.x * .047 - uTime * 3.7) * 4.) * act;
+  D.y += (sin(px.x * .018 + uTime * 2.6) * 6. + sin(px.x * .047 - uTime * 3.7) * 2.5) * act;
   D.x += sin(px.y * .03 + uTime * 3.1) * 5. * act;
   vec2 src = px - D;
   vec2 tuv = vec2((src.x - uOffX) / uTexW, src.y / uSimRes.y);
@@ -262,28 +264,23 @@ void main(){
   // lod по footprint — сжатые зоны не алиасят при textureLod)
   vec2 ts = vec2(uTexW, uSimRes.y);
   vec2 fx = dFdx(tuv) * ts, fy = dFdy(tuv) * ts;
-  float lod = .5 * log2(max(max(dot(fx, fx), dot(fy, fy)), 1.)) + agit * 2.6;
+  float lod = .5 * log2(max(max(dot(fx, fx), dot(fy, fy)), 1.)) + agit * 1.7;
   vec4 col = smpl(tuv, uc_noise(vUv * vec2(6., 5.)), lod);
   // утончение растянутой плёнки — ТОЛЬКО в большой волне листания (uWash):
   // от курсора вода не «просвечивает» бежевым пятном
   float thin = clamp(pow(min(area, 1.), .7), .04, 1.);
   col *= mix(1., thin, uWash);
-  // стеклянная прозрачность взволнованной воды — едва заметная
-  col *= 1. - .10 * agit * (1. - uWash);
-  // толща при сжатии чуть темнее
+  // никаких белёсых бликов и прозрачности от курсора: глубина воды читается
+  // лёгким потемнением взволнованных и сжатых зон
+  col.rgb *= 1. - .07 * agit * (1. - uWash);
   col.rgb *= 1. - .09 * clamp(area - 1., 0., 1.5) / 1.5;
-  // вода: блик по гребням (сжатие = горб) и тонкие каустики на склонах
-  float div = dDx + dDy;
-  float crest = clamp(-div * 2.4, 0., 1.);
-  float caust = exp(-pow((abs(div) - .28) * 5.5, 2.));
-  col.rgb += col.a * agit * (pow(crest, 3.) * .16 + caust * .06) * vec3(1.0, .99, .96);
   outC = col;
 }`;
 
 class FluidBottle {
   constructor(canvas, cfg){
     this.cv = canvas;
-    this.cfg = Object.assign({ texW: 442, texH: 1083, offX: 83, simW: 1250, simH: 1083, gw: 104, gh: 90 }, cfg);
+    this.cfg = Object.assign({ texW: 442, texH: 1083, offX: 83, simW: 1250, simH: 1083, gw: 104, gh: 120 }, cfg);
     const gl = this.gl = canvas.getContext('webgl2', { alpha: true, antialias: false, premultipliedAlpha: true });
     this.ready = false; this.failed = !gl;
     if (this.failed) return;
@@ -296,6 +293,12 @@ class FluidBottle {
     this.dx = new Float32Array(n); this.dy = new Float32Array(n);   // накопленное смещение, px
     this.tmp = new Float32Array(n);
     this.fieldBuf = new Float32Array(n * 4);
+    // у каждого горизонтального слоя — свой характер: байес фазы и темперамента,
+    // плавный между соседями (сглаженный шум) — слои текут вразнобой, но без рывков
+    const rb = new Float32Array(this.cfg.gh);
+    for (let j = 0; j < rb.length; j++) rb[j] = Math.random();
+    for (let p = 0; p < 3; p++) for (let j = 1; j < rb.length - 1; j++) rb[j] = (rb[j - 1] + rb[j] * 2 + rb[j + 1]) * .25;
+    this.rowBias = rb;
     this._io = new IntersectionObserver(es => es.forEach(e => { this.visible = e.isIntersecting; }), { rootMargin: '60px' });
     this._io.observe(canvas);
     this._mv = e => this._onMove(e);
@@ -407,16 +410,17 @@ class FluidBottle {
     while (acc > 1e-4) { const dt = Math.min(acc, .0167); this._step(dt, now); acc -= dt; }
     this._render(now);
   }
-  // диффузия по соседям: вязкая связность среды (и гарантия гладкости поля)
-  _blur(a, t){
-    if (t <= 0) return;
+  // анизотропная диффузия: внутри слоя (по x) вязкость сильная — слой един,
+  // между слоями (по y) слабая — слои скользят друг по другу, но без разрывов
+  _blur(a, tx, ty){
+    if (tx <= 0 && ty <= 0) return;
     const { gw, gh } = this.cfg, tmp = this.tmp;
     for (let j = 0; j < gh; j++) {
       const r = j * gw, ru = j > 0 ? r - gw : r, rd = j < gh - 1 ? r + gw : r;
       for (let i = 0; i < gw; i++) {
         const il = i > 0 ? i - 1 : i, ir = i < gw - 1 ? i + 1 : i;
-        const avg = (a[r + il] + a[r + ir] + a[ru + i] + a[rd + i]) * .25;
-        tmp[r + i] = a[r + i] + (avg - a[r + i]) * t;
+        const c = a[r + i];
+        tmp[r + i] = c + ((a[r + il] + a[r + ir]) * .5 - c) * tx + ((a[ru + i] + a[rd + i]) * .5 - c) * ty;
       }
     }
     a.set(tmp);
@@ -441,29 +445,30 @@ class FluidBottle {
     // в покое пружина и трение мягче — след курсора живёт дольше (тягучая вода)
     const ks = active ? 2.2 + 15 * ramp : 7.5;
     const damp = Math.exp(-(active ? 2.0 + 3.6 * ramp : 3.4) * dt);
-    // форсинг листания: когерентная волна импульсов (стаггер по x)
-    if (T < 1.1) {
+    // форсинг листания: слои утекают вразнобой — стаггер по x плюс
+    // пер-слойное запаздывание и темперамент (rowBias)
+    if (T < 1.25) {
+      const rb = this.rowBias;
       for (let j = 0; j < gh; j++) {
-        const sy = (j + .5) * ch, r = j * gw;
+        const sy = (j + .5) * ch, r = j * gw, b = rb[j];
         for (let i = 0; i < gw; i++) {
           const sx = (i + .5) * cw, k = r + i;
           if (fwd) {
-            // вперёд: правому краю — больший разгон (среда тянется, как мёд с ложки);
-            // стаггер по строкам мал — строки идут связно, без «нарезки» горловины
-            const p = T - sx / simW * .26 - Math.sin(sy * .012 + 1.7) * .015 - .05;
+            // вперёд: правому краю — больший разгон, каждый слой стартует со своей задержкой
+            const p = T - sx / simW * .24 - b * .16 - .05;
             if (p > -.3 && p < .45) {
               const g = Math.exp(-p * p / .024) * dt / .27;
-              vx[k] += (500 + 2300 * Math.pow(sx / simW, 1.1)) * g;
-              // изгибающая волна по x: прямые кромки текстуры гнутся, а не тянутся линейкой
-              vy[k] += (Math.max(-90, Math.min(90, (840 - sy) * .18)) + Math.sin(sx * .0045 + T * 2.5) * 55) * g;
+              vx[k] += (500 + 2300 * Math.pow(sx / simW, 1.1)) * (0.75 + b * .5) * g;
+              // лёгкая воронка к строке текста + изгиб кромок
+              vy[k] += (Math.max(-60, Math.min(60, (840 - sy) * .12)) + Math.sin(sx * .0045 + T * 2.5) * 35) * g;
             }
           } else {
-            // назад: мягкий толчок влево без уноса
-            const p = T - (1 - sx / simW) * .13 - .04;
+            // назад: мягкий толчок влево, слои колышутся вразнобой
+            const p = T - (1 - sx / simW) * .12 - b * .1 - .04;
             if (p > -.25 && p < .35) {
               const g = Math.exp(-p * p / .016) * dt / .226;
-              vx[k] -= (320 + Math.sin(sy * .01 + sx * .005) * 80) * g;
-              vy[k] += Math.sin(sy * .013 + 2.2) * 60 * g;
+              vx[k] -= (300 + (b - .5) * 160) * g;
+              vy[k] += Math.sin(sy * .013 + 2.2) * 40 * g;
             }
           }
         }
@@ -478,29 +483,32 @@ class FluidBottle {
       const R = 190, drag = Math.min(1, 8 * dt) * Math.min(1, spd / 260);
       const i0 = Math.max(0, Math.floor((cx - R) / cw)), i1 = Math.min(gw - 1, Math.ceil((cx + R) / cw));
       const j0 = Math.max(0, Math.floor((cy - R) / ch)), j1 = Math.min(gh - 1, Math.ceil((cy + R) / ch));
+      const rb = this.rowBias;
       for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
         const ddx = (i + .5) * cw - cx, ddy = (j + .5) * ch - cy;
         const g = Math.exp(-3 * (ddx * ddx + ddy * ddy) / (R * R)) * drag;
         const k = j * gw + i;
-        vx[k] += (cvx - vx[k]) * g;
-        vy[k] += (cvy - vy[k]) * g;
+        // слои воды увлекаются горизонтально, каждый по своему темпераменту
+        vx[k] += (cvx * (.75 + rb[j] * .55) - vx[k]) * g;
+        vy[k] += (cvy * .4 - vy[k]) * g;
       }
     }
-    // вязкая диффузия скорости: соседи увлекаются — среда сплошная
-    const vt = Math.min(1, 12 * dt);
-    this._blur(vx, vt); this._blur(vy, vt);
+    // вязкость: внутри слоя сильная, между слоями слабая (ламинарный сдвиг);
+    // в большой волне связь слоёв сильнее — масса уходит единым потоком
+    this._blur(vx, Math.min(1, 14 * dt), Math.min(1, (active ? 9 : 3) * dt));
+    this._blur(vy, Math.min(1, 10 * dt), Math.min(1, 5 * dt));
     // пружина к покою + затухание + интеграция смещения
     const n = gw * gh;
     for (let k = 0; k < n; k++) {
       vx[k] = (vx[k] - ks * dx[k] * dt) * damp;
       vy[k] = (vy[k] - ks * dy[k] * dt) * damp;
       dx[k] = Math.max(-1500, Math.min(1500, dx[k] + vx[k] * dt));
-      dy[k] = Math.max(-400, Math.min(400, dy[k] + vy[k] * dt));
+      dy[k] = Math.max(-150, Math.min(150, dy[k] + vy[k] * dt));
     }
-    // диффузия смещения — поле всегда гладкое; в полёте сильнее:
-    // строки склеены, силуэт не режется на полосы и ступени
-    const dtf = Math.min(1, (active ? 6 : 2.5) * dt);
-    this._blur(dx, dtf); this._blur(dy, dtf);
+    // диффузия смещения: по x держит слой гладким, по y — лишь слегка
+    // склеивает слои (в полёте сильнее, чтобы силуэт не резался на полосы)
+    this._blur(dx, Math.min(1, 5 * dt), Math.min(1, (active ? 5 : 1.1) * dt));
+    this._blur(dy, Math.min(1, 4 * dt), Math.min(1, (active ? 5 : 2) * dt));
   }
   _render(now){
     const gl = this.gl, rect = this.cv.getBoundingClientRect();

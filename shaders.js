@@ -207,8 +207,9 @@ in vec2 aPos; out vec2 vUv;
 void main(){ vUv = aPos * .5 + .5; vUv.y = 1. - vUv.y; gl_Position = vec4(aPos, 0., 1.); }`;
 const FB_FRAG = `#version 300 es
 precision highp float; in vec2 vUv; out vec4 outC;
-uniform sampler2D uTexA, uTexB, uField;
-uniform vec2 uSimRes, uGrid; uniform float uMix, uTime, uOffX, uTexW, uWash;
+uniform sampler2D uTexA, uTexB, uField, uMask;
+uniform vec2 uSimRes, uGrid; uniform float uMix, uTime, uOffX, uTexW, uWash, uLevel, uBreach, uFlow, uReach;
+uniform vec4 uVessel;
 ${GL_NOISE}
 // поле на сетке: бикубический B-сплайн через 4 аппаратных билинейных тапа —
 // C1-гладкий, без «накачки» градиента с частотой сетки (она давала муар-плетёнку)
@@ -244,6 +245,11 @@ void main(){
   vec4 FL = fld(vUv - vec2(e.x, 0.)), FR = fld(vUv + vec2(e.x, 0.));
   vec4 FU = fld(vUv - vec2(0., e.y)), FD = fld(vUv + vec2(0., e.y));
   vec2 px = vUv * uSimRes;
+  // сосуд: альфа-маска силуэта в координатах ПОКОЯ — стеклянные стенки
+  // неподвижны, движется только вода внутри (жёсткий контур + подвижное
+  // содержимое = главный признак жидкости; гнущийся силуэт = желе)
+  float m = texture(uMask, vec2((px.x - uOffX) / uTexW, px.y / uSimRes.y)).r;
+  float ins = smoothstep(.46, .54, m);
   // волнение покоя: едва заметное изотропное дыхание (вода слоями не дышит)
   vec2 idle = vec2(
     (sin(px.y * .006 - uTime * .8 + px.x * .003) + .6 * sin(px.y * .021 + uTime * .45)) * .9,
@@ -255,9 +261,33 @@ void main(){
   // рефракция: вода — линза, фон смещается по наклону поверхности (n≈1.33);
   // картинка локально сжимается/растягивается, оставаясь РЕЗКОЙ; в большой
   // волне листания рябь читается сквозь поток сильнее
-  vec2 D = F.xy + idle + gh * (90. + 70. * uWash);
+  vec2 D = F.xy + idle * ins + gh * (90. + 70. * uWash);
   vec2 src = px - D;
   vec2 tuv = vec2((src.x - uOffX) / uTexW, src.y / uSimRes.y);
+  // ватерлиния: уровень воды дышит полем ряби
+  float lvl = uLevel + F.z * 2.2;
+  float below = smoothstep(lvl - 2.5, lvl + 2.5, px.y);
+  // струя из бреши: лист воды от правой стенки. Верхняя кромка — парабола от
+  // ватерлинии (медленные верхние струи ныряют круто), нижняя стелется от дна;
+  // напор head задаёт пологость, uReach — как далеко успел дойти фронт
+  // верхняя кромка листа — огибающая всех струй: y = уровень + ξ (минимум
+  // y_exit + ξ²/4d по глубине d даёт диагональ); нижняя стелется от дна
+  float plume = 0.;
+  float xi = px.x - uVessel.z;
+  if (uFlow > .004 && xi > -10.) {
+    float yT = lvl + xi * .85
+             + (uc_noise(vec2(px.x * .013, uTime * 1.9)) - .5) * 34.;
+    float yB = uVessel.y + 4. + xi * .1
+             + (uc_noise(vec2(px.x * .011 + 7., uTime * 1.4)) - .5) * 22.;
+    plume = smoothstep(yT - 10., yT + 10., px.y) * (1. - smoothstep(yB - 10., yB + 10., px.y));
+    plume *= (1. - smoothstep(uReach - 90., uReach + 50., xi)) * clamp(uFlow * 1.6, 0., 1.);
+  }
+  // помпа — твёрдое тело: выше плеча сосуда ничего не течёт и не осушается
+  float pumpM = ins * (1. - smoothstep(uVessel.x - 6., uVessel.x + 6., px.y));
+  // последние ~130px воды выцветают в плёнку (дно текстуры — тёмные «дрожжи»)
+  float dry = clamp((lvl - (uVessel.y - 200.)) / 200., 0., 1.);
+  // вода существует только в сосуде ниже уровня — и в струе за брешью
+  float liq = max(ins * below * (1. - dry * .85), plume * (1. - ins));
   float dDx = (FR.x - FL.x) / (2. * cell.x);
   float dDy = (FD.y - FU.y) / (2. * cell.y);
   float area = abs((1. - dDx) * (1. - dDy));   // якобиан обратного отображения
@@ -273,6 +303,7 @@ void main(){
   col *= mix(1., thin, uWash);
   col.rgb *= 1. - .09 * clamp(area - 1., 0., 1.5) / 1.5;
   col.rgb *= 1. + .10 * clamp(1. - area, 0., 1.) * uWash;   // сжатый поток слегка светится
+  col *= liq;
   // ===== свет — главный признак воды =====
   // на глади (наклон и кривизна ~0) световые члены пропускаются целиком:
   // в покое pow не считается — дёшево даже на софтверном GL
@@ -290,6 +321,38 @@ void main(){
     col.rgb *= 1. + .24 * ca;
     col.rgb += (gl * 1.05 * vec3(1.0, .975, .94) + fr * .10 * vec3(.98, .955, .93)) * col.a;
   }
+  // помпа: недеформированный кадр поверх (твёрдый колпачок, кроссфейд тот же)
+  if (pumpM > .003) {
+    vec4 solid = smpl(vec2((px.x - uOffX) / uTexW, px.y / uSimRes.y), uc_noise(vUv * vec2(6., 5.)), 0.);
+    col = mix(col, solid, pumpM);
+  }
+  // мениск по кромкам струи
+  float men = plume * (1. - plume) * 4. * (1. - ins);
+  col.rgb += men * men * .22 * vec3(1., .96, .9) * col.a;
+  // ватерлиния: блик на стыке вода/воздух (в покое спрятана за плечом, под
+  // помпой); считается только в полосе ±9px — дёшево
+  float dl = px.y - lvl;
+  if (abs(dl) < 9.) {
+    float wl = exp(-pow(dl / 2.4, 2.)) * ins * (1. - pumpM);
+    col.rgb += wl * .34 * vec3(1., .965, .9);
+    col.a   += wl * .22;
+  }
+  // стеклянные стенки: тончайший тёплый контур (пик альфы маски на склоне 0↔1),
+  // отзывается свечением на удары волн; правая стенка ТАЕТ в брешь на время
+  // слива — вода уходит именно из-за её пропажи
+  float wb = m * (1. - m);
+  if (wb > .02) {
+    float wall = pow(wb * 4., 1.7);
+    float gap = uBreach * smoothstep(uVessel.z - 30., uVessel.z + 4., px.x)
+              * smoothstep(uVessel.x + 26., uVessel.x + 70., px.y);
+    wall *= (1. - gap) * (.6 + 1.5 * min(1., abs(F.z) * .3));
+    col.rgb += vec3(.86, .42, .27) * wall * .26;
+    col.a   += wall * .22;
+  }
+  // опустевший сосуд: едва заметное тёплое стекло вместо воды
+  float air = ins * (1. - below) * (1. - pumpM);
+  col.rgb += vec3(.93, .82, .74) * air * .05;
+  col.a   += air * .055;
   outC = col;
 }`;
 
@@ -309,6 +372,10 @@ class FluidBottle {
     this.dx = new Float32Array(n); this.dy = new Float32Array(n);   // накопленное смещение, px
     this.h = new Float32Array(n); this.hv = new Float32Array(n);    // рябь: высота поверхности и её скорость (волновое уравнение)
     this._dropAt = 0;
+    // сосуд: уровень воды (px, в покое выше контура = полон), брешь правой
+    // стенки, напор истечения и дальность фронта струи
+    this.level = -100; this.breach = 0; this.flow = 0; this.reach = 0;
+    this.ins = null; this.nb = null; this.ves = null;
     this.tmp = new Float32Array(n);
     this.fieldBuf = new Float32Array(n * 4);
     // у каждого горизонтального слоя — свой характер: байес фазы и темперамента,
@@ -344,13 +411,28 @@ class FluidBottle {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    // маска сосуда: R8-альфа силуэта, LINEAR — клип воды и контур стенок
+    this.maskTex = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, this.maskTex);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);                  // ширина 221 не кратна 4
+    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.R8, this.maskData.w, this.maskData.h);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.maskData.w, this.maskData.h, gl.RED, gl.UNSIGNED_BYTE, this.maskData.a);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     const U = n => gl.getUniformLocation(p, n);
     gl.uniform2f(U('uSimRes'), c.simW, c.simH);
     gl.uniform2f(U('uGrid'), c.gw, c.gh);
     gl.uniform1f(U('uOffX'), c.offX);
     gl.uniform1f(U('uTexW'), c.texW);
     gl.uniform1i(U('uTexA'), 0); gl.uniform1i(U('uTexB'), 1); gl.uniform1i(U('uField'), 2);
+    gl.uniform1i(U('uMask'), 3);
+    gl.uniform4f(U('uVessel'), this.ves.top, this.ves.bot, this.ves.wall, 0);
     this.uMixU = U('uMix'); this.uTimeU = U('uTime'); this.uWashU = U('uWash');
+    this.uLevelU = U('uLevel'); this.uBreachU = U('uBreach');
+    this.uFlowU = U('uFlow'); this.uReachU = U('uReach');
   }
   _loadTex(url, cb){
     const gl = this.gl;
@@ -370,6 +452,74 @@ class FluidBottle {
     img.onerror = () => cb(null);
     img.src = url;
   }
+  // маска сосуда: альфа-силуэт флакона (канон — текстура NAMIBIA: у всех
+  // ароматов кроме MANGO силуэты идентичны, у MANGO фон запечён и непрозрачен —
+  // его лишнее срежет этот же клип)
+  _buildMask(url, cb){
+    const img = new Image(); img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const MW = 221, MH = 541;
+        const cv = document.createElement('canvas'); cv.width = MW; cv.height = MH;
+        const cx = cv.getContext('2d', { willReadFrequently: true });
+        cx.drawImage(img, 0, 0, MW, MH);
+        const a = cx.getImageData(0, 0, MW, MH).data;
+        const mk = new Uint8Array(MW * MH);
+        for (let k = 0; k < MW * MH; k++) mk[k] = a[k * 4 + 3];
+        // рамка нулей: CLAMP_TO_EDGE за пределами текстурной полосы обязан
+        // давать «снаружи», даже если силуэт касается края кадра
+        for (let i = 0; i < MW; i++) { mk[i] = 0; mk[(MH - 1) * MW + i] = 0; }
+        for (let j = 0; j < MH; j++) { mk[j * MW] = 0; mk[j * MW + MW - 1] = 0; }
+        this.maskData = { w: MW, h: MH, a: mk };
+        this._vesselFromMask();
+        cb(true);
+      } catch (e) { cb(false); }
+    };
+    img.onerror = () => cb(false);
+    img.src = url;
+  }
+  _vesselFromMask(){
+    const { gw, gh, simW, simH, offX, texW } = this.cfg;
+    const md = this.maskData, n = gw * gh;
+    const ins = this.ins = new Uint8Array(n);
+    const cw = simW / gw, ch = simH / gh;
+    const at = (x, y) => {
+      const tx = (x - offX) / texW, ty = y / simH;
+      if (tx <= 0 || tx >= 1 || ty <= 0 || ty >= 1) return 0;
+      return md.a[((ty * md.h) | 0) * md.w + ((tx * md.w) | 0)];
+    };
+    for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++)
+      ins[j * gw + i] = at((i + .5) * cw, (j + .5) * ch) > 127 ? 1 : 0;
+    // геометрия: плечо тела (первая почти-максимальная ширина), дно, правая стенка
+    const rowW = new Array(gh).fill(0), rowR = new Array(gh).fill(0);
+    let maxW = 0;
+    for (let j = 0; j < gh; j++) { let w = 0, r = 0;
+      for (let i = 0; i < gw; i++) if (ins[j * gw + i]) { w++; r = i; }
+      rowW[j] = w; rowR[j] = r; if (w > maxW) maxW = w; }
+    let topJ = 0, botJ = gh - 1;
+    for (let j = 0; j < gh; j++) if (rowW[j] >= maxW * .8) { topJ = j; break; }
+    for (let j = gh - 1; j >= 0; j--) if (rowW[j] > 0) { botJ = j; break; }
+    let ws = 0, wc = 0;
+    for (let j = topJ + 2; j <= botJ - 2; j++) { ws += (rowR[j] + .5) * cw; wc++; }
+    this.ves = { top: (topJ + .5) * ch, bot: (botJ + .5) * ch, wall: wc ? ws / wc : offX + texW };
+    // соседи волнового шага: стенка сосуда отражает (Нейман) в обе стороны,
+    // внутри и снаружи волны живут свободно, через стенку — нет
+    const il = new Int32Array(n), ir = new Int32Array(n), ru = new Int32Array(n), rd = new Int32Array(n);
+    for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
+      const k = j * gw + i;
+      const L = i > 0 ? k - 1 : k, R = i < gw - 1 ? k + 1 : k;
+      const U = j > 0 ? k - gw : k, Dn = j < gh - 1 ? k + gw : k;
+      il[k] = ins[L] === ins[k] ? L : k;
+      ir[k] = ins[R] === ins[k] ? R : k;
+      ru[k] = ins[U] === ins[k] ? U : k;
+      rd[k] = ins[Dn] === ins[k] ? Dn : k;
+    }
+    this.nb = { il, ir, ru, rd };
+    // клетки бреши: правая стенка тела — при открытой бреши поглощают волну
+    const br = [];
+    for (let j = topJ + 1; j <= botJ; j++) if (ins[j * gw + rowR[j]]) br.push(j * gw + rowR[j]);
+    this.breachIdx = br;
+  }
   destroy(){
     removeEventListener('pointermove', this._mv);
     this._io.disconnect();
@@ -378,19 +528,24 @@ class FluidBottle {
     if (gl) { this.tex.forEach(t => t && gl.deleteTexture(t)); const e = gl.getExtension('WEBGL_lose_context'); if (e) e.loseContext(); }
   }
   init(urls, cb){
-    let left = urls.length, bad = false;
-    urls.forEach((url, ai) => this._loadTex(url, t => {
-      if (!t) bad = true; else this.tex[ai] = t;
+    let left = urls.length + 1, bad = false;
+    const done = () => {
       if (--left > 0) return;
       if (bad || this.failed) { this.failed = true; cb && cb(false); return; }
       try { this._initGL(); } catch (e) { this.failed = true; }
       if (this.failed) { cb && cb(false); return; }
       this.curIdx = 0; this.nextIdx = 0;
+      this.level = this.ves.top - 16;          // покой: тело полно, линия спрятана под помпой
       this.ready = true;
       this._last = performance.now();
       const tick = now => { this._frame(now); requestAnimationFrame(tick); };
       requestAnimationFrame(tick);
       cb && cb(true);
+    };
+    this._buildMask(urls[1], ok => { if (!ok) bad = true; done(); });
+    urls.forEach((url, ai) => this._loadTex(url, t => {
+      if (!t) bad = true; else this.tex[ai] = t;
+      done();
     }));
   }
   _onMove(e){
@@ -446,15 +601,40 @@ class FluidBottle {
   _step(dt, now){
     this.transT += dt;
     const fwd = this.dir > 0, T = this.transT;
-    // кроссфейд текстур — в максимуме слива (вперёд) или коротко под колыхание (назад)
-    this.mix = Math.min(1, Math.max(0, fwd ? (T - .45) / .45 : (T - .3) / .42));
+    // кроссфейд текстур: вперёд — у «дна» опустошения (сосуд почти пуст,
+    // подмена невидима, налив поднимает уже новую воду); назад — под колыхание
+    this.mix = Math.min(1, Math.max(0, fwd ? (T - .72) / .33 : (T - .3) / .42));
     // огибающая большой волны: утончение плёнки разрешено только здесь
     this.wash = Math.min(1, Math.sin(Math.min(T / (fwd ? 1.75 : 1.1), 1) * Math.PI) * 1.5) * (fwd ? 1 : .45);
+    // сосуд: брешь правой стенки открывается → напор Торричелли гонит воду в
+    // струю, уровень падает (быстро → медленно, h ∝ (1−t)²), у дна — подмена,
+    // налив поднимает новую воду, стенка восстанавливается
+    if (this.ves) {
+      if (fwd && T < 3) {
+        const open = Math.min(1, Math.max(0, (T - .04) / .14));
+        this.breach = open * (T < 1.02 ? 1 : Math.max(0, 1 - (T - 1.02) / .33));
+        const tt = T - .12, full = this.ves.top - 16;
+        let lf;
+        if (tt <= 0) lf = 1;
+        else if (tt < .86) { const q = 1 - tt / .86; lf = q * q; }
+        else { const s = Math.min(1, (tt - .86) / .64); lf = s * s * (3 - 2 * s); }
+        this.level = this.ves.bot - (this.ves.bot - full) * lf;
+        const drain = tt > 0 && tt < .86;
+        this.flow = drain ? this.breach * Math.sqrt(Math.max(0, (this.ves.bot - this.level) / (this.ves.bot - this.ves.top))) : 0;
+        if (T < .05) this.reach = 0;
+        if (drain) this.reach = Math.min(1300, this.reach + (380 + 900 * this.flow) * dt);
+        // налив: рябь у поднимающейся ватерлинии
+        if (tt >= .86 && lf < .995 && Math.random() < .5)
+          this._splash(130 + Math.random() * 350, this.level + 8, 1.1, 1.7, true);
+      } else {
+        this.breach = 0; this.flow = 0; this.level = this.ves.top - 16;
+      }
+    }
     if (this.mix >= 1 && this.curIdx !== this.nextIdx) {
       this.curIdx = this.nextIdx;
       // вода «дозванивает» после прихода нового флакона: пара затухающих колец
-      this._splash(180 + Math.random() * 240, 320 + Math.random() * 420, 3.2, 3.0);
-      this._splash(220 + Math.random() * 200, 480 + Math.random() * 300, 2.2, 2.2);
+      this._splash(180 + Math.random() * 240, 320 + Math.random() * 420, 3.2, 3.0, true);
+      this._splash(220 + Math.random() * 200, 480 + Math.random() * 300, 2.2, 2.2, true);
     }
     // затухание скорости курсора, когда он не движется
     if (now - this.cur.t > 90) { this.cur.vx *= Math.pow(.8, dt * 60); this.cur.vy *= Math.pow(.8, dt * 60); }
@@ -477,14 +657,16 @@ class FluidBottle {
         for (let i = 0; i < gw; i++) {
           const sx = (i + .5) * cw, k = r + i;
           if (fwd) {
-            // прорыв плотины: напор по Торричелли — нижним слоям сильный выброс
-            // вправо, верх вбок почти не идёт, а ОСЕДАЕТ вниз на место ушедшей
-            // воды (уровень падает, верх пустеет первым — верхний текст не накрыт)
+            // прорыв стенки: напор по Торричелли — нижним слоям сильный выброс
+            // вправо, верх ОСЕДАЕТ вниз вслед за уровнем. Внутри сосуда поток
+            // приглушён (вода стекается к бреши, но столб остаётся сплошным —
+            // неразрывность), снаружи уносится свободно
             const depth = sy / simH;
             const p = T - Math.max(0, 525 - sx) / 525 * .16 - b * .06 - .03;
             if (p > -.3 && p < .6) {
               const g = Math.exp(-p * p / .02) * dt / .25;
-              vx[k] += (300 + 2600 * Math.pow(depth, .8)) * (.85 + b * .3) * g;
+              const inV = this.ins && this.ins[k] ? .5 : 1;
+              vx[k] += (300 + 2600 * Math.pow(depth, .8)) * (.85 + b * .3) * g * inV;
               vy[k] += (1500 * (1 - depth) + 200) * g;
             }
           } else {
@@ -502,10 +684,10 @@ class FluidBottle {
       // ячейкам — он шинкует фото в конфетти) по зоне течения
       const env = Math.sin(Math.min(T / 1.3, 1) * Math.PI);
       if (fwd) {
-        if (Math.random() < .95) this._splash(80 + Math.random() * 520, 150 + Math.random() * 850, (4.5 + 4.5 * Math.random()) * env, 1.4 + Math.random() * .9);
-        if (T > .25 && Math.random() < .9) this._splash(520 + Math.random() * 560, 350 + Math.random() * 650, (5. + 5. * Math.random()) * env, 1.6 + Math.random());
+        if (Math.random() < .95) this._splash(80 + Math.random() * 520, 150 + Math.random() * 850, (4.5 + 4.5 * Math.random()) * env, 1.4 + Math.random() * .9, true);
+        if (T > .25 && Math.random() < .9) this._splash(520 + Math.random() * 560, 350 + Math.random() * 650, (5. + 5. * Math.random()) * env, 1.6 + Math.random(), false);
       } else if (Math.random() < .6) {
-        this._splash(60 + Math.random() * 460, 150 + Math.random() * 850, (1.1 + 1.1 * Math.random()) * env, 1.5 + Math.random() * .8);
+        this._splash(60 + Math.random() * 460, 150 + Math.random() * 850, (1.1 + 1.1 * Math.random()) * env, 1.5 + Math.random() * .8, true);
       }
     }
     // курсор: вода — не мёд. Лёгкое (втрое слабее прежнего, изотропное)
@@ -516,22 +698,24 @@ class FluidBottle {
       const cx = this.cur.x, cy = this.cur.y;
       const cvx = Math.max(-2200, Math.min(2200, this.cur.vx)), cvy = Math.max(-2200, Math.min(2200, this.cur.vy));
       const spd = Math.hypot(cvx, cvy);
-      const R = 160, drag = Math.min(1, 8 * dt) * Math.min(1, spd / 260) * .3;
+      const R = 160, drag = Math.min(1, 8 * dt) * Math.min(1, spd / 260) * .25;
       const i0 = Math.max(0, Math.floor((cx - R) / cw)), i1 = Math.min(gw - 1, Math.ceil((cx + R) / cw));
       const j0 = Math.max(0, Math.floor((cy - R) / ch)), j1 = Math.min(gh - 1, Math.ceil((cy + R) / ch));
+      const insA = this.ins;
       for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
         const ddx = (i + .5) * cw - cx, ddy = (j + .5) * ch - cy;
-        const g = Math.exp(-3 * (ddx * ddx + ddy * ddy) / (R * R)) * drag;
         const k = j * gw + i;
-        vx[k] += (cvx * .45 - vx[k]) * g;
-        vy[k] += (cvy * .22 - vy[k]) * g;
+        // увлекается только вода в сосуде — страница вокруг суха
+        const g = Math.exp(-3 * (ddx * ddx + ddy * ddy) / (R * R)) * drag * (insA ? insA[k] : 1);
+        vx[k] += (cvx * .28 - vx[k]) * g;
+        vy[k] += (cvy * .1 - vy[k]) * g;
       }
-      if (spd > 50) this._splash(cx, cy, Math.min(1, spd / 950) * 230 * dt, 2.1);
+      if (spd > 50) this._splash(cx, cy, Math.min(1, spd / 950) * 230 * dt, 2.1, true);
     }
     // покой: редкая капля — едва заметное расходящееся кольцо оживляет гладь
     if (T > 3.5 && now > this._dropAt) {
       this._dropAt = now + 2400 + Math.random() * 2800;
-      this._splash(140 + Math.random() * 360, 240 + Math.random() * 640, 1.7, 2.6);
+      this._splash(140 + Math.random() * 360, 240 + Math.random() * 640, 1.7, 2.6, true);
     }
     // вязкость: слоистая (ламинарный сдвиг) ТОЛЬКО в большой волне листания —
     // масса уходит единым потоком; в покое и под курсором вода изотропна
@@ -541,8 +725,10 @@ class FluidBottle {
     // гравитация: вытекшее за стенку (dx>60) падает к строке текста, смывая её
     const grav = fwd && active && T < 1.5;
     const n = gw * gh;
+    const insA = this.ins;
     for (let k = 0; k < n; k++) {
-      if (grav && dx[k] > 60) {
+      const inV = insA ? insA[k] : 0;
+      if (grav && !inV && dx[k] > 60) {
         const out = Math.min(1, (dx[k] - 60) / 240);
         const sy = (((k / gw) | 0) + .5) * ch;
         const fall = Math.max(0, Math.min(1, (920 - sy) / 450));
@@ -552,8 +738,12 @@ class FluidBottle {
       }
       vx[k] = (vx[k] - ks * dx[k] * dt) * damp;
       vy[k] = (vy[k] - ks * dy[k] * dt) * damp;
-      dx[k] = Math.max(-1500, Math.min(1500, dx[k] + vx[k] * dt));
-      dy[k] = Math.max(-560, Math.min(560, dy[k] + vy[k] * dt));
+      // неразрывность: внутри сосуда столб не эвакуируется (вода в сосуде
+      // остаётся водой, видимый уход массы — это падение уровня), снаружи
+      // поток уносится на всю длину струи
+      const lx = inV ? 230 : 1500, ly = inV ? 170 : 560;
+      dx[k] = Math.max(-lx, Math.min(lx, dx[k] + vx[k] * dt));
+      dy[k] = Math.max(-ly, Math.min(ly, dy[k] + vy[k] * dt));
     }
     // диффузия смещения: в полёте чуть анизотропна (слой един, силуэт не
     // режется на полосы), в покое — изотропна
@@ -573,14 +763,18 @@ class FluidBottle {
     const cw = simW / gw, ch = simH / gh;
     const s = .84 / (1 / (cw * cw) + 1 / (ch * ch));
     const kx = s / (cw * cw), ky = s / (ch * ch);
-    const h = this.h, hv = this.hv;
-    for (let j = 0; j < gh; j++) {
-      const r = j * gw, ru = j > 0 ? r - gw : r, rd = j < gh - 1 ? r + gw : r;
-      for (let i = 0; i < gw; i++) {
-        const il = i > 0 ? i - 1 : i, ir = i < gw - 1 ? i + 1 : i;
-        const c = h[r + i];
-        hv[r + i] = (hv[r + i] + kx * (h[r + il] + h[r + ir] - 2 * c) + ky * (h[ru + i] + h[rd + i] - 2 * c)) * .984;
-      }
+    const h = this.h, hv = this.hv, n = gw * gh;
+    // соседи предвычислены: стенка сосуда отражает волну (Нейман), внутри и
+    // снаружи — свободное распространение, сквозь стенку волна не проходит
+    const { il, ir, ru, rd } = this.nb;
+    for (let k = 0; k < n; k++) {
+      const c = h[k];
+      hv[k] = (hv[k] + kx * (h[il[k]] + h[ir[k]] - 2 * c) + ky * (h[ru[k]] + h[rd[k]] - 2 * c)) * .984;
+    }
+    // открытая брешь: волны уходят в пролом, не отражаясь
+    if (this.breach > .01) {
+      const d = 1 - .3 * this.breach, bi = this.breachIdx;
+      for (let q = 0; q < bi.length; q++) hv[bi[q]] *= d;
     }
     // поглощающая кромка: волны не отражаются от невидимых стен канваса
     const rl = (gh - 1) * gw;
@@ -590,10 +784,16 @@ class FluidBottle {
     for (let k = 0, n = gw * gh; k < n; k++) h[k] = (h[k] + hv[k]) * .9985;
   }
   // капля/источник: штамп скорости с нулевой суммой по окну (гауссиана минус
-  // её среднее) — вокруг вмятины поднимается валик, уровень не дрейфует
-  _splash(x, y, amp, R){
+  // её среднее) — вокруг вмятины поднимается валик, уровень не дрейфует;
+  // gate=true — только в воде сосуда (страница вокруг суха)
+  _splash(x, y, amp, R, gate){
     const { gw, gh, simW, simH } = this.cfg;
     const cw = simW / gw, ch = simH / gh;
+    if (gate && this.ins) {
+      const gi = Math.min(gw - 1, Math.max(0, Math.round(x / cw - .5)));
+      const gj = Math.min(gh - 1, Math.max(0, Math.round(y / ch - .5)));
+      if (!this.ins[gj * gw + gi]) return;
+    }
     const ci = x / cw - .5, cj = y / ch - .5;
     const W = Math.ceil(R) + 1;
     const i0 = Math.max(0, Math.round(ci - W)), i1 = Math.min(gw - 1, Math.round(ci + W));
@@ -637,6 +837,10 @@ class FluidBottle {
     gl.uniform1f(this.uMixU, this.mix);
     gl.uniform1f(this.uTimeU, now / 1000);
     gl.uniform1f(this.uWashU, this.wash);
+    gl.uniform1f(this.uLevelU, this.level);
+    gl.uniform1f(this.uBreachU, this.breach);
+    gl.uniform1f(this.uFlowU, this.flow);
+    gl.uniform1f(this.uReachU, this.reach);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 }

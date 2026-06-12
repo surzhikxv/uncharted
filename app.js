@@ -108,7 +108,7 @@
   const cascadeCaption = (el, txt) => {
     if (REDUCED) { el.textContent = txt; return; }
     const mk = (t, cls) => [...t].map((ch, i) =>
-      '<span class="cl ' + cls + '" style="transition-delay:' + (i * 16) + 'ms">' + (ch === ' ' ? '&nbsp;' : ch) + '</span>').join('');
+      '<span class="cl ' + cls + '" style="transition-delay:' + (i * 20) + 'ms">' + (ch === ' ' ? '&nbsp;' : ch) + '</span>').join('');
     el.setAttribute('aria-label', txt);
     el.innerHTML = mk(el.textContent, 'out-l');
     requestAnimationFrame(() => el.querySelectorAll('.cl').forEach(sp => sp.classList.add('gone')));
@@ -116,19 +116,21 @@
       el.innerHTML = mk(txt, 'in-l');
       requestAnimationFrame(() => requestAnimationFrame(() =>
         el.querySelectorAll('.cl').forEach(sp => sp.classList.add('here'))));
-      setTimeout(() => { el.textContent = txt; el.removeAttribute('aria-label'); }, 950);
-    }, 430);
+      setTimeout(() => { el.textContent = txt; el.removeAttribute('aria-label'); }, 1050);
+    }, 520);
   };
   const swapDescDir = (el, html, dir) => {
     if (REDUCED) { el.innerHTML = html; return; }
-    el.style.setProperty('--sx', (dir * 26) + 'px');
+    el.style.setProperty('--sx', (dir * 34) + 'px');
+    el.style.setProperty('--sk', (-dir * 5) + 'deg');     // вязкое утягивание вслед фронту
     el.classList.add('out');
-    setTimeout(() => {
+    setTimeout(() => {                                    // подмена — когда фронт геля у центра флакона
       el.innerHTML = html;
-      el.style.setProperty('--sx', (-dir * 26) + 'px');
+      el.style.setProperty('--sx', (-dir * 34) + 'px');
+      el.style.setProperty('--sk', (dir * 5) + 'deg');
       void el.offsetWidth;
       el.classList.remove('out');
-    }, 550);
+    }, 620);
   };
 
   const capEl = document.querySelector('.n622'), descEl = document.querySelector('.n624');
@@ -144,6 +146,15 @@
         morphScene.onFail = () => { stage.querySelector('.bottle-canvas').style.display = 'none'; fallbackImg.style.visibility = 'visible'; };
         const onMorphReady = () => { if (morphScene.ready) fallbackImg.style.visibility = 'hidden'; else if (!morphScene.failed) requestAnimationFrame(onMorphReady); };
         requestAnimationFrame(onMorphReady);
+        // отладочный хук для покадровой съёмки (спит без ?morphdbg в URL)
+        if (location.search.indexOf('morphdbg') >= 0) {
+          window.__morphdbg = {
+            ready: () => !!(morphScene && morphScene.ready),
+            prep: (n, dir) => { morphDir = dir; window.__mdPrepped = false; ENGINE.swapTexture(morphScene, 'uTo', AROMAS[n].img, () => { window.__mdPrepped = true; }); },
+            prepped: () => !!window.__mdPrepped,
+            set: p => { morphProgress = p; },
+          };
+        }
       }
     }
     const swapTexts = (next, dir) => {
@@ -162,8 +173,8 @@
       if (morphScene && morphScene.ready) {
         ENGINE.swapTexture(morphScene, 'uTo', AROMAS[next].img, ok => {
           if (!ok) { idx = next; release(); return; }
-          const t0 = performance.now(), DUR = 1200;
-          const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+          const t0 = performance.now(), DUR = 1350;
+          const ease = t => .5 - .5 * Math.cos(Math.PI * t);   // ровный темп: фронт не простаивает
           const step = now => { const t = Math.min(1, (now - t0) / DUR); morphProgress = ease(t);
             if (t < 1) requestAnimationFrame(step);
             else ENGINE.swapTexture(morphScene, 'uFrom', AROMAS[next].img, () => { morphProgress = 0; idx = next; release(); }); };
@@ -215,8 +226,8 @@
       if (mScene && mScene.ready) {
         mEng.swapTexture(mScene, 'uTo', AROMAS[next].m, ok => {
           if (!ok) { mi = next; mbusy = false; return; }
-          const t0 = performance.now(), DUR = 1150;
-          const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+          const t0 = performance.now(), DUR = 1250;
+          const ease = t => .5 - .5 * Math.cos(Math.PI * t);
           const step = now => {
             const t = Math.min(1, (now - t0) / DUR);
             mProg = ease(t);

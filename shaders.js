@@ -105,37 +105,59 @@ class GLEngine {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 }
-// направленный жидкий морф: уходящий кадр сносится по направлению листания,
-// распадается на капли и «испаряется» вверх; новый собирается из жидкости
+// жидкий морф «мениск»: через флакон в сторону листания идёт волнистый фронт геля —
+// перед ним старый кадр утягивается к фронту (поверхностное натяжение), у фронта
+// линзовая рефракция и блик-каустика, позади новый кадр успокаивается с затухающим
+// колыханием; низ фронта отстаёт (тяжесть). Никакого шумового распада.
 const MORPH_FRAG = `#version 300 es
 precision highp float; in vec2 vUv; out vec4 outC;
 uniform sampler2D uFrom, uTo; uniform float uTime, uProgress, uDir;
 ${GL_NOISE}
+#define PI 3.14159265
+vec4 smp(sampler2D t, vec2 uv){
+  vec4 c = texture(t, uv);
+  vec2 b = smoothstep(0., .012, uv) * smoothstep(1., .988, uv);
+  return c * b.x * b.y;
+}
 void main(){
   float p = clamp(uProgress, 0., 1.);
-  // --- уходящий: ускоряющийся снос + турбулентность + капельная эрозия
-  float po = smoothstep(0., .9, p);
-  float acc = po * po;
-  vec2 adv = vec2(uDir * acc * .34, -acc * .10);
-  vec2 jit = (vec2(uc_noise(vUv * vec2(6., 10.) + uTime * .08),
-                   uc_noise(vUv * vec2(9., 6.) + 13.1)) - .5) * .17 * po;
-  vec4 A = texture(uFrom, vUv + adv + jit);
-  float nA = uc_noise(vUv * vec2(11., 17.) + 4.7) * .75
-           + uc_noise(vUv * vec2(23., 37.) + 9.2) * .25;
-  A *= smoothstep(p * 1.5 - .3, p * 1.5 + .12, nA);
-  // --- приходящий: жидкая сборка с обратной стороны
-  float q = 1. - p;
-  float qo = smoothstep(0., .9, q);
-  float acc2 = qo * qo;
-  vec2 adv2 = vec2(-uDir * acc2 * .26, acc2 * .07);
-  vec2 jit2 = (vec2(uc_noise(vUv * vec2(8., 12.) + 23.7),
-                    uc_noise(vUv * vec2(12., 8.) + 31.3)) - .5) * .15 * qo;
-  vec4 B = texture(uTo, vUv + adv2 + jit2);
-  float nB = uc_noise(vUv * vec2(10., 15.) + 8.9) * .75
-           + uc_noise(vUv * vec2(21., 33.) + 17.4) * .25;
-  B *= smoothstep(q * 1.5 - .3, q * 1.5 + .12, nB);
-  // премультиплированная композиция: уходящий поверх собирающегося
-  outC = A + B * (1. - A.a);
+  float env = sin(p * PI);                       // всё движение гаснет к краям
+  float y = vUv.y;
+  // позиция фронта: ход ровно по габариту флакона — без мёртвых фаз на краях
+  float pp = smoothstep(.02, .93, p);
+  float x0 = .5 + (pp - .5) * 1.04 * uDir;
+  // форма фронта: крупная волна + лёгкое дыхание + отставание снизу
+  float wave = (uc_noise(vec2(y * 2.2 + 7.3, uTime * .22)) - .5) * 2.;
+  float wave2 = sin(y * 7. + uTime * .9);
+  float lag = (y - .35) * .16;
+  float xf = x0 + (wave * .085 + wave2 * .03 - lag) * uDir * env;
+  float d = (vUv.x - xf) * uDir;                 // >0 — старая сторона
+  float w = .17;
+  float q = d / w;
+  // линза у фронта: непрерывное поле преломления для обоих слоёв
+  float refr = q * exp(.5 - .5 * q * q) * .045 * env * uDir;
+  // старый кадр: дальнодействующее вязкое утягивание к фронту (антиципация)
+  float pull = exp(-max(d, 0.) / (w * 2.0));
+  vec2 uvA = vUv;
+  uvA.x -= uDir * pull * .075 * env;
+  uvA.x += refr;
+  uvA.y += (uc_noise(vec2(y * 3., uTime * .3)) - .5) * pull * .02 * env;
+  // новый кадр: подтянут к фронту, позади расслабляется с затухающим колыханием
+  float behind = exp(-max(-d, 0.) / (w * 1.8));
+  vec2 uvB = vUv;
+  uvB.x += uDir * behind * .07 * env + refr;
+  uvB.x += sin(max(-d, 0.) * 26. - uTime * 5.) * behind * .008 * env;
+  vec4 A = smp(uFrom, uvA);
+  vec4 B = smp(uTo, uvB);
+  float mB = smoothstep(.012, -.012, d);
+  vec4 col = A * (1. - mB) + B * mB;
+  // толща геля: лёгкое поглощение в полосе фронта
+  col.rgb *= 1. - .09 * exp(-q * q) * env;
+  // мениск: тёплый блик по фронту + мягкий вторичный позади
+  float spec  = exp(-q * q * 9.) * env;
+  float spec2 = exp(-(q + .9) * (q + .9) * 16.) * env;
+  col.rgb += (spec * .26 + spec2 * .10) * col.a * vec3(1.0, .975, .94);
+  outC = col;
 }`;
 
 // течение струи геля: рефракция + бегущие блики внутри маски струи

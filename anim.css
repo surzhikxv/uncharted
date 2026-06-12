@@ -22,9 +22,9 @@ body.modal-open { overflow: hidden; }
 .car-next:hover::before { transform: translate(-30%, -50%) rotate(45deg); }
 .car-prev:hover::before { transform: translate(-70%, -50%) rotate(-135deg); }
 .car-arrow:focus-visible::before { border-color: #7c2d12; }
-.fade-swap { transition: opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1),
-  filter .55s ease; }
-.fade-swap.out { opacity: 0; transform: translate(var(--sx, 0px), 10px); filter: blur(7px); }
+.fade-swap { transition: opacity .65s cubic-bezier(.22,1,.36,1), transform .65s cubic-bezier(.22,1,.36,1),
+  filter .65s ease; }
+.fade-swap.out { opacity: 0; transform: translate(var(--sx, 0px), 12px) skewX(var(--sk, 0deg)); filter: blur(9px); }
 /* побуквенный каскад подписи аромата */
 .cl { display: inline-block; transition: opacity .36s ease, transform .45s cubic-bezier(.22,1,.36,1), filter .36s ease; }
 .cl.out-l.gone { opacity: 0; transform: translateY(-12px); filter: blur(4px); }

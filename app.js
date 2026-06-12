@@ -263,7 +263,15 @@
     const swapTexts = (next, dir) => {
       cascadeCaption(capEl, AROMAS[next].caption);
       if (dir > 0 && fluid) {
-        setTimeout(() => washDesc(descEl, AROMAS[next].desc), 480);   // поток геля дотёк до текста
+        // смыв запускает САМА вода: ждём, когда фронт листа из бреши дойдёт
+        // до описания (fluid.reach — sim-px от стенки), страховка по времени
+        const t0 = performance.now();
+        const watch = () => {
+          if (!fluid || fluid.reach > 30 || performance.now() - t0 > 1100) {
+            washDesc(descEl, AROMAS[next].desc);
+          } else requestAnimationFrame(watch);
+        };
+        requestAnimationFrame(watch);
       } else {
         swapDescDir(descEl, AROMAS[next].desc, dir);
       }

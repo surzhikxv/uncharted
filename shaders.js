@@ -264,30 +264,59 @@ void main(){
   vec2 D = F.xy + idle * ins + gh * (90. + 70. * uWash);
   vec2 src = px - D;
   vec2 tuv = vec2((src.x - uOffX) / uTexW, src.y / uSimRes.y);
-  // ватерлиния: уровень воды дышит полем ряби
-  float lvl = uLevel + F.z * 2.2;
+  // ватерлиния: уровень дышит полем ряби и капиллярно прилипает к стенкам
+  // (у кромки силуэта m→0.5 — линия подползает вверх)
+  float capil = 1. - smoothstep(.54, .9, m);
+  float lvl = uLevel + F.z * 2.2 - capil * 7.;
   float below = smoothstep(lvl - 2.5, lvl + 2.5, px.y);
-  // струя из бреши: лист воды от правой стенки. Верхняя кромка — парабола от
-  // ватерлинии (медленные верхние струи ныряют круто), нижняя стелется от дна;
-  // напор head задаёт пологость, uReach — как далеко успел дойти фронт
-  // верхняя кромка листа — огибающая всех струй: y = уровень + ξ (минимум
-  // y_exit + ξ²/4d по глубине d даёт диагональ); нижняя стелется от дна
-  float plume = 0.;
+  // ===== струя из бреши: у листа СВОЁ тело (за силуэтом текстуры нет) =====
+  // тёплая янтарная полупрозрачная вода: верхняя кромка — честная огибающая
+  // всех струй y = уровень + ξ, нити-струйки несутся по потоку, яркий мениск
+  // ведущей кромки, с фронта срываются капли
+  vec4 jet = vec4(0.);
   float xi = px.x - uVessel.z;
   if (uFlow > .004 && xi > -10.) {
-    float yT = lvl + xi * .85
+    // у стенки лист во всю открытую брешь (от ватерлинии до дна), верхняя
+    // кромка — диагональ вправо-вниз: треугольный каскад, утекающий за канвас
+    float yT = lvl + xi * .5
              + (uc_noise(vec2(px.x * .013, uTime * 1.9)) - .5) * 34.;
-    float yB = uVessel.y + 4. + xi * .1
-             + (uc_noise(vec2(px.x * .011 + 7., uTime * 1.4)) - .5) * 22.;
-    plume = smoothstep(yT - 10., yT + 10., px.y) * (1. - smoothstep(yB - 10., yB + 10., px.y));
-    plume *= (1. - smoothstep(uReach - 90., uReach + 50., xi)) * clamp(uFlow * 1.6, 0., 1.);
+    float yB = uVessel.y + 4. + xi * .1 + (uc_noise(vec2(px.x * .011 + 7., uTime * 1.4)) - .5) * 22.;
+    float front = 1. - smoothstep(uReach - 70., uReach + 30., xi);
+    float sheet = smoothstep(yT - 8., yT + 8., px.y) * (1. - smoothstep(yB - 12., yB + 12., px.y))
+                * front * clamp(uFlow * 1.6, 0., 1.);
+    // нити-струйки: два масштаба шума, унесённого по потоку
+    float s1 = uc_noise(vec2((px.x - uTime * 620.) * .021, px.y * .05));
+    float s2 = uc_noise(vec2((px.x - uTime * 950.) * .043, px.y * .11 + 4.2));
+    float str = .55 + .5 * s1 + .35 * (s2 - .5);
+    // тело плотнее у верхней кромки — лист виден с ребра
+    float topw = exp(-pow((px.y - yT) / 26., 2.));
+    float a = sheet * (.30 + .42 * topw) * str;
+    vec3 amber = vec3(.78, .45, .16) * (.95 + .4 * topw);
+    float menF = exp(-pow((xi - uReach) / 16., 2.)) * sheet;
+    float menT = exp(-pow((px.y - yT) / 3.2, 2.)) * front * clamp(uFlow * 1.5, 0., 1.)
+               * step(-2., xi);
+    vec3 jrgb = amber * a + vec3(1., .94, .82) * (menF * .65 + menT * .5);
+    float ja = a + menF * .5 + menT * .38;
+    // капли: срываются с ведущего угла листа и летят по параболам
+    for (int di = 0; di < 3; di++) {
+      float fi = float(di);
+      float ph = fract(uTime * (.9 + fi * .31) + fi * .41);
+      float dxp = uReach + 24. + ph * 110. + fi * 17.;
+      vec2 dp = vec2(uVessel.z + dxp, lvl + dxp * .5 + ph * ph * 170. - fi * 26.);
+      float dd = length(px - dp);
+      float dr = 6.5 - ph * 3.;
+      float da = exp(-dd * dd / (dr * dr)) * (1. - ph) * clamp(uFlow * 1.4, 0., 1.);
+      jrgb += (vec3(.9, .6, .3) + vec3(.6) * exp(-pow((dd - dr * .4) / 1.6, 2.))) * da;
+      ja += da * .85;
+    }
+    jet = vec4(jrgb, min(ja, .92));
   }
   // помпа — твёрдое тело: выше плеча сосуда ничего не течёт и не осушается
   float pumpM = ins * (1. - smoothstep(uVessel.x - 6., uVessel.x + 6., px.y));
-  // последние ~130px воды выцветают в плёнку (дно текстуры — тёмные «дрожжи»)
+  // последние ~200px воды выцветают в плёнку (дно текстуры — тёмные «дрожжи»)
   float dry = clamp((lvl - (uVessel.y - 200.)) / 200., 0., 1.);
-  // вода существует только в сосуде ниже уровня — и в струе за брешью
-  float liq = max(ins * below * (1. - dry * .85), plume * (1. - ins));
+  // вода в сосуде: единое тело ниже ватерлинии
+  float liq = ins * below * (1. - dry * .85);
   float dDx = (FR.x - FL.x) / (2. * cell.x);
   float dDy = (FD.y - FU.y) / (2. * cell.y);
   float area = abs((1. - dDx) * (1. - dDy));   // якобиан обратного отображения
@@ -319,23 +348,23 @@ void main(){
     // Френель: наклонённая вода ловит тёплое отражение страницы
     float fr = pow(min(1., length(gh) * 6.3), 3.);
     col.rgb *= 1. + .24 * ca;
-    col.rgb += (gl * 1.05 * vec3(1.0, .975, .94) + fr * .10 * vec3(.98, .955, .93)) * col.a;
+    col.rgb += (gl * 1.18 * vec3(1.0, .975, .94) + fr * .10 * vec3(.98, .955, .93)) * col.a;
   }
   // помпа: недеформированный кадр поверх (твёрдый колпачок, кроссфейд тот же)
   if (pumpM > .003) {
     vec4 solid = smpl(vec2((px.x - uOffX) / uTexW, px.y / uSimRes.y), uc_noise(vUv * vec2(6., 5.)), 0.);
     col = mix(col, solid, pumpM);
   }
-  // мениск по кромкам струи
-  float men = plume * (1. - plume) * 4. * (1. - ins);
-  col.rgb += men * men * .22 * vec3(1., .96, .9) * col.a;
-  // ватерлиния: блик на стыке вода/воздух (в покое спрятана за плечом, под
-  // помпой); считается только в полосе ±9px — дёшево
+  // струя поверх (вне силуэта col там пуст, над текстом — полупрозрачный янтарь)
+  jet *= (1. - ins) * (1. - pumpM);
+  col = col * (1. - jet.a) + jet;
+  // ватерлиния: чёткий яркий блик на стыке вода/воздух (в покое спрятана за
+  // плечом, под помпой); считается только в полосе ±10px — дёшево
   float dl = px.y - lvl;
-  if (abs(dl) < 9.) {
+  if (abs(dl) < 10.) {
     float wl = exp(-pow(dl / 2.4, 2.)) * ins * (1. - pumpM);
-    col.rgb += wl * .34 * vec3(1., .965, .9);
-    col.a   += wl * .22;
+    col.rgb += wl * .44 * vec3(1., .965, .9);
+    col.a   += wl * .26;
   }
   // стеклянные стенки: тончайший тёплый контур (пик альфы маски на склоне 0↔1),
   // отзывается свечением на удары волн; правая стенка ТАЕТ в брешь на время
@@ -346,13 +375,18 @@ void main(){
     float gap = uBreach * smoothstep(uVessel.z - 30., uVessel.z + 4., px.x)
               * smoothstep(uVessel.x + 26., uVessel.x + 70., px.y);
     wall *= (1. - gap) * (.6 + 1.5 * min(1., abs(F.z) * .3));
-    col.rgb += vec3(.86, .42, .27) * wall * .26;
-    col.a   += wall * .22;
+    col.rgb += vec3(.86, .42, .27) * wall * .33;
+    col.a   += wall * .3;
   }
-  // опустевший сосуд: едва заметное тёплое стекло вместо воды
+  // опустевшая часть — СТЕКЛО, не белая дыра: вертикальные блики у стенок
+  // (кромка толщины), мягкий вертикальный хайлайт по телу, едва заметный тон
   float air = ins * (1. - below) * (1. - pumpM);
-  col.rgb += vec3(.93, .82, .74) * air * .05;
-  col.a   += air * .055;
+  if (air > .003) {
+    float edgeBand = 1. - smoothstep(.5, .95, m);
+    float hl = exp(-pow((px.x - (uVessel.z - 330.)) / 42., 2.));
+    col.rgb += (vec3(.97, .93, .88) * (edgeBand * .07 + hl * .035) + vec3(.93, .84, .76) * .018) * air;
+    col.a   += air * (.035 + edgeBand * .07 + hl * .03);
+  }
   outC = col;
 }`;
 
@@ -572,7 +606,7 @@ class FluidBottle {
     if (this.mix >= 1) this.curIdx = this.nextIdx;     // прошлый переход дорисован
     this.nextIdx = nextIdx;
     this.dir = dir;
-    this.mix = 0; this.transT = 0;
+    this.mix = 0; this.transT = 0; this._snapped = false; this.reach = 0;
   }
   _frame(now){
     if (!this.ready || this.failed) return;
@@ -619,13 +653,20 @@ class FluidBottle {
         else if (tt < .86) { const q = 1 - tt / .86; lf = q * q; }
         else { const s = Math.min(1, (tt - .86) / .64); lf = s * s * (3 - 2 * s); }
         this.level = this.ves.bot - (this.ves.bot - full) * lf;
+        // сосуд пуст — мгновенно и невидимо распрямляем поле смещений:
+        // налив поднимет НОВУЮ воду ровным горизонтальным уровнем, без
+        // остаточного перекоса столба от слива
+        if (tt >= .86 && !this._snapped) {
+          this._snapped = true;
+          this.dx.fill(0); this.dy.fill(0); this.vx.fill(0); this.vy.fill(0);
+        }
         const drain = tt > 0 && tt < .86;
         this.flow = drain ? this.breach * Math.sqrt(Math.max(0, (this.ves.bot - this.level) / (this.ves.bot - this.ves.top))) : 0;
         if (T < .05) this.reach = 0;
         if (drain) this.reach = Math.min(1300, this.reach + (380 + 900 * this.flow) * dt);
-        // налив: рябь у поднимающейся ватерлинии
-        if (tt >= .86 && lf < .995 && Math.random() < .5)
-          this._splash(130 + Math.random() * 350, this.level + 8, 1.1, 1.7, true);
+        // налив: лёгкая рябь у поднимающейся ватерлинии
+        if (tt >= .86 && lf < .995 && Math.random() < .28)
+          this._splash(130 + Math.random() * 350, this.level + 8, .75, 1.6, true);
       } else {
         this.breach = 0; this.flow = 0; this.level = this.ves.top - 16;
       }
@@ -665,9 +706,9 @@ class FluidBottle {
             const p = T - Math.max(0, 525 - sx) / 525 * .16 - b * .06 - .03;
             if (p > -.3 && p < .6) {
               const g = Math.exp(-p * p / .02) * dt / .25;
-              const inV = this.ins && this.ins[k] ? .5 : 1;
+              const inV = this.ins && this.ins[k] ? .35 : 1;
               vx[k] += (300 + 2600 * Math.pow(depth, .8)) * (.85 + b * .3) * g * inV;
-              vy[k] += (1500 * (1 - depth) + 200) * g;
+              vy[k] += (1500 * (1 - depth) + 200) * g * inV;
             }
           } else {
             // назад: мягкий толчок влево, слои колышутся вразнобой
@@ -738,10 +779,10 @@ class FluidBottle {
       }
       vx[k] = (vx[k] - ks * dx[k] * dt) * damp;
       vy[k] = (vy[k] - ks * dy[k] * dt) * damp;
-      // неразрывность: внутри сосуда столб не эвакуируется (вода в сосуде
-      // остаётся водой, видимый уход массы — это падение уровня), снаружи
-      // поток уносится на всю длину струи
-      const lx = inV ? 230 : 1500, ly = inV ? 170 : 560;
+      // неразрывность: внутри сосуда пейзаж — ЕДИНОЕ тело (лёгкий снос к бреши,
+      // не эвакуация; видимый уход массы — это падение уровня), снаружи поток
+      // уносится на всю длину струи
+      const lx = inV ? 70 : 1500, ly = inV ? 50 : 560;
       dx[k] = Math.max(-lx, Math.min(lx, dx[k] + vx[k] * dt));
       dy[k] = Math.max(-ly, Math.min(ly, dy[k] + vy[k] * dt));
     }

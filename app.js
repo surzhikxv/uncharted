@@ -137,22 +137,31 @@
   const stage = document.querySelector('.bottle-stage');
   if (stage && capEl && descEl) {
     capEl.classList.add('fade-swap'); descEl.classList.add('fade-swap');
-    let idx = 0, busy = false, particles = null;
+    let idx = 0, busy = false, fluid = null;
     const fallbackImg = stage.querySelector('.bottle-fallback');
-    // флакон из частиц: пейзаж разбит на ~30к вязких «капель» (см. ParticleBottle)
-    if (window.ParticleBottle && !REDUCED && !MOBILE) {
-      const pCv = document.createElement('canvas');
-      pCv.className = 'particle-canvas';
-      document.querySelector('.page').appendChild(pCv);
-      const pb = new ParticleBottle(pCv);
-      if (pb.failed) { pCv.remove(); }
-      else pb.init(AROMAS.map(a => a.img), ok => {
+    // флакон — сплошная вязкая среда: фуллскрин-шейдер + CPU-поле скоростей (см. FluidBottle)
+    if (window.FluidBottle && !REDUCED && !MOBILE) {
+      const fCv = document.createElement('canvas');
+      fCv.className = 'fluid-canvas';
+      document.querySelector('.page').appendChild(fCv);
+      const fb = new FluidBottle(fCv);
+      if (fb.failed) { fCv.remove(); }
+      else fb.init(AROMAS.map(a => a.img), ok => {
         if (ok) {
-          particles = pb;
+          fb.curIdx = fb.nextIdx = idx;          // пока грузились текстуры, могли листать фоллбеком
+          fluid = fb;
           fallbackImg.style.visibility = 'hidden';
           stage.querySelector('.bottle-canvas').style.display = 'none';
-          if (location.search.indexOf('morphdbg') >= 0) window.__pb = pb;   // для покадровой QA-съёмки
-        } else pCv.remove();
+          // потеря GL-контекста (сброс GPU, долгие сессии) — возврат на фоллбек
+          fCv.addEventListener('webglcontextlost', e => {
+            e.preventDefault();
+            fluid = null;
+            fallbackImg.src = AROMAS[idx].img;
+            fallbackImg.style.visibility = '';
+            fb.destroy(); fCv.remove();
+          });
+          if (location.search.indexOf('morphdbg') >= 0) window.__fb = fb;   // для покадровой QA-съёмки
+        } else { fb.destroy(); fCv.remove(); }
       });
     }
     // автоплей: вперёд каждые 7с, пока секция на экране, вкладка активна и курсор не на карусели;
@@ -187,8 +196,8 @@
     };
     const swapTexts = (next, dir) => {
       cascadeCaption(capEl, AROMAS[next].caption);
-      if (dir > 0 && particles) {
-        setTimeout(() => washDesc(descEl, AROMAS[next].desc), 480);   // волна частиц долетела до текста
+      if (dir > 0 && fluid) {
+        setTimeout(() => washDesc(descEl, AROMAS[next].desc), 480);   // поток геля дотёк до текста
       } else {
         swapDescDir(descEl, AROMAS[next].desc, dir);
       }
@@ -201,8 +210,8 @@
       const release = () => { busy = false; arrows.forEach(a => a.disabled = false); };
       const next = (idx + dir + AROMAS.length) % AROMAS.length;
       swapTexts(next, dir);
-      if (particles) {
-        particles.transition(dir, next);
+      if (fluid) {
+        fluid.transition(dir, next);
         setTimeout(() => { idx = next; release(); }, 1900);
       } else if (REDUCED) {
         fallbackImg.src = AROMAS[next].img; idx = next; release();

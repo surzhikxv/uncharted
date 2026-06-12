@@ -193,119 +193,131 @@ void main(){
   outC = vec4(c, 1.);
 }`;
 
-// ===== Флакон из частиц (igloo-style, но «вода») =====
-// Пейзаж флакона разбит на ~30к чанков-точек. Каждая — чуть вязкая капля:
-// пружина к дому + сильное трение, реагирует на курсор (увлекается его скоростью),
-// при листании вперёд волной слева направо улетает на текст описания и смывает его,
-// затем стекает обратно домой уже с цветами нового аромата.
-const PB_VERT = `#version 300 es
-in vec2 aPos; in vec2 aUV; in float aSize; in vec2 aRnd;
-uniform vec2 uSimRes, uTexSize; uniform float uPx, uMix;
-out vec2 vUVc; out float vUVh, vMix, vSize;
+// ===== Флакон — сплошная вязкая среда (гель/мёд) =====
+// Никаких частиц: фуллскрин-шейдер деформирует фото полем смещений D(uv),
+// которое живёт на CPU-сетке ~80×70 как вязкая жидкость (инерция + диффузия
+// соседей + пружина к покою). Зазоры невозможны по построению: сэмплинг
+// uv - D(uv) непрерывен при любом гладком D. Курсор вмешивает скорость в поле
+// (тягучий след, как ложкой по мёду); листание вперёд — стаггер-импульс вправо:
+// изображение утекает на текст описания и вязко возвращается уже с новой
+// текстурой; назад — мягкое колыхание с кроссфейдом.
+const FB_VERT = `#version 300 es
+in vec2 aPos; out vec2 vUv;
+void main(){ vUv = aPos * .5 + .5; vUv.y = 1. - vUv.y; gl_Position = vec4(aPos, 0., 1.); }`;
+const FB_FRAG = `#version 300 es
+precision highp float; in vec2 vUv; out vec4 outC;
+uniform sampler2D uTexA, uTexB, uField;
+uniform vec2 uSimRes, uGrid; uniform float uMix, uTime, uOffX, uTexW;
+${GL_NOISE}
+// поле на сетке: бикубический B-сплайн через 4 аппаратных билинейных тапа —
+// C1-гладкий, без «накачки» градиента с частотой сетки (она давала муар-плетёнку)
+vec4 fld(vec2 uv){
+  vec2 p = clamp(uv, 0., 1.) * uGrid - .5;
+  vec2 i = floor(p), f = p - i;
+  vec2 f2 = f * f, f3 = f2 * f;
+  vec2 w0 = (-f3 + 3. * f2 - 3. * f + 1.) / 6.;
+  vec2 w1 = (3. * f3 - 6. * f2 + 4.) / 6.;
+  vec2 w2 = (-3. * f3 + 3. * f2 + 3. * f + 1.) / 6.;
+  vec2 w3 = f3 / 6.;
+  vec2 g0 = w0 + w1, g1 = w2 + w3;
+  vec2 t0 = (i + w1 / g0 - .5) / uGrid;
+  vec2 t1 = (i + w3 / g1 + 1.5) / uGrid;
+  return texture(uField, vec2(t0.x, t0.y)) * g0.x * g0.y
+       + texture(uField, vec2(t1.x, t0.y)) * g1.x * g0.y
+       + texture(uField, vec2(t0.x, t1.y)) * g0.x * g1.y
+       + texture(uField, vec2(t1.x, t1.y)) * g1.x * g1.y;
+}
+// стаггер кроссфейда — в ЭКРАННЫХ координатах: в зонах сжатия текстуры
+// шум не превращается в пиксельную «шахматку»
+vec4 smpl(vec2 tuv, float stag){
+  vec2 b = smoothstep(vec2(0.), vec2(.012, .025), tuv) * smoothstep(vec2(1.), vec2(.988, .975), tuv);
+  vec4 A = texture(uTexA, tuv), B = texture(uTexB, tuv);
+  float m = clamp((uMix - stag * .5) / .5, 0., 1.);
+  return mix(A, B, m * m * (3. - 2. * m)) * b.x * b.y;
+}
 void main(){
-  vec2 ndc = aPos / uSimRes * 2. - 1.;
-  gl_Position = vec4(ndc.x, -ndc.y, 0., 1.);
-  float m = clamp((uMix - aRnd.y * .35) / .65, 0., 1.);
-  vMix = m * m * (3. - 2. * m);
-  vUVc = aUV;                                  // центр чанка в uv текстуры
-  vUVh = (aSize * .5 + .45) / uTexSize.y;      // полуразмер с нахлёстом (текстура непрерывна — швов нет)
-  vSize = aSize;
-  gl_PointSize = (aSize + .9) * uPx;
-}`;
-const PB_FRAG = `#version 300 es
-precision highp float;
-in vec2 vUVc; in float vUVh, vMix, vSize;
-uniform sampler2D uTexA, uTexB; uniform vec2 uTexSize;
-out vec4 outC;
-void main(){
-  float aspect = uTexSize.y / uTexSize.x;
-  vec2 uv = vUVc + (gl_PointCoord - .5) * 2. * vUVh * vec2(aspect, 1.);
-  if (uv.x < 0. || uv.x > 1. || uv.y < 0. || uv.y > 1.) discard;
-  outC = mix(texture(uTexA, uv), texture(uTexB, uv), vMix);
+  vec4 F = fld(vUv);
+  vec2 px = vUv * uSimRes;
+  // едва заметное волнение покоя (~2px), аналитическое — всегда гладкое
+  vec2 idle = vec2(
+    sin(px.y * .006 - uTime * .8 + px.x * .003) + .5 * sin(px.y * .013 + uTime * .5),
+    cos(px.x * .005 - uTime * .55 + px.y * .004)) * vec2(1.25, .8);
+  vec2 D = F.xy + idle;
+  // капиллярная рябь в движении (~|D|): прямые смазанные кромки текстуры гнутся
+  // органическими язычками; в покое строго ноль
+  float act = min(1., length(F.xy) * .012);
+  D.y += (sin(px.x * .018 + uTime * 2.6) * 9. + sin(px.x * .047 - uTime * 3.7) * 4.) * act;
+  D.x += sin(px.y * .03 + uTime * 3.1) * 5. * act;
+  vec2 src = px - D;
+  vec2 tuv = vec2((src.x - uOffX) / uTexW, src.y / uSimRes.y);
+  vec4 col = smpl(tuv, uc_noise(vUv * vec2(6., 5.)));
+  // градиенты поля: «толщина» среды и глянец складок
+  vec2 e = 1. / uGrid;
+  float dDx = (fld(vUv + vec2(e.x, 0.)).x - fld(vUv - vec2(e.x, 0.)).x) / (2. * e.x * uSimRes.x);
+  float dDy = (fld(vUv + vec2(0., e.y)).y - fld(vUv - vec2(0., e.y)).y) / (2. * e.y * uSimRes.y);
+  float area = abs((1. - dDx) * (1. - dDy));   // якобиан обратного отображения
+  // растяжение (area<1) — плёнка тоньше и прозрачнее, сильно растянутая почти
+  // исчезает (резкие края текстуры не дают «глитч-штрихов»); сжатие — чуть темнее
+  float thin = clamp(pow(min(area, 1.), .7), .04, 1.);
+  col *= thin;
+  col.rgb *= 1. - .10 * clamp(area - 1., 0., 1.5) / 1.5;
+  // тёплый глянец на движущихся складках геля — едва заметный
+  float fold = clamp(abs(dDx) * 1.2 - .12, 0., 1.);
+  float speed = length(F.zw);
+  col.rgb += col.a * fold * min(speed * .0012, .22) * vec3(1.0, .975, .94) * .35;
+  outC = col;
 }`;
 
-class ParticleBottle {
+class FluidBottle {
   constructor(canvas, cfg){
     this.cv = canvas;
-    this.cfg = Object.assign({ texW: 442, texH: 1083, offX: 83, simW: 1250, simH: 1083 }, cfg);
+    this.cfg = Object.assign({ texW: 442, texH: 1083, offX: 83, simW: 1250, simH: 1083, gw: 104, gh: 90 }, cfg);
     const gl = this.gl = canvas.getContext('webgl2', { alpha: true, antialias: false, premultipliedAlpha: true });
     this.ready = false; this.failed = !gl;
     if (this.failed) return;
-    this.mix = 1; this.transT = 9e9;
+    this.mix = 1; this.transT = 9e9; this.dir = 1;
     this.cur = { x: -9e3, y: -9e3, vx: 0, vy: 0, t: 0 };
     this.visible = false;
     this.tex = [];
-    new IntersectionObserver(es => es.forEach(e => { this.visible = e.isIntersecting; }), { rootMargin: '60px' }).observe(canvas);
-    addEventListener('pointermove', e => this._onMove(e), { passive: true });
+    const n = this.cfg.gw * this.cfg.gh;
+    this.vx = new Float32Array(n); this.vy = new Float32Array(n);   // скорость среды, px/s
+    this.dx = new Float32Array(n); this.dy = new Float32Array(n);   // накопленное смещение, px
+    this.tmp = new Float32Array(n);
+    this.fieldBuf = new Float32Array(n * 4);
+    this._io = new IntersectionObserver(es => es.forEach(e => { this.visible = e.isIntersecting; }), { rootMargin: '60px' });
+    this._io.observe(canvas);
+    this._mv = e => this._onMove(e);
+    addEventListener('pointermove', this._mv, { passive: true });
   }
-  // квадродерево «склеек»: чанки 16/8/4px, чанк живёт если под ним есть непрозрачные пиксели
-  _buildChunks(alpha){
-    const c = this.cfg, W = c.texW, H = c.texH;
-    const has = (x0, y0, s) => {
-      for (let y = y0; y < y0 + s && y < H; y += 2) {
-        const row = y * W;
-        for (let x = x0; x < x0 + s && x < W; x += 2) if (alpha[(row + x) * 4 + 3] > 24) return true;
-      }
-      return false;
-    };
-    const out = [];
-    const put = (x0, y0, s) => out.push(x0 + s / 2, y0 + s / 2, s);
-    for (let y0 = 0; y0 < H; y0 += 16) for (let x0 = 0; x0 < W; x0 += 16) {
-      if (!has(x0, y0, 16)) continue;
-      if (Math.random() < .30) { put(x0, y0, 16); continue; }
-      for (let qy = 0; qy < 2; qy++) for (let qx = 0; qx < 2; qx++) {
-        const x8 = x0 + qx * 8, y8 = y0 + qy * 8;
-        if (!has(x8, y8, 8)) continue;
-        if (Math.random() < .55) { put(x8, y8, 8); continue; }
-        for (let ry = 0; ry < 2; ry++) for (let rx = 0; rx < 2; rx++) {
-          const x4 = x8 + rx * 4, y4 = y8 + ry * 4;
-          if (has(x4, y4, 4)) put(x4, y4, 4);
-        }
-      }
-    }
-    return out;
-  }
-  _initGL(chunks){
+  _initGL(){
     const gl = this.gl, c = this.cfg;
     const mk = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh);
       if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
     const p = this.prog = gl.createProgram();
-    gl.attachShader(p, mk(gl.VERTEX_SHADER, PB_VERT)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, PB_FRAG));
+    gl.attachShader(p, mk(gl.VERTEX_SHADER, FB_VERT)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, FB_FRAG));
     gl.linkProgram(p);
     if (!gl.getProgramParameter(p, gl.LINK_STATUS)) { this.failed = true; return; }
     gl.useProgram(p);
-    const N = this.N = chunks.length / 3;
-    this.pos = new Float32Array(N * 2); this.vel = new Float32Array(N * 2);
-    this.home = new Float32Array(N * 2); this.rnd = new Float32Array(N * 2);
-    this.im = new Float32Array(N);                      // «лёгкость»: мелкие чанки подвижнее
-    this.idel = new Float32Array(N); this.ivx = new Float32Array(N); this.ivy = new Float32Array(N);
-    const uv = new Float32Array(N * 2), size = new Float32Array(N);
-    for (let k = 0; k < N; k++) {
-      const cx = chunks[k*3], cy = chunks[k*3+1], s = chunks[k*3+2];
-      this.home[k*2] = this.pos[k*2] = c.offX + cx;
-      this.home[k*2+1] = this.pos[k*2+1] = cy;
-      uv[k*2] = cx / c.texW; uv[k*2+1] = cy / c.texH;
-      size[k] = s;
-      this.im[k] = Math.sqrt(4 / s);
-      this.rnd[k*2] = Math.random(); this.rnd[k*2+1] = Math.random();
-    }
     this.vao = gl.createVertexArray(); gl.bindVertexArray(this.vao);
-    const attr = (name, buf, n, dynamic) => {
-      const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
-      gl.bufferData(gl.ARRAY_BUFFER, buf, dynamic ? gl.DYNAMIC_DRAW : gl.STATIC_DRAW);
-      const loc = gl.getAttribLocation(p, name);
-      gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0);
-      return b;
-    };
-    this.bPos = attr('aPos', this.pos, 2, true);
-    attr('aUV', uv, 2, false);
-    attr('aSize', size, 1, false);
-    attr('aRnd', this.rnd, 2, false);
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(p, 'aPos');
+    gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    // поле смещений/скоростей: RGBA16F (xy=D px, zw=v px/s), LINEAR — бикубика в шейдере
+    this.fieldTex = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, this.fieldTex);
+    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA16F, c.gw, c.gh);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     const U = n => gl.getUniformLocation(p, n);
-    this.uSimRes = U('uSimRes'); this.uTexSize = U('uTexSize');
-    this.uPx = U('uPx'); this.uMixU = U('uMix');
-    this.uTexA = U('uTexA'); this.uTexB = U('uTexB');
-    gl.uniform2f(this.uTexSize, c.texW, c.texH);
+    gl.uniform2f(U('uSimRes'), c.simW, c.simH);
+    gl.uniform2f(U('uGrid'), c.gw, c.gh);
+    gl.uniform1f(U('uOffX'), c.offX);
+    gl.uniform1f(U('uTexW'), c.texW);
+    gl.uniform1i(U('uTexA'), 0); gl.uniform1i(U('uTexB'), 1); gl.uniform1i(U('uField'), 2);
+    this.uMixU = U('uMix'); this.uTimeU = U('uTime');
   }
   _loadTex(url, cb){
     const gl = this.gl;
@@ -317,20 +329,28 @@ class ParticleBottle {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      cb(t, img);
+      // мипмапы: при сильном сжатии картинки в потоке нет муара-алиасинга
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      cb(t);
     };
     img.onerror = () => cb(null);
     img.src = url;
   }
-  // загрузка ароматов: GL-текстуры + альфа-карта первого для раскладки чанков
+  destroy(){
+    removeEventListener('pointermove', this._mv);
+    this._io.disconnect();
+    this.ready = false; this.failed = true;
+    const gl = this.gl;
+    if (gl) { this.tex.forEach(t => t && gl.deleteTexture(t)); const e = gl.getExtension('WEBGL_lose_context'); if (e) e.loseContext(); }
+  }
   init(urls, cb){
-    const c = this.cfg;
-    let left = urls.length, bad = false, alphaDone = false;
-    const tryFinish = () => {
-      if (left > 0 || !alphaDone) return;
-      if (bad || this.failed || !this._alpha) { this.failed = true; cb && cb(false); return; }
-      try { this._initGL(this._buildChunks(this._alpha)); } catch (e) { this.failed = true; }
+    let left = urls.length, bad = false;
+    urls.forEach((url, ai) => this._loadTex(url, t => {
+      if (!t) bad = true; else this.tex[ai] = t;
+      if (--left > 0) return;
+      if (bad || this.failed) { this.failed = true; cb && cb(false); return; }
+      try { this._initGL(); } catch (e) { this.failed = true; }
       if (this.failed) { cb && cb(false); return; }
       this.curIdx = 0; this.nextIdx = 0;
       this.ready = true;
@@ -338,21 +358,6 @@ class ParticleBottle {
       const tick = now => { this._frame(now); requestAnimationFrame(tick); };
       requestAnimationFrame(tick);
       cb && cb(true);
-    };
-    urls.forEach((url, ai) => this._loadTex(url, (t, img) => {
-      if (!t) bad = true;
-      else {
-        this.tex[ai] = t;
-        if (ai === 0) {
-          const cnv = document.createElement('canvas'); cnv.width = c.texW; cnv.height = c.texH;
-          const ctx = cnv.getContext('2d', { willReadFrequently: true });
-          ctx.drawImage(img, 0, 0, c.texW, c.texH);
-          this._alpha = ctx.getImageData(0, 0, c.texW, c.texH).data;
-          alphaDone = true;
-        }
-      }
-      if (ai === 0 && !this._alpha) alphaDone = true;
-      left--; tryFinish();
     }));
   }
   _onMove(e){
@@ -361,34 +366,25 @@ class ParticleBottle {
     const x = (e.clientX - r.left) / r.width * this.cfg.simW;
     const y = (e.clientY - r.top) / r.height * this.cfg.simH;
     const now = performance.now();
-    const dt = Math.min(.1, (now - (this.cur.t || now)) / 1000) || .016;
+    const gap = now - (this.cur.t || 0);
+    // телепорт (первое событие или долгая пауза) — позиция без скорости, иначе сплат-взрыв
+    if (gap > 250 || this.cur.x < -8e3) {
+      this.cur.x = x; this.cur.y = y; this.cur.vx = 0; this.cur.vy = 0; this.cur.t = now;
+      return;
+    }
+    const dt = Math.min(.1, gap / 1000) || .016;
     const k = .45;                                   // сглаживание скорости курсора
-    this.cur.vx += ((x - (this.cur.x > -8e3 ? this.cur.x : x)) / dt - this.cur.vx) * k;
-    this.cur.vy += ((y - (this.cur.y > -8e3 ? this.cur.y : y)) / dt - this.cur.vy) * k;
+    this.cur.vx += ((x - this.cur.x) / dt - this.cur.vx) * k;
+    this.cur.vy += ((y - this.cur.y) / dt - this.cur.vy) * k;
     this.cur.x = x; this.cur.y = y; this.cur.t = now;
   }
-  // листание: волна импульсов + кроссфейд текстур (uMix со стаггером в вершиннике)
+  // листание: запускает таймлайн форсинга в _step (вперёд — унос вправо, назад — колыхание)
   transition(dir, nextIdx){
     if (!this.tex[nextIdx] || !this.ready) return;
     if (this.mix >= 1) this.curIdx = this.nextIdx;     // прошлый переход дорисован
     this.nextIdx = nextIdx;
+    this.dir = dir;
     this.mix = 0; this.transT = 0;
-    const c = this.cfg, N = this.N;
-    for (let k = 0; k < N; k++) {
-      const hx = this.home[k*2] - c.offX, hy = this.home[k*2+1];
-      const r0 = this.rnd[k*2], r1 = this.rnd[k*2+1], im = this.im[k];
-      if (dir > 0) {                                  // вперёд: когерентная волна слева направо на текст
-        this.idel[k] = (hx / c.texW) * .28 + r0 * .05;
-        this.ivx[k] = (2100 + Math.sin(hy * .017 + r0 * 2.) * 130 + r1 * 180) * (.55 + .45 * im);
-        // лёгкая воронка к строке описания (sim y ~840), без сжатия в полосы
-        const fy = (840 - hy) * (.18 + r0 * .08);
-        this.ivy[k] = (Math.max(-170, Math.min(170, fy)) + (r1 - .5) * 60) * (.55 + .45 * im);
-      } else {                                        // назад: мягкое колыхание влево, без полёта
-        this.idel[k] = ((c.texW - hx) / c.texW) * .14 + r0 * .05;
-        this.ivx[k] = -(170 + r1 * 90) * im;
-        this.ivy[k] = (r0 - .5) * 70 * im;
-      }
-    }
   }
   _frame(now){
     if (!this.ready || this.failed) return;
@@ -397,75 +393,126 @@ class ParticleBottle {
     let acc = Math.min(.1, Math.max(.001, (now - this._last) / 1000));
     this._last = now;
     while (acc > 1e-4) { const dt = Math.min(acc, .0167); this._step(dt, now); acc -= dt; }
-    this._render();
+    this._render(now);
+  }
+  // диффузия по соседям: вязкая связность среды (и гарантия гладкости поля)
+  _blur(a, t){
+    if (t <= 0) return;
+    const { gw, gh } = this.cfg, tmp = this.tmp;
+    for (let j = 0; j < gh; j++) {
+      const r = j * gw, ru = j > 0 ? r - gw : r, rd = j < gh - 1 ? r + gw : r;
+      for (let i = 0; i < gw; i++) {
+        const il = i > 0 ? i - 1 : i, ir = i < gw - 1 ? i + 1 : i;
+        const avg = (a[r + il] + a[r + ir] + a[ru + i] + a[rd + i]) * .25;
+        tmp[r + i] = a[r + i] + (avg - a[r + i]) * t;
+      }
+    }
+    a.set(tmp);
   }
   _step(dt, now){
     this.transT += dt;
-    this.mix = Math.min(1, Math.max(0, (this.transT - .55) / .95));
+    const fwd = this.dir > 0, T = this.transT;
+    // кроссфейд текстур — в максимуме смаза (вперёд) или коротко под колыхание (назад)
+    this.mix = Math.min(1, Math.max(0, fwd ? (T - .55) / .5 : (T - .3) / .42));
+    if (this.mix >= 1 && this.curIdx !== this.nextIdx) this.curIdx = this.nextIdx;
     // затухание скорости курсора, когда он не движется
     if (now - this.cur.t > 90) { this.cur.vx *= Math.pow(.8, dt * 60); this.cur.vy *= Math.pow(.8, dt * 60); }
-
-    if (this.mix >= 1 && this.curIdx !== this.nextIdx) this.curIdx = this.nextIdx;
-    const N = this.N, pos = this.pos, vel = this.vel, home = this.home, im = this.im;
-    const idel = this.idel, ivx = this.ivx, ivy = this.ivy;
-    const cx = this.cur.x, cy = this.cur.y;
-    const cvx = Math.max(-2600, Math.min(2600, this.cur.vx)), cvy = Math.max(-2600, Math.min(2600, this.cur.vy));
-    // фазовая жёсткость: в полёте пружина слабая (частицы парят),
-    // на возврате — жёстче, чтобы флакон собирался быстро и чётко
-    const rt = Math.min(1, Math.max(0, (this.transT - .9) / 1.));
+    const { gw, gh, simW, simH } = this.cfg;
+    const cw = simW / gw, ch = simH / gh;
+    const vx = this.vx, vy = this.vy, dx = this.dx, dy = this.dy;
+    // фазовая жёсткость: в полёте среда мягкая (течёт), на возврате собирается
+    const active = T < 3;
+    const rt = Math.min(1, Math.max(0, (T - .85) / .85));
     const ramp = rt * rt * (3 - 2 * rt);
-    const damp = Math.pow(.959 - .02 * ramp, dt * 60);
-    const spring = (1.6 + 3.2 * ramp) * dt;
-    const R = 95, R2 = R * R;
-    const tw = now * .001;
-    for (let k = 0; k < N; k++) {
-      const i2 = k * 2;
-      let x = pos[i2], y = pos[i2+1], vx = vel[i2], vy = vel[i2+1];
-      // волна импульсов листания
-      if (idel[k] > 0) {
-        idel[k] -= dt;
-        if (idel[k] <= 0) { vx += ivx[k]; vy += ivy[k]; }
+    const ks = active ? 2.2 + 15 * ramp : 11;
+    const damp = Math.exp(-(active ? 2.0 + 3.6 * ramp : 4.8) * dt);
+    // форсинг листания: когерентная волна импульсов (стаггер по x)
+    if (T < 1.1) {
+      for (let j = 0; j < gh; j++) {
+        const sy = (j + .5) * ch, r = j * gw;
+        for (let i = 0; i < gw; i++) {
+          const sx = (i + .5) * cw, k = r + i;
+          if (fwd) {
+            // вперёд: правому краю — больший разгон (среда тянется, как мёд с ложки);
+            // стаггер по строкам мал — строки идут связно, без «нарезки» горловины
+            const p = T - sx / simW * .26 - Math.sin(sy * .012 + 1.7) * .015 - .05;
+            if (p > -.3 && p < .45) {
+              const g = Math.exp(-p * p / .024) * dt / .27;
+              vx[k] += (500 + 2300 * Math.pow(sx / simW, 1.1)) * g;
+              // изгибающая волна по x: прямые кромки текстуры гнутся, а не тянутся линейкой
+              vy[k] += (Math.max(-90, Math.min(90, (840 - sy) * .18)) + Math.sin(sx * .0045 + T * 2.5) * 55) * g;
+            }
+          } else {
+            // назад: мягкий толчок влево без уноса
+            const p = T - (1 - sx / simW) * .13 - .04;
+            if (p > -.25 && p < .35) {
+              const g = Math.exp(-p * p / .016) * dt / .226;
+              vx[k] -= (320 + Math.sin(sy * .01 + sx * .005) * 80) * g;
+              vy[k] += Math.sin(sy * .013 + 2.2) * 60 * g;
+            }
+          }
+        }
       }
-      const imk = im[k];
-      // курсор: вязкое увлечение + расталкивание (мелкие склейки подвижнее)
-      const dx = x - cx, dy = y - cy;
-      const d2 = dx * dx + dy * dy;
-      if (d2 < R2) {
-        const d = Math.sqrt(d2) || 1;
-        const f = (1 - d / R) * imk;
-        vx += (cvx * 10 * dt + dx / d * 750 * dt) * f;
-        vy += (cvy * 10 * dt + dy / d * 750 * dt) * f;
-      }
-      // едва заметный wave: медленная бегущая волна по изображению
-      const hxk = home[i2], hyk = home[i2+1];
-      vx += Math.sin(hyk * .006 - tw * 1.05 + hxk * .003) * 11 * dt * imk;
-      vy += Math.cos(hxk * .005 - tw * .65 + hyk * .004) * 6 * dt * imk;
-      // вязкая пружина к дому
-      vx += (home[i2] - x) * spring;
-      vy += (home[i2+1] - y) * spring;
-      vx *= damp; vy *= damp;
-      x += vx * dt; y += vy * dt;
-      pos[i2] = x; pos[i2+1] = y; vel[i2] = vx; vel[i2+1] = vy;
     }
+    // курсор: вязкое вмешивание скорости в поле (медленный тягучий след);
+    // сила ~ скорости курсора — неподвижная «ложка» поле не держит
+    if (this.cur.x > -8e3) {
+      const cx = this.cur.x, cy = this.cur.y;
+      const cvx = Math.max(-2200, Math.min(2200, this.cur.vx)), cvy = Math.max(-2200, Math.min(2200, this.cur.vy));
+      const spd = Math.hypot(cvx, cvy);
+      const R = 170, drag = Math.min(1, 7 * dt) * Math.min(1, spd / 500);
+      const i0 = Math.max(0, Math.floor((cx - R) / cw)), i1 = Math.min(gw - 1, Math.ceil((cx + R) / cw));
+      const j0 = Math.max(0, Math.floor((cy - R) / ch)), j1 = Math.min(gh - 1, Math.ceil((cy + R) / ch));
+      for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+        const ddx = (i + .5) * cw - cx, ddy = (j + .5) * ch - cy;
+        const g = Math.exp(-3 * (ddx * ddx + ddy * ddy) / (R * R)) * drag;
+        const k = j * gw + i;
+        vx[k] += (cvx * .85 - vx[k]) * g;
+        vy[k] += (cvy * .85 - vy[k]) * g;
+      }
+    }
+    // вязкая диффузия скорости: соседи увлекаются — среда сплошная
+    const vt = Math.min(1, 12 * dt);
+    this._blur(vx, vt); this._blur(vy, vt);
+    // пружина к покою + затухание + интеграция смещения
+    const n = gw * gh;
+    for (let k = 0; k < n; k++) {
+      vx[k] = (vx[k] - ks * dx[k] * dt) * damp;
+      vy[k] = (vy[k] - ks * dy[k] * dt) * damp;
+      dx[k] = Math.max(-1500, Math.min(1500, dx[k] + vx[k] * dt));
+      dy[k] = Math.max(-400, Math.min(400, dy[k] + vy[k] * dt));
+    }
+    // диффузия смещения — поле всегда гладкое; в полёте сильнее:
+    // строки склеены, силуэт не режется на полосы и ступени
+    const dtf = Math.min(1, (active ? 6 : 2.5) * dt);
+    this._blur(dx, dtf); this._blur(dy, dtf);
   }
-  _render(){
-    const pos = this.pos, N = this.N;
+  _render(now){
     const gl = this.gl, rect = this.cv.getBoundingClientRect();
     const dpr = Math.min(devicePixelRatio || 1, 1.5);
     const w = Math.round(rect.width * dpr), h = Math.round(rect.height * dpr);
+    if (!w || !h) return;
     if (this.cv.width !== w || this.cv.height !== h) { this.cv.width = w; this.cv.height = h; }
+    const { gw, gh } = this.cfg, n = gw * gh, f = this.fieldBuf;
+    for (let k = 0; k < n; k++) {
+      f[k * 4] = this.dx[k]; f[k * 4 + 1] = this.dy[k];
+      f[k * 4 + 2] = this.vx[k]; f[k * 4 + 3] = this.vy[k];
+    }
     gl.viewport(0, 0, w, h);
     gl.useProgram(this.prog); gl.bindVertexArray(this.vao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.bPos); gl.bufferSubData(gl.ARRAY_BUFFER, 0, pos);
-    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    // _loadTex ставит PREMULTIPLY на контексте — для сырого поля обязателен сброс,
+    // иначе rgb (dx,dy,vx) умножается на «альфу» (vy)
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, this.fieldTex);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gw, gh, gl.RGBA, gl.FLOAT, f);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tex[this.curIdx]);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.tex[this.nextIdx]);
-    gl.uniform1i(this.uTexA, 0); gl.uniform1i(this.uTexB, 1);
-    gl.uniform2f(this.uSimRes, this.cfg.simW, this.cfg.simH);
-    gl.uniform1f(this.uPx, w / this.cfg.simW);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.uniform1f(this.uMixU, this.mix);
-    gl.drawArrays(gl.POINTS, 0, N);
+    gl.uniform1f(this.uTimeU, now / 1000);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 }
 
@@ -479,4 +526,4 @@ void main(){
   outC = vec4(vec3(.5 + g * .12 + warm), 1.);
 }`;
 
-window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG; window.MORPH_FRAG = MORPH_FRAG; window.GRAIN_FRAG = GRAIN_FRAG; window.FLOW_FRAG = FLOW_FRAG; window.ParticleBottle = ParticleBottle;
+window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG; window.MORPH_FRAG = MORPH_FRAG; window.GRAIN_FRAG = GRAIN_FRAG; window.FLOW_FRAG = FLOW_FRAG; window.FluidBottle = FluidBottle;

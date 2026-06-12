@@ -58,6 +58,72 @@
   modal.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
   addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
 
+  // --- карусель продуктов: горизонтальный скролл + стрелки + скроллбар + drag ---
+  const sc = document.querySelector('.showcase');
+  if (sc) {
+    const track = sc.querySelector('.sc-track');
+    const prev = sc.querySelector('.sc-arrow--prev');
+    const next = sc.querySelector('.sc-arrow--next');
+    const bar = sc.querySelector('.sc-bar');
+    const thumb = sc.querySelector('.sc-thumb');
+    const vis = () => (document.documentElement.clientWidth > 768 ? document.documentElement.clientWidth / 1920 : 1);
+    const step = () => {
+      const card = track.querySelector('.sc-card');
+      const w = card ? card.offsetWidth + 36 : track.clientWidth * 0.8;   // design-px (zoom не влияет на layout-метрики)
+      return Math.max(w, Math.floor(track.clientWidth / w) * w);
+    };
+    const update = () => {
+      const max = track.scrollWidth - track.clientWidth;
+      const x = track.scrollLeft;
+      prev.hidden = x <= 2;
+      next.hidden = x >= max - 2;
+      const ratio = track.clientWidth / track.scrollWidth;
+      thumb.style.width = Math.min(100, ratio * 100) + '%';
+      const room = bar.clientWidth - thumb.offsetWidth;
+      thumb.style.transform = 'translateX(' + (max > 0 ? (x / max) * room : 0) + 'px)';
+    };
+    prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: REDUCED ? 'auto' : 'smooth' }));
+    next.addEventListener('click', () => track.scrollBy({ left: step(), behavior: REDUCED ? 'auto' : 'smooth' }));
+    track.addEventListener('scroll', update, { passive: true });
+    addEventListener('resize', update);
+    // перетаскивание ползунка
+    thumb.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      const max = track.scrollWidth - track.clientWidth;
+      const barW = bar.getBoundingClientRect().width;        // экранные px (с учётом zoom)
+      const x0 = e.clientX, l0 = track.scrollLeft;
+      thumb.setPointerCapture(e.pointerId);
+      const mv = ev => { track.scrollLeft = l0 + ((ev.clientX - x0) / barW) * max; };
+      const up = () => { thumb.removeEventListener('pointermove', mv); thumb.removeEventListener('pointerup', up); };
+      thumb.addEventListener('pointermove', mv);
+      thumb.addEventListener('pointerup', up);
+    });
+    // клик по дорожке — прыжок
+    bar.addEventListener('pointerdown', e => {
+      if (e.target === thumb) return;
+      const r = bar.getBoundingClientRect();
+      const max = track.scrollWidth - track.clientWidth;
+      track.scrollTo({ left: ((e.clientX - r.left) / r.width) * max, behavior: REDUCED ? 'auto' : 'smooth' });
+    });
+    // drag мышью по карточкам
+    let pd = false, px0 = 0, pl0 = 0, moved = false;
+    track.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'mouse') return;
+      pd = true; px0 = e.clientX; pl0 = track.scrollLeft; moved = false; track.classList.add('dragging');
+    });
+    track.addEventListener('pointermove', e => {
+      if (!pd) return;
+      const dx = e.clientX - px0;
+      if (Math.abs(dx) > 3) moved = true;
+      track.scrollLeft = pl0 - dx / vis();
+    });
+    const endDrag = () => { if (pd) { pd = false; track.classList.remove('dragging'); } };
+    track.addEventListener('pointerup', endDrag);
+    track.addEventListener('pointerleave', endDrag);
+    track.addEventListener('click', e => { if (moved) { e.preventDefault(); e.stopPropagation(); } }, true);
+    update();
+  }
+
   // --- WebGL band ---
   if (!REDUCED && window.GLEngine && document.documentElement.clientWidth > 768) {
     try {
@@ -373,7 +439,7 @@
   if (!REDUCED) {
     document.body.classList.add('anim');
     requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.add('hero-in')));
-    const revealSel = ['.n617','.n618','.n619','.n692','.card','.geldiag','.creamdiag',
+    const revealSel = ['.n617','.n618','.n619','.n692','.showcase','.geldiag','.creamdiag',
       '.lbl','.n725','.n726','.n729','.n620','.n621','.n622','.n623','.n624','.n629',
       '.n631','.n632','.n633','.n634','.n635','.n636','.n637','.n638','.n639','.n657','.n658'];
     const els = document.querySelectorAll('.page ' + revealSel.join(', .page '));

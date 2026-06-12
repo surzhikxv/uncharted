@@ -157,13 +157,26 @@
     background: url('public/images/m/texture.webp') top center / 100% auto repeat-y;
     text-align: center;
   }
-  .m-teaser-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+  /* горизонтальный скролл всех продуктов */
+  .m-teaser-row {
+    display: flex;
     gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin: 0 -20px;
+    padding: 0 20px 14px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
-  .m-teaser-card { border-radius: 14px; overflow: hidden; }
-  .m-teaser-card img { width: 100%; height: auto; }
+  .m-teaser-row::-webkit-scrollbar { display: none; }
+  .m-teaser-card {
+    flex: 0 0 62%;
+    scroll-snap-align: start;
+    text-align: left;
+  }
+  .m-teaser-card img { width: 100%; height: auto; border-radius: 14px; display: block; }
+  .m-teaser-cap { display: block; margin-top: 12px; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: #313131; }
+  .m-teaser-cap small { display: block; margin-top: 4px; font-family: 'Geometria', sans-serif; font-weight: 300; font-size: 12.5px; text-transform: none; letter-spacing: .02em; color: #C35B3F; }
   .m-teaser-btn { margin-top: 30px; }
 
   /* ---------- свойства ---------- */

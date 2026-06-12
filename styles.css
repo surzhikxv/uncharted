@@ -90,11 +90,6 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* ============ 521:582 catalog texture bg ============ */
 .n582 { left: 0; top: 1810px; width: 1920px; height: 2499px; }
 
-.n583 { left: 101px;  top: 2519px; }
-.n585 { left: 567px;  top: 2519px; }
-.n587 { left: 1033px; top: 2519px; }
-.n589 { left: 1499px; top: 2519px; }
-
 /* ============ 521:591 hero bg — crop of scene-canyon-lake ============ */
 .n591 {
   left: 0; top: 0; width: 1920px; height: 1043px;
@@ -147,8 +142,8 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 .n619 { left: 49px; top: 1255px; transform: translateY(1px); width: 1101px;   font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
 
 /* aromas section texts */
-.n620 { left: 64px; top: 6124px; width: 530px;   font-size: 55px; line-height: 1; color: #C35B3F; }
-.n621 { left: 64px; top: 6192px; width: 502px; font-size: 24.6px;   line-height: 1.2; letter-spacing: 0.08em; }
+.n620 { left: 150px; top: 6124px; width: 530px;   font-size: 55px; line-height: 1; color: #C35B3F; }
+.n621 { left: 150px; top: 6192px; width: 502px; font-size: 24.6px;   line-height: 1.2; letter-spacing: 0.08em; }
 .n622 { left: 734px; top: 6584px; width: 440px;  font-size: 33px;   line-height: 1; text-align: center; color: #C35B3F; white-space: nowrap; }
 .n623 { left: 1190px; top: 5707px; width: 456px; font-size: 21px; line-height: 1.2; letter-spacing: 0.04em; }
 .n624 {
@@ -208,20 +203,21 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 .n657 { left: 128px; top: 8622px; width: 192px; font-size: 30px; line-height: 1; }
 .n658 { left: 660px; top: 8622px; width: 205px; font-size: 30px; line-height: 1; }
 .n659 { left: 128px; top: 8857.9px; width: 262.4px; font-size: 19.2px; line-height: 1.2; }
-.n660 { left: 660px; top: 8746px; width: 48px; height: 48px; }
-.n671 { left: 660px; top: 8682px; width: 48px; height: 48px; }
-.n680 { left: 660px; top: 8810px; width: 48px; height: 48px; }
-.n684 { left: 660px; top: 8874px; width: 48px; height: 48px; }
+/* порядок «ГДЕ КУПИТЬ»: Золотое яблоко, ЛЭТУАЛЬ, Ozon, Wildberries (top сверху вниз) */
+.n660 { left: 660px; top: 8682px; width: 48px; height: 48px; } /* Золотое яблоко */
+.n671 { left: 660px; top: 8874px; width: 48px; height: 48px; } /* Wildberries */
+.n680 { left: 660px; top: 8810px; width: 48px; height: 48px; } /* Ozon */
+.n684 { left: 660px; top: 8746px; width: 48px; height: 48px; } /* ЛЭТУАЛЬ */
 .shop { font-family: 'Geometria', sans-serif; font-weight: 400; font-size: 25.6px; line-height: 1; }
-.n667 { left: 724px; top: 8757.2px; width: 202px; }
-.n668 { left: 724px; top: 8821.2px; width: 66px; }
-.n669 { left: 724px; top: 8885px;   width: 120px; }
-.n670 { left: 724px; top: 8693.2px; width: 142px; }
+.n667 { left: 724px; top: 8693.2px; width: 202px; } /* Золотое яблоко */
+.n668 { left: 724px; top: 8821.2px; width: 66px; }  /* Ozon */
+.n669 { left: 724px; top: 8757.2px; width: 120px; } /* ЛЭТУАЛЬ */
+.n670 { left: 724px; top: 8885px;   width: 142px; } /* Wildberries */
 /* 521:675 copyright (Ossem unavailable — set in Geometria per approval) */
 .n675 { left: 1695px; top: 8885px; width: 216px; font-family: 'Geometria', sans-serif; font-weight: 400; font-size: 19.2px; line-height: 1.3; }
 .n676 { left: 1663px; top: 8888px; width: 19.2px; height: 19.2px; }
 .n679 { left: 1186px; top: 8885px; width: 379px; font-family: 'Geometria', sans-serif; font-weight: 400; font-size: 19.2px; line-height: 1.2; }
-.n687 { left: 667px; top: 8888px; width: 37px; height: 19px; }
+.n687 { left: 667px; top: 8760px; width: 37px; height: 19px; }
 
 /* 521:690 red rock */
 .n690 { left: 0; top: 5177px; width: 557px; height: 1102px; }
@@ -237,13 +233,66 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* 521:692 свойства гелей и кремов */
 .n692 { left: 251px; top: 2741px; width: 1417px; font-size: 90px; line-height: 1; color: #C35B3F; }
 
-/* catalog cards (baked from render, radius included) — тизеры-ссылки в каталог */
-.card { top: 1789px; width: 424px; height: 703px; }
-.card img { display: block; width: 100%; height: 100%; }
-.n693 { left: 49px; }
-.n694 { left: 515px; }
-.n695 { left: 981px; }
-.n696 { left: 1447px; }
+/* ============ Карусель продуктов (горизонтальный скролл) ============
+   Заменяет 4 статичные карточки-тизера. Фикс-px карточки → zoom масштабирует
+   корректно и в WebKit (в отличие от grid 1fr). */
+.showcase { position: absolute; left: 49px; top: 1789px; width: 1822px; height: 715px; }
+.sc-track {
+  display: flex;
+  gap: 36px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-bottom: 26px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+}
+.sc-track::-webkit-scrollbar { display: none; }
+.sc-track.dragging { cursor: grabbing; scroll-behavior: auto; scroll-snap-type: none; }
+.sc-card { flex: 0 0 404px; width: 404px; scroll-snap-align: start; display: flex; flex-direction: column; }
+.sc-photo {
+  display: block; width: 404px; height: 505px;
+  border-radius: 18px; overflow: hidden; background: #F1E5DC;
+  -webkit-mask-image: -webkit-radial-gradient(white, black); /* скругление при transform (Safari) */
+}
+.sc-photo img { width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 1.1s cubic-bezier(.22,1,.36,1); }
+.sc-card:hover .sc-photo img { transform: scale(1.045); }
+.sc-name { margin-top: 22px; font-size: 28px; line-height: 1.15; letter-spacing: .06em; text-transform: uppercase; color: #313131; }
+.sc-meta { margin-top: 8px; font-family: 'Geometria', sans-serif; font-weight: 300; font-size: 20px; color: #C35B3F; letter-spacing: .03em; }
+.sc-buy {
+  margin-top: 18px; align-self: flex-start; min-width: 196px; height: 60px; padding: 0 30px;
+  border: 0; border-radius: 8px; background: #C35B3F;
+  font-family: 'Tenor Sans', sans-serif; font-size: 26px; line-height: 1;
+  text-transform: uppercase; color: #fff; cursor: pointer;
+  transition: background .3s, letter-spacing .3s;
+}
+.sc-buy:hover { background: #A94A30; letter-spacing: .03em; }
+.sc-buy:focus-visible { outline: 2px solid #7c2d12; outline-offset: 2px; }
+/* стрелки */
+.sc-arrow {
+  position: absolute; top: 252px; width: 72px; height: 72px; margin-top: -36px;
+  border: 0; border-radius: 50%; background: rgba(250,245,241,.9);
+  box-shadow: 0 10px 30px rgba(120,60,30,.2); cursor: pointer; padding: 0; z-index: 3;
+  transition: opacity .35s, transform .3s, background .3s;
+}
+.sc-arrow::before {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 20px; height: 20px;
+  border-top: 2.5px solid #C35B3F; border-right: 2.5px solid #C35B3F;
+  transform: translate(-60%, -50%) rotate(45deg);
+}
+.sc-arrow--prev { left: -26px; }
+.sc-arrow--prev::before { transform: translate(-40%, -50%) rotate(-135deg); }
+.sc-arrow--next { right: -26px; }
+.sc-arrow:hover { background: #fff; transform: scale(1.06); }
+.sc-arrow[hidden] { display: block; opacity: 0; pointer-events: none; }
+.sc-arrow:focus-visible { outline: 2px solid #7c2d12; outline-offset: 3px; }
+/* скроллбар снизу */
+.sc-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; border-radius: 6px; background: rgba(195,91,63,.16); cursor: pointer; }
+.sc-thumb { position: absolute; left: 0; top: 0; height: 100%; min-width: 40px; border-radius: 6px; background: #C35B3F; }
+.sc-bar:hover .sc-thumb { background: #A94A30; }
 
 /* 521:697 gel pump photo (baked) */
 .n697 { left: 0; top: 2848px; width: 473px; height: 1553px; }

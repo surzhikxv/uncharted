@@ -23,12 +23,6 @@
   <!-- 521:582 catalog texture bg -->
   <img class="abs n582" src="public/images/521-582.webp" alt="" loading="lazy">
 
-  <!-- 521:583/585/587/589 КУПИТЬ buttons -->
-  <div class="btn n583" data-buy tabindex="0" role="button"><span>КУПИТЬ</span></div>
-  <div class="btn n585" data-buy tabindex="0" role="button"><span>КУПИТЬ</span></div>
-  <div class="btn n587" data-buy tabindex="0" role="button"><span>КУПИТЬ</span></div>
-  <div class="btn n589" data-buy tabindex="0" role="button"><span>КУПИТЬ</span></div>
-
   <!-- 521:591 hero bg -->
   <div class="abs n591"></div>
   <img class="abs hero-right" src="public/images/render/hero-right.webp" alt="">
@@ -127,9 +121,8 @@
   <a class="t shop n669" href="#" data-link="letu">ЛЭТУАЛЬ</a>
   <a class="t shop n670" href="#" data-link="wildberries">Wildberries</a>
   <img class="abs n671" src="public/images/icon-671.svg" alt="" loading="lazy">
-  <p class="t n675">2025 <span class="up">uncharted</span><br>All rights reserved</p>
+  <p class="t n675">2026 <span class="up">uncharted</span><br>All rights reserved</p>
   <img class="abs n676" src="public/images/521-677.png" alt="" loading="lazy">
-  <p class="t n679">ИП .......<br>г.Москва, улица Октябрьская, д.20, кв 6</p>
   <img class="abs n680" src="public/images/icon-680.svg" alt="" loading="lazy">
   <img class="abs n684" src="public/images/icon-684.svg" alt="" loading="lazy">
   <img class="abs n687" src="public/images/icon-687.svg" alt="" loading="lazy">
@@ -146,11 +139,86 @@
   <!-- 521:692 -->
   <h2 class="t up n692">свойства гелей и кремов</h2>
 
-  <!-- 521:693-696 catalog cards — тизеры, ведут в полный каталог -->
-  <a class="abs card n693" href="catalog.html" aria-label="Гель для душа KAMCHATKA VEIL — открыть каталог"><img src="public/images/render/card-693.webp" alt="" loading="lazy"></a>
-  <a class="abs card n694" href="catalog.html" aria-label="Гель для душа ISLAY SMOKE — открыть каталог"><img src="public/images/render/card-694.webp" alt="" loading="lazy"></a>
-  <a class="abs card n695" href="catalog.html" aria-label="Гель для душа MANGO BLISS — открыть каталог"><img src="public/images/render/card-695.webp" alt="" loading="lazy"></a>
-  <a class="abs card n696" href="catalog.html" aria-label="SPICY FRANGIPANI — открыть каталог"><img src="public/images/render/card-696.webp" alt="" loading="lazy"></a>
+  <!-- 521:693-696 → карусель всех продуктов (горизонтальный скролл) -->
+  <section class="showcase" aria-label="Продукты UNCHARTED">
+    <div class="sc-track">
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="KAMCHATKA VEIL — гель для душа, открыть каталог"><img src="public/images/catalog/gel-450-kamchatka-veil.webp" alt="Гель для душа UNCHARTED KAMCHATKA VEIL, 450 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Kamchatka Veil</p>
+        <p class="sc-meta">Гель для душа · 450 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="ISLAY SMOKE — гель для душа, открыть каталог"><img src="public/images/catalog/gel-450-islay-smoke.webp" alt="Гель для душа UNCHARTED ISLAY SMOKE, 450 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Islay Smoke</p>
+        <p class="sc-meta">Гель для душа · 450 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="MANGO BLISS — гель для душа, открыть каталог"><img src="public/images/catalog/gel-450-mango-bliss.webp" alt="Гель для душа UNCHARTED MANGO BLISS, 450 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Mango Bliss</p>
+        <p class="sc-meta">Гель для душа · 450 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="CITRUS VETIVER — крем для рук и тела, открыть каталог"><img src="public/images/catalog/cream-450-citrus-vetiver.webp" alt="Крем для рук и тела UNCHARTED CITRUS VETIVER, 450 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Citrus Vetiver</p>
+        <p class="sc-meta">Крем для рук и тела · 450 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="FROZEN BLACK PEPPER — крем для рук и тела, открыть каталог"><img src="public/images/catalog/cream-450-frozen-black-pepper.webp" alt="Крем для рук и тела UNCHARTED FROZEN BLACK PEPPER, 450 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Frozen Black Pepper</p>
+        <p class="sc-meta">Крем для рук и тела · 450 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="SPICY FRANGIPANI — крем для рук и тела, открыть каталог"><img src="public/images/catalog/cream-450-spicy-frangipani.webp" alt="Крем для рук и тела UNCHARTED SPICY FRANGIPANI, 450 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Spicy Frangipani</p>
+        <p class="sc-meta">Крем для рук и тела · 450 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="MANGO BLISS — крем для рук и тела, открыть каталог"><img src="public/images/catalog/cream-450-mango-bliss.webp" alt="Крем для рук и тела UNCHARTED MANGO BLISS, 450 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Mango Bliss</p>
+        <p class="sc-meta">Крем для рук и тела · 450 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="ISLAY SMOKE — крем для рук и тела, открыть каталог"><img src="public/images/catalog/cream-450-islay-smoke.webp" alt="Крем для рук и тела UNCHARTED ISLAY SMOKE, 450 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Islay Smoke</p>
+        <p class="sc-meta">Крем для рук и тела · 450 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="CITRUS VETIVER — крем для рук и тела 50 мл, открыть каталог"><img src="public/images/catalog/cream-50-citrus-vetiver.webp" alt="Крем для рук и тела UNCHARTED CITRUS VETIVER, 50 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Citrus Vetiver</p>
+        <p class="sc-meta">Крем для рук и тела · 50 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="MANGO BLISS — крем для рук и тела 50 мл, открыть каталог"><img src="public/images/catalog/cream-50-mango-bliss.webp" alt="Крем для рук и тела UNCHARTED MANGO BLISS, 50 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Mango Bliss</p>
+        <p class="sc-meta">Крем для рук и тела · 50 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="FROZEN BLACK PEPPER — крем для рук и тела 50 мл, открыть каталог"><img src="public/images/catalog/cream-50-frozen-black-pepper.webp" alt="Крем для рук и тела UNCHARTED FROZEN BLACK PEPPER, 50 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Frozen Black Pepper</p>
+        <p class="sc-meta">Крем для рук и тела · 50 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="sc-card">
+        <a class="sc-photo" href="catalog.html" aria-label="SPICY FRANGIPANI — крем для рук и тела 50 мл, открыть каталог"><img src="public/images/catalog/cream-50-spicy-frangipani.webp" alt="Крем для рук и тела UNCHARTED SPICY FRANGIPANI, 50 мл" loading="lazy" width="880" height="1100"></a>
+        <p class="sc-name">Spicy Frangipani</p>
+        <p class="sc-meta">Крем для рук и тела · 50 мл</p>
+        <button class="sc-buy" type="button" data-buy>купить</button>
+      </article>
+    </div>
+    <button class="sc-arrow sc-arrow--prev" type="button" aria-label="Прокрутить назад" hidden></button>
+    <button class="sc-arrow sc-arrow--next" type="button" aria-label="Прокрутить вперёд"></button>
+    <div class="sc-bar"><div class="sc-thumb"></div></div>
+  </section>
 
   <!-- 521:698 gradient blur -->
   <div class="abs n698"></div>
@@ -221,13 +289,21 @@
   <!-- ФОТОЛЕНТА -->
   <div class="m-band m-rv"><img src="public/images/m/canyon.webp" alt="" loading="lazy"></div>
 
-  <!-- КАТАЛОГ-ТИЗЕР -->
+  <!-- КАТАЛОГ-ТИЗЕР: горизонтальный скролл всех продуктов -->
   <section class="m-teaser">
-    <div class="m-teaser-grid">
-      <a class="m-teaser-card m-rv" href="catalog.html"><img src="public/images/m/card-1.webp" alt="Гель для душа KAMCHATKA VEIL — открыть каталог" loading="lazy"></a>
-      <a class="m-teaser-card m-rv" href="catalog.html"><img src="public/images/m/card-2.webp" alt="Гель для душа ISLAY SMOKE — открыть каталог" loading="lazy"></a>
-      <a class="m-teaser-card m-rv" href="catalog.html"><img src="public/images/m/card-3.webp" alt="Гель для душа MANGO BLISS — открыть каталог" loading="lazy"></a>
-      <a class="m-teaser-card m-rv" href="catalog.html"><img src="public/images/m/card-4.webp" alt="SPICY FRANGIPANI — открыть каталог" loading="lazy"></a>
+    <div class="m-teaser-row m-rv">
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/gel-450-kamchatka-veil.webp" alt="Гель для душа KAMCHATKA VEIL — открыть каталог" loading="lazy"><span class="m-teaser-cap">Kamchatka Veil<small>Гель для душа · 450 мл</small></span></a>
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/gel-450-islay-smoke.webp" alt="Гель для душа ISLAY SMOKE — открыть каталог" loading="lazy"><span class="m-teaser-cap">Islay Smoke<small>Гель для душа · 450 мл</small></span></a>
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/gel-450-mango-bliss.webp" alt="Гель для душа MANGO BLISS — открыть каталог" loading="lazy"><span class="m-teaser-cap">Mango Bliss<small>Гель для душа · 450 мл</small></span></a>
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-450-citrus-vetiver.webp" alt="Крем для рук и тела CITRUS VETIVER — открыть каталог" loading="lazy"><span class="m-teaser-cap">Citrus Vetiver<small>Крем для рук и тела · 450 мл</small></span></a>
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-450-frozen-black-pepper.webp" alt="Крем для рук и тела FROZEN BLACK PEPPER — открыть каталог" loading="lazy"><span class="m-teaser-cap">Frozen Black Pepper<small>Крем для рук и тела · 450 мл</small></span></a>
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-450-spicy-frangipani.webp" alt="Крем для рук и тела SPICY FRANGIPANI — открыть каталог" loading="lazy"><span class="m-teaser-cap">Spicy Frangipani<small>Крем для рук и тела · 450 мл</small></span></a>
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-450-mango-bliss.webp" alt="Крем для рук и тела MANGO BLISS — открыть каталог" loading="lazy"><span class="m-teaser-cap">Mango Bliss<small>Крем для рук и тела · 450 мл</small></span></a>
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-450-islay-smoke.webp" alt="Крем для рук и тела ISLAY SMOKE — открыть каталог" loading="lazy"><span class="m-teaser-cap">Islay Smoke<small>Крем для рук и тела · 450 мл</small></span></a>
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-50-citrus-vetiver.webp" alt="Крем для рук и тела CITRUS VETIVER 50 мл — открыть каталог" loading="lazy"><span class="m-teaser-cap">Citrus Vetiver<small>Крем для рук и тела · 50 мл</small></span></a>
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-50-mango-bliss.webp" alt="Крем для рук и тела MANGO BLISS 50 мл — открыть каталог" loading="lazy"><span class="m-teaser-cap">Mango Bliss<small>Крем для рук и тела · 50 мл</small></span></a>
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-50-frozen-black-pepper.webp" alt="Крем для рук и тела FROZEN BLACK PEPPER 50 мл — открыть каталог" loading="lazy"><span class="m-teaser-cap">Frozen Black Pepper<small>Крем для рук и тела · 50 мл</small></span></a>
+      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-50-spicy-frangipani.webp" alt="Крем для рук и тела SPICY FRANGIPANI 50 мл — открыть каталог" loading="lazy"><span class="m-teaser-cap">Spicy Frangipani<small>Крем для рук и тела · 50 мл</small></span></a>
     </div>
     <a class="m-btn m-teaser-btn m-rv" href="catalog.html">весь каталог</a>
   </section>
@@ -319,10 +395,10 @@
       </div>
       <div class="m-foot-group">
         <p class="m-foot-h">ГДЕ КУПИТЬ:</p>
-        <a class="m-foot-row m-geo" href="#" data-link="wildberries"><img src="public/images/icon-671.svg" alt="">Wildberries</a>
         <a class="m-foot-row m-geo" href="#" data-link="goldapple"><img src="public/images/icon-660.svg" alt="">Золотое яблоко</a>
-        <a class="m-foot-row m-geo" href="#" data-link="ozon"><img src="public/images/icon-680.svg" alt="">Ozon</a>
         <a class="m-foot-row m-geo" href="#" data-link="letu"><span class="m-letu"><img src="public/images/icon-684.svg" alt=""><img class="m-letu-glyph" src="public/images/icon-687.svg" alt=""></span>ЛЭТУАЛЬ</a>
+        <a class="m-foot-row m-geo" href="#" data-link="ozon"><img src="public/images/icon-680.svg" alt="">Ozon</a>
+        <a class="m-foot-row m-geo" href="#" data-link="wildberries"><img src="public/images/icon-671.svg" alt="">Wildberries</a>
       </div>
       <div class="m-foot-group">
         <p class="m-foot-h">Информация:</p>
@@ -335,8 +411,7 @@
       </div>
     </div>
     <div class="m-copy">
-      <p>2025 <span class="m-up">uncharted</span> · All rights reserved</p>
-      <p class="m-legal">ИП .......<br>г.Москва, улица Октябрьская, д.20, кв 6</p>
+      <p>2026 <span class="m-up">uncharted</span> · All rights reserved</p>
     </div>
   </footer>
 
@@ -347,10 +422,10 @@
   <div class="buy-card" role="dialog" aria-modal="true" aria-label="Где купить">
     <button class="buy-close" data-close aria-label="Закрыть">&#10005;</button>
     <p class="buy-title">ГДЕ КУПИТЬ</p>
-    <a class="buy-row" data-link="wildberries" href="#" target="_blank" rel="noopener"><img src="public/images/icon-671.svg" alt="">Wildberries</a>
     <a class="buy-row" data-link="goldapple" href="#" target="_blank" rel="noopener"><img src="public/images/icon-660.svg" alt="">Золотое яблоко</a>
+    <a class="buy-row" data-link="letu" href="#" target="_blank" rel="noopener"><span class="buy-letu"><img src="public/images/icon-684.svg" alt=""><img class="buy-letu-glyph" src="public/images/icon-687.svg" alt=""></span>ЛЭТУАЛЬ</a>
     <a class="buy-row" data-link="ozon" href="#" target="_blank" rel="noopener"><img src="public/images/icon-680.svg" alt="">Ozon</a>
-    <a class="buy-row" data-link="letu" href="#" target="_blank" rel="noopener"><img src="public/images/icon-684.svg" alt="">ЛЭТУАЛЬ</a>
+    <a class="buy-row" data-link="wildberries" href="#" target="_blank" rel="noopener"><img src="public/images/icon-671.svg" alt="">Wildberries</a>
   </div>
 </div>
 

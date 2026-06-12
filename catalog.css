@@ -192,18 +192,18 @@ body.anim .cat-card.rv-card:not(.in) { opacity: 0; transform: translateY(26px); 
 .cat-footer .n657 { top: 194px; }
 .cat-footer .n658 { top: 194px; }
 .cat-footer .n659 { top: 429.9px; }
-.cat-footer .n660 { top: 318px; }
-.cat-footer .n667 { top: 329.2px; }
-.cat-footer .n668 { top: 393.2px; }
-.cat-footer .n669 { top: 457px; }
-.cat-footer .n670 { top: 265.2px; }
-.cat-footer .n671 { top: 254px; }
+.cat-footer .n660 { top: 254px; }   /* Золотое яблоко */
+.cat-footer .n667 { top: 265.2px; } /* Золотое яблоко */
+.cat-footer .n668 { top: 393.2px; } /* Ozon */
+.cat-footer .n669 { top: 329.2px; } /* ЛЭТУАЛЬ */
+.cat-footer .n670 { top: 457px; }   /* Wildberries */
+.cat-footer .n671 { top: 446px; }   /* Wildberries */
 .cat-footer .n675 { top: 457px; }
 .cat-footer .n676 { top: 460px; }
 .cat-footer .n679 { top: 457px; }
-.cat-footer .n680 { top: 382px; }
-.cat-footer .n684 { top: 446px; }
-.cat-footer .n687 { top: 460px; }
+.cat-footer .n680 { top: 382px; }   /* Ozon */
+.cat-footer .n684 { top: 318px; }   /* ЛЭТУАЛЬ */
+.cat-footer .n687 { top: 332px; }   /* ЛЭТУАЛЬ */
 
 .cat-footer-m { display: none; }
 

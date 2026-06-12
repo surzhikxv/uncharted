@@ -7,6 +7,9 @@
 .buy-title { font-size: 26px; letter-spacing: .08em; color: #C35B3F; margin-bottom: 26px; }
 .buy-row { display: flex; align-items: center; gap: 16px; padding: 14px 10px; font-size: 21px; color: #313131; text-decoration: none; border-radius: 8px; transition: background .25s, transform .25s; }
 .buy-row img { width: 36px; height: 36px; }
+.buy-letu { position: relative; display: inline-flex; width: 36px; height: 36px; flex-shrink: 0; }
+.buy-letu img { width: 36px; height: 36px; }
+.buy-letu-glyph { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 23px !important; height: 12px !important; }
 .buy-row:hover { background: #F1E5DC; transform: translateX(4px); }
 .buy-close { position: absolute; top: 14px; right: 16px; border: 0; background: none; font-size: 20px; color: #8a7a6e; cursor: pointer; padding: 8px; transition: color .2s; }
 .buy-close:hover { color: #C35B3F; }
@@ -65,9 +68,6 @@ body.anim.hero-in .n594 { opacity: 1; transform: none; }
 body.anim.hero-in .nav-link { opacity: 1; transform: none; transition-delay: .15s; }
 body.anim.hero-in .n609 { opacity: 1; transform: none; transition-delay: .3s; }
 body.anim.hero-in .n610 { opacity: 1; transform: none; transition-delay: .45s; }
-/* ===== Hover карточек ===== */
-.card { transition: transform .5s cubic-bezier(.22,1,.36,1), filter .5s; }
-.card:hover { transform: translateY(-6px); filter: drop-shadow(0 18px 28px rgba(120,60,30,.18)); }
 /* ===== Hover статики ===== */
 .btn { transition: background .3s, letter-spacing .3s; }
 .btn:hover { background: #A94A30; }

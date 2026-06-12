@@ -428,8 +428,8 @@ class FluidBottle {
   _step(dt, now){
     this.transT += dt;
     const fwd = this.dir > 0, T = this.transT;
-    // кроссфейд текстур — в максимуме смаза (вперёд) или коротко под колыхание (назад)
-    this.mix = Math.min(1, Math.max(0, fwd ? (T - .55) / .5 : (T - .3) / .42));
+    // кроссфейд текстур — в максимуме слива (вперёд) или коротко под колыхание (назад)
+    this.mix = Math.min(1, Math.max(0, fwd ? (T - .45) / .45 : (T - .3) / .42));
     // огибающая большой волны: утончение плёнки разрешено только здесь
     this.wash = Math.min(1, Math.sin(Math.min(T / (fwd ? 1.75 : 1.1), 1) * Math.PI) * 1.5) * (fwd ? 1 : .45);
     if (this.mix >= 1 && this.curIdx !== this.nextIdx) this.curIdx = this.nextIdx;
@@ -454,13 +454,13 @@ class FluidBottle {
         for (let i = 0; i < gw; i++) {
           const sx = (i + .5) * cw, k = r + i;
           if (fwd) {
-            // вперёд: правому краю — больший разгон, каждый слой стартует со своей задержкой
-            const p = T - sx / simW * .24 - b * .16 - .05;
-            if (p > -.3 && p < .45) {
-              const g = Math.exp(-p * p / .024) * dt / .27;
-              vx[k] += (500 + 2300 * Math.pow(sx / simW, 1.1)) * (0.75 + b * .5) * g;
-              // лёгкая воронка к строке текста + изгиб кромок
-              vy[k] += (Math.max(-60, Math.min(60, (840 - sy) * .12)) + Math.sin(sx * .0045 + T * 2.5) * 35) * g;
+            // «стенка справа пропала»: слои у правого края уходят первыми,
+            // вглубь — каскадом; вытекшая вода дальше падает гравитацией (ниже)
+            const p = T - Math.max(0, 525 - sx) / 525 * .2 - b * .08 - .04;
+            if (p > -.3 && p < .5) {
+              const g = Math.exp(-p * p / .02) * dt / .25;
+              vx[k] += (2200 + 1600 * Math.pow(sx / simW, 1.1)) * (.8 + b * .4) * g;
+              vy[k] += Math.sin(sx * .0045 + T * 2.5) * 30 * g;
             }
           } else {
             // назад: мягкий толчок влево, слои колышутся вразнобой
@@ -497,13 +497,22 @@ class FluidBottle {
     // в большой волне связь слоёв сильнее — масса уходит единым потоком
     this._blur(vx, Math.min(1, 14 * dt), Math.min(1, (active ? 9 : 3) * dt));
     this._blur(vy, Math.min(1, 10 * dt), Math.min(1, 5 * dt));
-    // пружина к покою + затухание + интеграция смещения
+    // пружина к покою + затухание + интеграция смещения;
+    // гравитация: вытекшее за стенку (dx>60) падает к строке текста, смывая её
+    const grav = fwd && active && T < 1.5;
     const n = gw * gh;
     for (let k = 0; k < n; k++) {
+      if (grav && dx[k] > 60) {
+        const out = Math.min(1, (dx[k] - 60) / 240);
+        const sy = (((k / gw) | 0) + .5) * ch;
+        const fall = Math.max(0, Math.min(1, (920 - sy) / 450));
+        vy[k] += 1700 * dt * out * fall;       // падение к строке текста
+        vx[k] += 1000 * dt * out;              // и поток продолжает уносить вправо
+      }
       vx[k] = (vx[k] - ks * dx[k] * dt) * damp;
       vy[k] = (vy[k] - ks * dy[k] * dt) * damp;
       dx[k] = Math.max(-1500, Math.min(1500, dx[k] + vx[k] * dt));
-      dy[k] = Math.max(-150, Math.min(150, dy[k] + vy[k] * dt));
+      dy[k] = Math.max(-560, Math.min(560, dy[k] + vy[k] * dt));
     }
     // диффузия смещения: по x держит слой гладким, по y — лишь слегка
     // склеивает слои (в полёте сильнее, чтобы силуэт не резался на полосы)

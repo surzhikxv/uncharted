@@ -147,29 +147,29 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 .n619 { left: 49px; top: 1255px; transform: translateY(1px); width: 1101px;   font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
 
 /* aromas section texts */
-.n620 { left: 64px; top: 6267px; width: 647px;   font-size: 67.2px; line-height: 1; color: #C35B3F; }
-.n621 { left: 64px; top: 6349px; width: 612.8px; font-size: 30px;   line-height: 1.2; letter-spacing: 0.08em; }
-.n622 { left: 784px; top: 6828px; width: 338px;  font-size: 40px;   line-height: 1; text-align: center; color: #C35B3F; }
-.n623 { left: 1242px; top: 5758px; width: 556px; font-size: 25.6px; line-height: 1.2; letter-spacing: 0.04em; }
+.n620 { left: 64px; top: 6124px; width: 530px;   font-size: 55px; line-height: 1; color: #C35B3F; }
+.n621 { left: 64px; top: 6192px; width: 502px; font-size: 24.6px;   line-height: 1.2; letter-spacing: 0.08em; }
+.n622 { left: 734px; top: 6584px; width: 440px;  font-size: 33px;   line-height: 1; text-align: center; color: #C35B3F; white-space: nowrap; }
+.n623 { left: 1190px; top: 5707px; width: 456px; font-size: 21px; line-height: 1.2; letter-spacing: 0.04em; }
 .n624 {
-  left: 1237px; top: 6402px; width: 604.8px;
+  left: 1186px; top: 6235px; width: 496px;
   font-family: 'Geometria', sans-serif; font-weight: 300;
-  font-size: 30px; line-height: 34px; letter-spacing: 3px;
+  font-size: 24.6px; line-height: 28px; letter-spacing: 2.5px;
 }
-.n624 .ts4 { font-family: 'Tenor Sans', sans-serif; font-size: 40px; line-height: 48px; letter-spacing: 4.06px; color: #C35B3F; }
-.n624 .ts5 { font-family: 'Tenor Sans', sans-serif; font-size: 40px; line-height: 48px; letter-spacing: 0.1em; color: #C35B3F; }
+.n624 .ts4 { font-family: 'Tenor Sans', sans-serif; font-size: 33px; line-height: 39px; letter-spacing: 3.3px; color: #C35B3F; }
+.n624 .ts5 { font-family: 'Tenor Sans', sans-serif; font-size: 33px; line-height: 39px; letter-spacing: 0.1em; color: #C35B3F; }
 .n624 .ts6 { font-family: 'Tenor Sans', sans-serif; }
 .n624 .ts7 { font-family: 'Tenor Sans', sans-serif; }
 
 
 /* 521:625 mask group (bottle-shaped photo, baked from render) */
-.n625 { left: 733px; top: 5701px; width: 442px; height: 1083px; }
+.n625 { left: 773px; top: 5660px; width: 362px; height: 888px; }
 
 /* 521:628 dot */
-.n628 { left: 1232px; top: 6438.6px; width: 10px; height: 10px; border-radius: 50%; background: #FFF9BC; }
+.n628 { left: 1182px; top: 6265px; width: 8px; height: 8px; border-radius: 50%; background: #FFF9BC; }
 
 /* 521:629 АРОМАТЫ */
-.n629 { left: 524px; top: 5474px; width: 838px; font-size: 150px; line-height: 1; color: #C35B3F; }
+.n629 { left: 601px; top: 5474px; width: 687px; font-size: 123px; line-height: 1; color: #C35B3F; }
 
 /* 521:630 giant uncharted */
 .n630 {

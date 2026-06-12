@@ -15,7 +15,7 @@ body.modal-open { overflow: hidden; }
 .bottle-stage .bottle-fallback, .bottle-stage .bottle-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .car-arrow { position: absolute; top: 50%; width: 56px; height: 56px; margin-top: -28px; border: 0; background: none; cursor: pointer; padding: 0; }
 .car-arrow[disabled] { opacity: .4; pointer-events: none; }
-.car-prev { left: -84px; } .car-next { right: -84px; }
+.car-prev { left: -69px; } .car-next { right: -69px; }
 .car-arrow::before { content: ''; position: absolute; left: 50%; top: 50%; width: 22px; height: 22px;
   border-top: 2px solid #C35B3F; border-right: 2px solid #C35B3F; transform: translate(-50%, -50%) rotate(45deg); transition: transform .3s, border-color .3s; }
 .car-prev::before { transform: translate(-50%, -50%) rotate(-135deg); }
@@ -25,8 +25,9 @@ body.modal-open { overflow: hidden; }
 .fade-swap { transition: opacity .65s cubic-bezier(.22,1,.36,1), transform .65s cubic-bezier(.22,1,.36,1),
   filter .65s ease; }
 .fade-swap.out { opacity: 0; transform: translate(var(--sx, 0px), 12px) skewX(var(--sk, 0deg)); filter: blur(9px); }
-/* канвас вязкой среды: флакон + полётное поле направо через описание аромата */
-.fluid-canvas { position: absolute; left: 650px; top: 5701px; width: 1250px; height: 1083px; pointer-events: none; }
+/* канвас вязкой среды: флакон + полётное поле направо через описание аромата
+   (CSS-габариты = sim 1250×1083 × 0.82 — блок ужат под один экран) */
+.fluid-canvas { position: absolute; left: 705px; top: 5660px; width: 1025px; height: 888px; pointer-events: none; }
 /* смыв описания потоком капель (только листание вперёд) */
 .n624.washing {
   -webkit-mask-image: linear-gradient(97deg, transparent 38%, #000 58%);

@@ -23,10 +23,8 @@
   <!-- 521:582 catalog texture bg -->
   <img class="abs n582" src="public/images/521-582.webp" alt="" loading="lazy">
 
-  <!-- 521:591 hero bg -->
+  <!-- hero bg — фото модели с флаконом (Figma 825:21) -->
   <div class="abs n591"></div>
-  <img class="abs hero-right" src="public/images/render/hero-right.webp" alt="">
-  <img class="abs hero-streak" src="public/images/render/hero-streak.webp" alt="">
   <canvas class="abs hero-grain" data-shader="grain"></canvas>
 
   <!-- 521:592 aromas bg -->
@@ -61,6 +59,9 @@
   <a class="t up nav-link n614" href="#" data-scroll="7069">о бренде</a>
   <a class="t up nav-link n615" href="catalog.html">каталог</a>
   <a class="t up nav-link n616" href="#" data-scroll="8428">контакты</a>
+
+  <!-- декоративный фон интро: туманные пейзажи + лайн-арт эскизы (Figma 825:20) -->
+  <img class="abs intro-bg" src="public/images/render/intro-bg.webp" alt="" loading="lazy">
 
   <!-- 521:617-619 intro -->
   <p class="t n617">В ритме города так легко забыть о себе...</p>
@@ -129,12 +130,6 @@
 
   <!-- 521:690 red rock -->
   <img class="abs n690" src="public/images/render/rock-690.webp" alt="" loading="lazy">
-
-  <!-- 521:691 rock slab — replaced by WebGL photo band -->
-  <div class="abs photoband-wrap">
-    <img class="abs photoband-fallback" src="public/images/adj/521-607-adj.webp" alt="" loading="lazy">
-    <canvas class="photoband" data-shader="band"></canvas>
-  </div>
 
   <!-- 521:692 -->
   <h2 class="t up n692">свойства гелей и кремов</h2>
@@ -232,29 +227,28 @@
   <!-- 521:731 planet -->
   <img class="abs n731" src="public/images/render/planet-731.webp" alt="" loading="lazy">
 
-  <!-- gel/cream diagrams -->
-  <p class="t lbl n699">быстро впитывается, <br>не оставляя липкости</p>
-  <p class="t lbl n700">устраняет сухость и раздражение</p>
+  <!-- gel/cream diagrams — подписи точь-в-точь по макету (Figma) -->
   <img class="abs geldiag" src="public/images/render/geldiag.webp" alt="" loading="lazy">
   <img class="abs creamdiag" src="public/images/render/creamdiag.webp" alt="" loading="lazy">
-  <p class="t lbl n703">обновляет липидный слой кожи</p>
-  <p class="t lbl n705">стойкий аромат на теле</p>
-  <p class="t lbl n706">питает, увлажняет и заживляет кожу</p>
-  <p class="t lbl geo n721">большой объем</p>
-  <p class="t lbl geo n722">насыщенный<br>многогранный<br>аромат</p>
-  <p class="t lbl geo n723">не сушит кожу</p>
-  <p class="t lbl geo n724">густая текстура</p>
+  <!-- КРЕМ (белый мазок) -->
+  <p class="t lbl n705">Стойкий аромат<br>на теле</p>
+  <p class="t lbl n706">Питает, увлажняет<br>и заживляет кожу</p>
+  <p class="t lbl n700">Содержит масла ши,<br>кокоса, арганы и<br>органическое масло<br>черной оливы</p>
+  <p class="t lbl n730">Витамин Е, мочевина<br>и экстракт ванили<br>в составе</p>
+  <p class="t lbl n703">Быстро впитывается,<br>не оставляет липкости<br>и жирных следов</p>
+  <p class="t lbl n699">Устраняет сухость<br>и раздражение</p>
+  <!-- ГЕЛЬ (капля) -->
+  <p class="t lbl geo n721">Большой объем</p>
+  <p class="t lbl geo n722">Насыщенный<br>многогранный<br>аромат</p>
+  <p class="t lbl geo n723">Не сушит кожу</p>
+  <p class="t lbl geo n728">Содержит сок алоэ<br>вера, глицерин,<br>пантенол, бетаин<br>и кокосовое масло</p>
+  <p class="t lbl geo n727">хорошо пенится,<br>густая текстура</p>
+  <p class="t lbl geo n724">для мужчин<br>и женщин</p>
   <p class="t up n725">гель для душа</p>
   <p class="t up n726">крем для рук и тела</p>
-  <p class="t lbl geo n727">хорошо пенится</p>
-  <p class="t lbl geo n728">натуральные компоненты</p>
 
   <!-- 521:729 quote -->
   <p class="t n729">когда вода смывает дневную суету, <span class="ts10">остаются только вы и место,</span><br><span class="ts11">где шум города растворяется </span><br><span class="ts11">в звуках природы</span></p>
-
-  <!-- 521:730 -->
-  <p class="t lbl n730">натуральные компоненты</p>
-
 
 </div>
 
@@ -272,7 +266,7 @@
 
   <!-- ХИРО: текст поверх пейзажа, как на десктопе -->
   <section class="m-hero">
-    <img class="m-hero-bg" src="public/images/m/hero.webp" alt="">
+    <img class="m-hero-bg" src="public/images/m/hero-woman.webp" alt="">
     <div class="m-hero-inner">
       <p class="m-hero-text">Парфюмированная уходовая косметика для&nbsp;тех, кто открывает новые горизонты через&nbsp;ароматы, уход и&nbsp;воображение</p>
       <a class="m-btn" href="catalog.html">каталог</a>
@@ -315,24 +309,24 @@
       <img class="m-diag-img" src="public/images/m/geldiag.webp" alt="Капля крема для рук и тела" loading="lazy">
       <p class="m-diag-name">крем для рук и тела</p>
       <ul class="m-diag-list">
-        <li>стойкий аромат на теле</li>
-        <li>натуральные компоненты</li>
-        <li>устраняет сухость и раздражение</li>
-        <li>обновляет липидный слой кожи</li>
-        <li>питает, увлажняет и заживляет кожу</li>
-        <li>быстро впитывается, не оставляя липкости</li>
+        <li>Стойкий аромат на теле</li>
+        <li>Питает, увлажняет и заживляет кожу</li>
+        <li>Содержит масла ши, кокоса, арганы и органическое масло черной оливы</li>
+        <li>Витамин Е, мочевина и экстракт ванили в составе</li>
+        <li>Быстро впитывается, не оставляет липкости и жирных следов</li>
+        <li>Устраняет сухость и раздражение</li>
       </ul>
     </div>
     <div class="m-diag m-rv">
       <img class="m-diag-img" src="public/images/m/creamdiag.webp" alt="Капля геля для душа" loading="lazy">
       <p class="m-diag-name">гель для душа</p>
       <ul class="m-diag-list m-diag-list--geo">
-        <li>большой объем</li>
-        <li>натуральные компоненты</li>
-        <li>насыщенный многогранный аромат</li>
-        <li>хорошо пенится</li>
-        <li>не сушит кожу</li>
-        <li>густая текстура</li>
+        <li>Большой объем</li>
+        <li>Насыщенный многогранный аромат</li>
+        <li>Не сушит кожу</li>
+        <li>Содержит сок алоэ вера, глицерин, пантенол, бетаин и кокосовое масло</li>
+        <li>хорошо пенится, густая текстура</li>
+        <li>для мужчин и женщин</li>
       </ul>
     </div>
   </section>

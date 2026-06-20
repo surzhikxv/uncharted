@@ -90,12 +90,12 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* ============ 521:582 catalog texture bg ============ */
 .n582 { left: 0; top: 1810px; width: 1920px; height: 2499px; }
 
-/* ============ 521:591 hero bg — crop of scene-canyon-lake ============ */
+/* ============ hero bg — фото модели с флаконом (Figma 825:21) ============ */
 .n591 {
   left: 0; top: 0; width: 1920px; height: 1043px;
-  background-image: url('public/images/adj/scene-canyon-lake-adj.webp');
-  background-size: 2115.55px 1190.63px;
-  background-position: -71.23px -166.2px;
+  background-image: url('public/images/render/hero-woman.webp');
+  background-size: cover;
+  background-position: 50% 16%;
 }
 
 /* 521:592 aromas bg */
@@ -136,10 +136,11 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 .nav-link { font-size: 28.8px; line-height: 1; }
 
 /* intro texts */
-.n617 { left: 49px; top: 909px;  width: 880px;    font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
-.n618 { left: 49px; top: 1060px; transform: translateY(1px); width: 886.4px;  font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
+/* интро-тексты перемещены ПОД карусель (карусель поднята под hero) */
+.n617 { left: 49px; top: 1880px; width: 880px;    font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
+.n618 { left: 49px; top: 2031px; transform: translateY(1px); width: 886.4px;  font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
 .n618 .brand { color: #B23D0F; }
-.n619 { left: 49px; top: 1255px; transform: translateY(1px); width: 1101px;   font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
+.n619 { left: 49px; top: 2226px; transform: translateY(1px); width: 1101px;   font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
 
 /* aromas section texts */
 .n620 { left: 150px; top: 6124px; width: 530px;   font-size: 55px; line-height: 1; color: #C35B3F; }
@@ -222,13 +223,13 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* 521:690 red rock */
 .n690 { left: 0; top: 5177px; width: 557px; height: 1102px; }
 
-/* 521:691 photo band (WebGL canvas replaces rock slab) */
-.photoband-wrap { left: 0; top: 1392px; width: 1920px; height: 378px; }
-.photoband { position: absolute; inset: 0; width: 100%; height: 100%; }
-.photoband-fallback { left: 0; top: 0; width: 1920px; height: 378px; object-fit: cover; object-position: 50% 38%;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 18%, #000 82%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0, #000 18%, #000 82%, transparent 100%); }
-.webgl-on .photoband-fallback { visibility: hidden; }
+/* декоративный фон интро: туманные пейзажи + лайн-арт эскизы (Figma 825:20),
+   за текстами «Мы создали…»/«Каждый аромат…»; растушёван сверху/снизу в крем */
+.intro-bg {
+  left: 0; top: 1950px; width: 1920px; height: 656px; opacity: .92;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 78%, transparent 100%);
+}
 
 /* 521:692 свойства гелей и кремов */
 .n692 { left: 251px; top: 2741px; width: 1417px; font-size: 90px; line-height: 1; color: #C35B3F; }
@@ -236,7 +237,7 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* ============ Карусель продуктов (горизонтальный скролл) ============
    Заменяет 4 статичные карточки-тизера. Фикс-px карточки → zoom масштабирует
    корректно и в WebKit (в отличие от grid 1fr). */
-.showcase { position: absolute; left: 49px; top: 1789px; width: 1822px; height: 715px; }
+.showcase { position: absolute; left: 49px; top: 1110px; width: 1822px; height: 715px; }
 .sc-track {
   display: flex;
   gap: 36px;
@@ -317,22 +318,30 @@ a.t, a.btn { color: #313131; text-decoration: none; }
   filter: blur(90px);
 }
 
-/* gel/cream diagram labels */
+/* gel/cream diagram labels — привязаны к запечённым точкам-выноскам.
+   Левые подписи якорятся по ПРАВОМУ краю (right:1073px → x=847), правые — по
+   ЛЕВОМУ (left:1518/1520). Переносы строк заданы <br> точь-в-точь по макету;
+   top рассчитан так, чтобы блок центрировался по своей точке. */
 .lbl  { font-size: 35.2px; line-height: 1; }
 .geo  { font-family: 'Geometria', sans-serif; font-weight: 400; margin-top: -2px; }
-.n699 { left: 1518px; top: 3310px; width: 236px;   letter-spacing: -0.01em; }
-.n700 { left: 503px;  top: 3344px; width: 344px;   text-align: right; }
-.n703 { left: 1518px; top: 3164px; width: 272px; }
-.n705 { left: 569px;  top: 3025px; width: 278.4px; text-align: right; }
-.n706 { left: 525px;  top: 3202px; width: 321.6px; text-align: right; }
-.n721 { left: 570px;  top: 3770px; width: 277px; text-align: right; }
-.n722 { left: 591px;  top: 3911px; width: 256px; text-align: right; }
-.n723 { left: 598px;  top: 4053px; width: 249px; text-align: right; }
-.n724 { left: 1520px; top: 3985px; width: 269px; }
+/* КРЕМ (белый мазок) — лево (3) */
+.n705 { right: 1073px; top: 3025px; text-align: right; } /* Стойкий аромат */
+.n706 { right: 1073px; top: 3202px; text-align: right; } /* Питает, увлажняет */
+.n700 { right: 1073px; top: 3309px; text-align: right; } /* Содержит масла ши (4 стр) */
+/* КРЕМ — право (3) */
+.n730 { left: 1518px; top: 2976px; } /* Витамин Е (3 стр) */
+.n703 { left: 1518px; top: 3139px; } /* Быстро впитывается (3 стр) */
+.n699 { left: 1518px; top: 3328px; letter-spacing: -0.01em; } /* Устраняет сухость (2 стр) */
+/* ГЕЛЬ (капля) — лево (3) */
+.n721 { right: 1073px; top: 3769px; text-align: right; } /* Большой объём (1 стр) */
+.n722 { right: 1073px; top: 3911px; text-align: right; } /* Насыщенный (3 стр) */
+.n723 { right: 1073px; top: 4052px; text-align: right; } /* Не сушит кожу (1 стр) */
+/* ГЕЛЬ — право (3) */
+.n728 { left: 1520px; top: 3623px; } /* Содержит сок алоэ вера (4 стр) */
+.n727 { left: 1520px; top: 3828px; } /* хорошо пенится (2 стр) */
+.n724 { left: 1520px; top: 3981px; } /* для мужчин и женщин (2 стр) */
 .n725 { left: 966px;  top: 4225px; width: 406px; font-size: 44.8px; line-height: 1; }
 .n726 { left: 911px;  top: 3471px; width: 556px; font-size: 44.8px; line-height: 1; }
-.n727 { left: 1518px; top: 3824px; width: 258px; }
-.n728 { left: 1520px; top: 3661px; width: 258px; }
 
 /* 521:729 big quote over shore */
 .n729 {
@@ -342,9 +351,6 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 }
 .n729 .ts10 { letter-spacing: 0.03em; }
 .n729 .ts11 { letter-spacing: -0.01em; }
-
-/* 521:730 */
-.n730 { left: 1518px; top: 3002px; width: 271px; }
 
 /* 521:731 planet */
 .n731 { left: 1372px; top: 3761px; width: 548px; height: 1249px; }

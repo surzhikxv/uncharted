@@ -128,19 +128,16 @@
   if (!REDUCED && window.GLEngine && document.documentElement.clientWidth > 768) {
     try {
       window.ENGINE = new GLEngine();
-      const band = document.querySelector('canvas[data-shader="band"]');
-      if (band) {
-        const sc = ENGINE.addScene(band, BAND_FRAG, { uTex: 'public/images/adj/521-607-adj.webp' }, rect => ({
-          uScroll: Math.min(1, Math.max(0, 1 - (rect.top + rect.height / 2) / innerHeight)),
-        }));
-        if (sc) {
-          sc.onFail = () => document.body.classList.remove('webgl-on');
-          const onReady = () => { if (sc.ready) document.body.classList.add('webgl-on'); else if (!sc.failed) requestAnimationFrame(onReady); };
+      // фотополоса-каньон (band) убрана по макету; webgl-on теперь ставит сцена grain
+      const grain = document.querySelector('canvas[data-shader="grain"]');
+      if (grain) {
+        const gsc = ENGINE.addScene(grain, GRAIN_FRAG, {}, () => ({}));
+        if (gsc) {
+          gsc.onFail = () => document.body.classList.remove('webgl-on');
+          const onReady = () => { if (gsc.ready) document.body.classList.add('webgl-on'); else if (!gsc.failed) requestAnimationFrame(onReady); };
           requestAnimationFrame(onReady);
         }
       }
-      const grain = document.querySelector('canvas[data-shader="grain"]');
-      if (grain) ENGINE.addScene(grain, GRAIN_FRAG, {}, () => ({}));
       // течение струи геля на помпе
       const flow = document.querySelector('canvas[data-shader="flow"]');
       if (flow) {
@@ -169,6 +166,9 @@
       desc: '<span class="ts4">аромат KAMCHATKA VEIL</span><br><span class="ts6">— </span><span class="ts7">путешествие на вершины вулканов камчатки, где каждый вздох наполнен пикантным черным перцем<br>и бодрящим бергамотом<br>с нежностью ванили<br>и белого чая</span>' },
   ];
   const MOBILE = document.documentElement.clientWidth <= 768;
+  // по просьбе заказчика: сложная анимация воды/морфа во флаконе (секция АРОМАТЫ)
+  // отключена — карусель использует простой кроссфейд (десктоп и мобилка).
+  const NO_AROMA_FLUID = true;
   AROMAS.forEach(a => { const i = new Image(); i.src = MOBILE ? a.m : a.img; });
   // --- смена текста карусели: побуквенный каскад для подписи, направленный blur для описания ---
   const cascadeCaption = (el, txt) => {
@@ -206,7 +206,7 @@
     let idx = 0, busy = false, fluid = null;
     const fallbackImg = stage.querySelector('.bottle-fallback');
     // флакон — сплошная вязкая среда: фуллскрин-шейдер + CPU-поле скоростей (см. FluidBottle)
-    if (window.FluidBottle && !REDUCED && !MOBILE) {
+    if (!NO_AROMA_FLUID && window.FluidBottle && !REDUCED && !MOBILE) {
       const fCv = document.createElement('canvas');
       fCv.className = 'fluid-canvas';
       document.querySelector('.page').appendChild(fCv);
@@ -315,7 +315,7 @@
     const mdesc = document.querySelector('.m-car-desc');
     let mi = 0, mfront = 0, mbusy = false;
     let mScene = null, mEng = null, mProg = 0, mDirU = 1;
-    if (window.GLEngine && !REDUCED && document.documentElement.clientWidth <= 768) {
+    if (!NO_AROMA_FLUID && window.GLEngine && !REDUCED && document.documentElement.clientWidth <= 768) {
       try {
         mEng = new GLEngine();
         const cv = document.createElement('canvas');

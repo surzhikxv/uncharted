@@ -69,8 +69,8 @@
     const vis = () => (document.documentElement.clientWidth > 768 ? document.documentElement.clientWidth / 1920 : 1);
     const step = () => {
       const card = track.querySelector('.sc-card');
-      const w = card ? card.offsetWidth + 36 : track.clientWidth * 0.8;   // design-px (zoom не влияет на layout-метрики)
-      return Math.max(w, Math.floor(track.clientWidth / w) * w);
+      // шаг = одна карточка + gap (раньше прокручивало целую «страницу» видимых карточек)
+      return card ? card.offsetWidth + 36 : track.clientWidth * 0.8;   // design-px (zoom не влияет на layout-метрики)
     };
     const update = () => {
       const max = track.scrollWidth - track.clientWidth;

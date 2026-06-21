@@ -136,11 +136,12 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 .nav-link { font-size: 28.8px; line-height: 1; }
 
 /* intro texts */
-/* интро-тексты перемещены ПОД карусель (карусель поднята под hero) */
-.n617 { left: 49px; top: 1880px; width: 880px;    font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
-.n618 { left: 49px; top: 2031px; transform: translateY(1px); width: 886.4px;  font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
+/* интро-тексты перемещены ПОД карусель (карусель поднята под hero);
+   отступы ступенькой — точь-в-точь по макету (Image #5): 79 / 511 / 248 */
+.n617 { left: 79px;  top: 1880px; width: 880px;    font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
+.n618 { left: 511px; top: 2031px; transform: translateY(1px); width: 970px;   font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
 .n618 .brand { color: #B23D0F; }
-.n619 { left: 49px; top: 2226px; transform: translateY(1px); width: 1101px;   font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
+.n619 { left: 248px; top: 2226px; transform: translateY(1px); width: 1101px;  font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
 
 /* aromas section texts */
 .n620 { left: 150px; top: 6124px; width: 530px;   font-size: 55px; line-height: 1; color: #C35B3F; }
@@ -226,7 +227,7 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* декоративный фон интро: туманные пейзажи + лайн-арт эскизы (Figma 825:20),
    за текстами «Мы создали…»/«Каждый аромат…»; растушёван сверху/снизу в крем */
 .intro-bg {
-  left: 0; top: 1950px; width: 1920px; height: 656px; opacity: .92;
+  left: 0; top: 1950px; width: 1920px; height: 703px; opacity: .92;
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 78%, transparent 100%);
   mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 78%, transparent 100%);
 }

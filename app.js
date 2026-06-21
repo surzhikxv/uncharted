@@ -457,7 +457,7 @@
     document.body.classList.add('anim');
     requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.add('hero-in')));
     const revealSel = ['.n617','.n618','.n619','.n692','.showcase','.geldiag','.creamdiag',
-      '.lbl','.n725','.n726','.n729','.n620','.n621','.n622','.n623','.n624','.n629',
+      '.lbl','.n725','.n726','.n729a','.n729b','.n620','.n621','.n622','.n623','.n624','.n629',
       '.n631','.n632','.n633','.n634','.n635','.n636','.n637','.n638','.n639','.n657','.n658'];
     const els = document.querySelectorAll('.page ' + revealSel.join(', .page '));
     const io = new IntersectionObserver(es => es.forEach(e => {

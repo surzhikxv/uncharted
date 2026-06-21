@@ -138,10 +138,11 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* intro texts */
 /* интро-тексты перемещены ПОД карусель (карусель поднята под hero);
    отступы ступенькой — точь-в-точь по макету (Image #5): 79 / 511 / 248 */
-.n617 { left: 79px;  top: 1880px; width: 880px;    font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
-.n618 { left: 511px; top: 2031px; transform: translateY(1px); width: 970px;   font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
+/* шрифт 38.4→30px (×0.78 по макету), интервалы шире — «менее плотно» */
+.n617 { left: 79px;  top: 1755px; width: 780px;    font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
+.n618 { left: 511px; top: 1935px; transform: translateY(1px); width: 770px;   font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
 .n618 .brand { color: #B23D0F; }
-.n619 { left: 248px; top: 2226px; transform: translateY(1px); width: 1101px;  font-size: 38.4px; line-height: 1.2; letter-spacing: 0.04em; color: #000; }
+.n619 { left: 248px; top: 2145px; transform: translateY(1px); width: 850px;  font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
 
 /* aromas section texts */
 .n620 { left: 150px; top: 6124px; width: 530px;   font-size: 55px; line-height: 1; color: #C35B3F; }
@@ -238,7 +239,7 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* ============ Карусель продуктов (горизонтальный скролл) ============
    Заменяет 4 статичные карточки-тизера. Фикс-px карточки → zoom масштабирует
    корректно и в WebKit (в отличие от grid 1fr). */
-.showcase { position: absolute; left: 49px; top: 1110px; width: 1822px; height: 715px; }
+.showcase { position: absolute; left: 49px; top: 912px; width: 1822px; height: 715px; }
 .sc-track {
   display: flex;
   gap: 36px;
@@ -291,8 +292,8 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 .sc-arrow:hover { background: #fff; transform: scale(1.06); }
 .sc-arrow[hidden] { display: block; opacity: 0; pointer-events: none; }
 .sc-arrow:focus-visible { outline: 2px solid #7c2d12; outline-offset: 3px; }
-/* скроллбар снизу */
-.sc-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; border-radius: 6px; background: rgba(195,91,63,.16); cursor: pointer; }
+/* скроллбар снизу — скрыт по макету (линии-разделителя в макете нет) */
+.sc-bar { display: none; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; border-radius: 6px; background: rgba(195,91,63,.16); cursor: pointer; }
 .sc-thumb { position: absolute; left: 0; top: 0; height: 100%; min-width: 40px; border-radius: 6px; background: #C35B3F; }
 .sc-bar:hover .sc-thumb { background: #A94A30; }
 
@@ -344,17 +345,39 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 .n725 { left: 966px;  top: 4225px; width: 406px; font-size: 44.8px; line-height: 1; }
 .n726 { left: 911px;  top: 3471px; width: 556px; font-size: 44.8px; line-height: 1; }
 
-/* 521:729 big quote over shore */
-.n729 {
-  left: 322px; top: 4549px; width: 1275px;
-  font-size: 75px; line-height: 1; letter-spacing: -0.03em;
-  text-align: center; color: #C35B3F;
+/* 521:729 цитата над берегом — по макету: левый флаг + вторая фраза со сдвигом
+   вправо-вниз; шрифт 75→51px (×0.68), выключка влево */
+.n729a {
+  left: 94px; top: 4560px; width: 920px;
+  font-size: 50px; line-height: 1.06; letter-spacing: 0;
+  text-align: left; color: #C35B3F;
 }
-.n729 .ts10 { letter-spacing: 0.03em; }
-.n729 .ts11 { letter-spacing: -0.01em; }
+.n729b {
+  left: 390px; top: 4762px; width: 1260px;
+  font-size: 50px; line-height: 1.06; letter-spacing: 0;
+  text-align: left; color: #C35B3F; white-space: nowrap;
+}
 
 /* 521:731 planet */
 .n731 { left: 1372px; top: 3761px; width: 548px; height: 1249px; }
 
 /* струя геля: канвас-течение поверх запечённой помпы */
 .pump-stage .pump-fallback, .pump-stage .pump-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* ===E3START=== props resize: font x0.82 cream x0.9 gel x0.78 */
+.geldiag { left: 883.5px; top: 2985.5px; width: 600px; height: 459px; }
+.creamdiag { left: 923.5px; top: 3587.5px; width: 520px; height: 480px; }
+.lbl { font-size: 28.9px; line-height: 1.0; }
+.n705 { right: 1039.3px; top: 3046.8px; }
+.n706 { right: 1039.3px; top: 3206.1px; }
+.n700 { right: 1039.3px; top: 3305.2px; }
+.n730 { left: 1484.5px; top: 3004.1px; }
+.n703 { left: 1484.5px; top: 3150.8px; }
+.n699 { left: 1484.5px; top: 3319.5px; }
+.n721 { right: 999.0px; top: 3781.1px; }
+.n722 { right: 999.0px; top: 3890.5px; }
+.n723 { right: 999.0px; top: 4001.9px; }
+.n728 { left: 1444.4px; top: 3665.1px; }
+.n727 { left: 1444.4px; top: 3826.4px; }
+.n724 { left: 1444.4px; top: 3945.8px; }
+/* ===E3END=== */

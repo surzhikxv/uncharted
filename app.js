@@ -33,7 +33,7 @@
   });
 
   // --- переход по якорю с другой страницы (catalog.html → index.html#about) ---
-  const HASH_POS = { '#about': 7069, '#catalog': 1789, '#contacts': 8428 };
+  const HASH_POS = { '#about': 6849, '#catalog': 1789, '#contacts': 8428 };
   if (HASH_POS[location.hash] && document.querySelector('.page')) {
     if (document.documentElement.clientWidth > 768) {
       scrollTo(0, HASH_POS[location.hash] * zoom());
@@ -138,6 +138,9 @@
           requestAnimationFrame(onReady);
         }
       }
+      // атмосферный туман у модели на hero
+      const fog = document.querySelector('canvas[data-shader="fog"]');
+      if (fog) ENGINE.addScene(fog, MIST_FRAG, {}, () => ({}));
       // течение струи геля на помпе
       const flow = document.querySelector('canvas[data-shader="flow"]');
       if (flow) {

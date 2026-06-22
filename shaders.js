@@ -954,4 +954,69 @@ void main(){
   outC = vec4(vec3(.5 + g * .12 + warm), 1.);
 }`;
 
-window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG; window.MORPH_FRAG = MORPH_FRAG; window.GRAIN_FRAG = GRAIN_FRAG; window.FLOW_FRAG = FLOW_FRAG; window.FluidBottle = FluidBottle;
+// восходящий пар на hero: поднимается от линии-источника у низа кадра (y≈0.95,
+// x∈[0.56,0.97], перед моделью справа). Турбулентный domain-warp FBM лепит мягкие
+// клубящиеся пуфы; конус-огибающая держит пар плотным у линии, расширяет и
+// распускает его кверху до прозрачности; поле сносится вверх по uTime + боковое
+// колыхание. Выход премультиплицирован (движок: ONE,1-SRC_ALPHA).
+// Тюнинг: множитель/потолок `a` — общая плотность; turb — рваность клубов;
+// HW0 и rs*… — ширина и высота струи; скорости t*… — темп подъёма и дрейфа.
+const MIST_FRAG = `#version 300 es
+precision highp float; in vec2 vUv; out vec4 outC;
+uniform float uTime; uniform vec2 uRes;
+${GL_NOISE}
+// fbm с поворотом между октавами — мягкие клубы без сеточных артефактов нойза
+float uc_fbm(vec2 p){
+  float v = 0., a = .5;
+  mat2 r = mat2(.80, .60, -.60, .80);
+  for (int i = 0; i < 4; i++){ v += a * uc_noise(p); p = r * p * 2.0; a *= .5; }
+  return v;
+}
+void main(){
+  // === восходящий пар от линии-источника у низа кадра ===
+  // vUv.y: 0 — верх кадра, 1 — низ. Источник: y≈0.95, x∈[0.56,0.97] (перед моделью справа).
+  // Пар поднимается к меньшим y, расширяется мягкими клубами и тает в прозрачность.
+  float t  = uTime;
+  float ar = uRes.x / uRes.y;
+
+  // геометрия источника: центр и полуширина струи у линии
+  const float SRC_Y = 0.95;
+  const float CX0   = 0.765;   // (0.56 + 0.97) / 2
+  const float HW0   = 0.205;   // (0.97 - 0.56) / 2
+
+  // линия-источник «дышит» по x — нет прямого горизонтального ребра снизу
+  float baseWave = (uc_noise(vec2(vUv.x * 6.0, t * .35)) - .5) * .025;
+  float rs = (SRC_Y + baseWave) - vUv.y;       // высота над источником: >0 — выше по экрану
+
+  // всплывая, струя колышется вбок и расширяется конусом (клубы расходятся кверху)
+  float sway = sin(t * .35 + rs * 3.0) * .05 * rs
+             + (uc_fbm(vec2(rs * 2.5, t * .20)) - .5) * .12 * rs;
+  float cx = CX0 + sway;
+  float hw = HW0 + rs * .55;                    // полуширина растёт с высотой
+
+  // турбулентный domain-warp по FBM: мягкие пуфы; поле сносится вверх по времени
+  // (рост y в сэмпле ⇒ узор бежит вниз по координате ⇒ на экране пар поднимается)
+  vec2  np = vec2(vUv.x * ar * 2.6, vUv.y * 2.6 + t * .42);
+  vec2  w1 = vec2(uc_fbm(np + vec2(0.0, t * .18)),
+                  uc_fbm(np + vec2(5.2, 1.3) - vec2(0.0, t * .12)));
+  float turb = .55 + rs * 2.2;                  // у линии собранно, кверху рвётся на клочья
+  vec2  w2 = vec2(uc_fbm(np * 1.9 + w1 * turb + vec2(1.7, 9.2)),
+                  uc_fbm(np * 1.9 + w1 * turb + vec2(8.3, 2.8)));
+  float f  = uc_fbm(np + w1 * turb + w2 * (turb * .4));
+  f = smoothstep(.30, .85, f);                  // низкий контраст — облачные пуфы, не струйки
+
+  // огибающие: эмиссия от линии, мягкие бока конуса, затухание кверху
+  float gate  = smoothstep(-0.02, 0.05, rs);                 // пар рождается у линии и выше
+  float fade  = smoothstep(0.62, 0.0, rs);                   // плотно у низа, тает кверху
+  float horiz = smoothstep(1.0, 0.15, abs(vUv.x - cx) / hw); // мягкие боковые границы
+
+  float dens = f * gate * fade * horiz;
+  dens *= 1.0 - rs * .35;                       // доп. рассеивание плотности с высотой
+  dens = clamp(dens, 0.0, 1.0);
+
+  float a   = clamp(dens * 1.25, 0.0, 0.62);    // умеренно: фон читается сквозь пар
+  vec3  col = mix(vec3(.85, .88, .94), vec3(.96, .98, 1.0), f); // прохладный near-white
+  outC = vec4(col * a, a);                       // premultiplied alpha
+}`;
+
+window.GLEngine = GLEngine; window.BAND_FRAG = BAND_FRAG; window.MORPH_FRAG = MORPH_FRAG; window.GRAIN_FRAG = GRAIN_FRAG; window.FLOW_FRAG = FLOW_FRAG; window.MIST_FRAG = MIST_FRAG; window.FluidBottle = FluidBottle;

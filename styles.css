@@ -101,14 +101,18 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* 521:592 aromas bg */
 .n592 { left: 0; top: 5336px; width: 1920px; height: 1632px; }
 
-/* 521:593 cream rectangle — начинается ниже зоны живого фейда фото */
-.n593 { left: -72px; top: 908px; width: 2095px; height: 902px; background: #FAF5F1; }
+/* 521:593 cream rectangle — опущена, чтобы показать больше модели до карусели
+   (раньше top:908 перекрывал девушку → «каталог обрезал»); крем начинается под фото */
+.n593 { left: -72px; top: 1043px; width: 2095px; height: 767px; background: #FAF5F1; }
 
 /* 521:594 logo */
 .n594 { left: 49px; top: 54px; width: 168px; height: 143px; }
 
 /* 521:607 canyon valley bg */
-.n607 { left: -2px; top: 7054px; width: 1924px; height: 1374px; }
+.n607 { left: -2px; top: 7054px; width: 1924px; height: 1374px;
+  /* мягкий ввод верхней кромки, чтобы не было линии-стыка (как в макете) */
+  -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0px, rgba(0,0,0,1) 300px);
+          mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0px, rgba(0,0,0,1) 300px); }
 
 /* 521:608 gradient blur */
 .n608 {
@@ -117,8 +121,8 @@ a.t, a.btn { color: #313131; text-decoration: none; }
   filter: blur(90px);
 }
 
-/* 521:609 hero paragraph */
-.n609 { left: 49px; top: 276px; width: 871px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
+/* 521:609 hero paragraph — 2 строки по макету (без «уход и воображение») */
+.n609 { left: 49px; top: 276px; width: 1100px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
 
 /* 521:610 каталог button */
 .n610 { left: 49px; top: 652px; }
@@ -139,10 +143,10 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* интро-тексты перемещены ПОД карусель (карусель поднята под hero);
    отступы ступенькой — точь-в-точь по макету (Image #5): 79 / 511 / 248 */
 /* шрифт 38.4→30px (×0.78 по макету), интервалы шире — «менее плотно» */
-.n617 { left: 79px;  top: 1755px; width: 780px;    font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
-.n618 { left: 511px; top: 1935px; transform: translateY(1px); width: 770px;   font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
+.n617 { left: 79px;  top: 1960px; width: 780px;    font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
+.n618 { left: 511px; top: 2140px; transform: translateY(1px); width: 770px;   font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
 .n618 .brand { color: #B23D0F; }
-.n619 { left: 248px; top: 2145px; transform: translateY(1px); width: 850px;  font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
+.n619 { left: 248px; top: 2350px; transform: translateY(1px); width: 850px;  font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
 
 /* aromas section texts */
 .n620 { left: 150px; top: 6124px; width: 530px;   font-size: 55px; line-height: 1; color: #C35B3F; }
@@ -179,13 +183,13 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 }
 
 /* UNCHARTED — ЭТО section */
-.n631 { left: 128px; top: 7305px; width: 1096px; font-size: 60px;  line-height: 1; text-align: center; color: #C35B3F; }
-.n632 { left: 128px; top: 8079px; width: 1278px; font-size: 60px;  line-height: 1; color: #C35B3F; }
-.n633 { left: 128px; top: 7697px; width: 1028px; font-size: 60px;  line-height: 1; color: #C35B3F; }
-.n634 { left: 120px; top: 7069px; width: 1292px; font-size: 120px; line-height: 1; text-align: center; color: #C35B3F; }
-.n635 { left: 128px; top: 7402px; transform: translateY(2px); width: 1283px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
-.n636 { left: 133px; top: 8168px; transform: translateY(2px); width: 1283px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
-.n637 { left: 128px; top: 7791px; transform: translateY(2px); width: 1029px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
+.n631 { left: 128px; top: 7085px; width: 1096px; font-size: 60px;  line-height: 1; text-align: center; color: #C35B3F; }
+.n632 { left: 128px; top: 7859px; width: 1278px; font-size: 60px;  line-height: 1; color: #C35B3F; }
+.n633 { left: 128px; top: 7477px; width: 1028px; font-size: 60px;  line-height: 1; color: #C35B3F; }
+.n634 { left: 120px; top: 6849px; width: 1292px; font-size: 120px; line-height: 1; text-align: center; color: #C35B3F; }
+.n635 { left: 128px; top: 7182px; transform: translateY(2px); width: 1283px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
+.n636 { left: 133px; top: 7948px; transform: translateY(2px); width: 1283px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
+.n637 { left: 128px; top: 7571px; transform: translateY(2px); width: 1029px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
 
 /* footer */
 .n638 {
@@ -228,7 +232,7 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* декоративный фон интро: туманные пейзажи + лайн-арт эскизы (Figma 825:20),
    за текстами «Мы создали…»/«Каждый аромат…»; растушёван сверху/снизу в крем */
 .intro-bg {
-  left: 0; top: 1950px; width: 1920px; height: 703px; opacity: .92;
+  left: 0; top: 1900px; width: 1920px; height: 703px; opacity: .92;
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 78%, transparent 100%);
   mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 78%, transparent 100%);
 }
@@ -239,7 +243,7 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* ============ Карусель продуктов (горизонтальный скролл) ============
    Заменяет 4 статичные карточки-тизера. Фикс-px карточки → zoom масштабирует
    корректно и в WebKit (в отличие от grid 1fr). */
-.showcase { position: absolute; left: 49px; top: 912px; width: 1822px; height: 715px; }
+.showcase { position: absolute; left: 49px; top: 1075px; width: 1822px; height: 715px; }
 .sc-track {
   display: flex;
   gap: 36px;
@@ -308,7 +312,7 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 .hero-streak { left: 380px; top: 560px; width: 580px; height: 212px;
   -webkit-mask-image: radial-gradient(ellipse 95% 90% at 50% 50%, #000 45%, transparent 97%);
   mask-image: radial-gradient(ellipse 95% 90% at 50% 50%, #000 45%, transparent 97%); }
-.hero-fade   { left: 0; top: 700px; width: 1920px; height: 209px;
+.hero-fade   { left: 0; top: 880px; width: 1920px; height: 163px;
   background: linear-gradient(180deg, rgba(250,245,241,0) 0%, rgba(250,245,241,.55) 55%, #FAF5F1 100%); }
 .geldiag   { left: 850px; top: 2960px; width: 667px; height: 510px; }
 .creamdiag { left: 850px; top: 3520px; width: 667px; height: 615px; }
@@ -342,18 +346,19 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 .n728 { left: 1520px; top: 3623px; } /* Содержит сок алоэ вера (4 стр) */
 .n727 { left: 1520px; top: 3828px; } /* хорошо пенится (2 стр) */
 .n724 { left: 1520px; top: 3981px; } /* для мужчин и женщин (2 стр) */
-.n725 { left: 966px;  top: 4225px; width: 406px; font-size: 44.8px; line-height: 1; }
+/* «гель для душа» поднят: равный отступ от капли, как у «крем для рук и тела» (≈72px) */
+.n725 { left: 981px;  top: 4100px; width: 406px; font-size: 44.8px; line-height: 1; }
 .n726 { left: 911px;  top: 3471px; width: 556px; font-size: 44.8px; line-height: 1; }
 
 /* 521:729 цитата над берегом — по макету: левый флаг + вторая фраза со сдвигом
    вправо-вниз; шрифт 75→51px (×0.68), выключка влево */
 .n729a {
-  left: 94px; top: 4560px; width: 920px;
+  left: 94px; top: 4480px; width: 920px;
   font-size: 50px; line-height: 1.06; letter-spacing: 0;
   text-align: left; color: #C35B3F;
 }
 .n729b {
-  left: 390px; top: 4762px; width: 1260px;
+  left: 390px; top: 4674px; width: 1260px;
   font-size: 50px; line-height: 1.06; letter-spacing: 0;
   text-align: left; color: #C35B3F; white-space: nowrap;
 }

@@ -143,7 +143,8 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* интро-тексты перемещены ПОД карусель (карусель поднята под hero);
    отступы ступенькой — точь-в-точь по макету (Image #5): 79 / 511 / 248 */
 /* шрифт 38.4→30px (×0.78 по макету), интервалы шире — «менее плотно» */
-.n617 { left: 79px;  top: 1960px; width: 780px;    font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
+/* top опущен 1960→1971: «воздух» под «В ритме города» (139.5px) выровнен с зазором ниже (129px) */
+.n617 { left: 79px;  top: 1971px; width: 780px;    font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
 .n618 { left: 511px; top: 2140px; transform: translateY(1px); width: 770px;   font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
 .n618 .brand { color: #B23D0F; }
 .n619 { left: 248px; top: 2350px; transform: translateY(1px); width: 850px;  font-size: 30px; line-height: 1.35; letter-spacing: 0.04em; color: #000; }
@@ -183,13 +184,14 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 }
 
 /* UNCHARTED — ЭТО section */
-.n631 { left: 128px; top: 7085px; width: 1096px; font-size: 60px;  line-height: 1; text-align: center; color: #C35B3F; }
-.n632 { left: 128px; top: 7859px; width: 1278px; font-size: 60px;  line-height: 1; color: #C35B3F; }
-.n633 { left: 128px; top: 7477px; width: 1028px; font-size: 60px;  line-height: 1; color: #C35B3F; }
-.n634 { left: 120px; top: 6849px; width: 1292px; font-size: 120px; line-height: 1; text-align: center; color: #C35B3F; }
-.n635 { left: 128px; top: 7182px; transform: translateY(2px); width: 1283px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
-.n636 { left: 133px; top: 7948px; transform: translateY(2px); width: 1283px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
-.n637 { left: 128px; top: 7571px; transform: translateY(2px); width: 1029px; font-size: 35px; line-height: 1.2; letter-spacing: 0.04em; }
+/* подзаголовки и абзацы блока уменьшены на 9% (×0.91): 60→54.6px, 35→31.85px */
+.n631 { left: 128px; top: 7085px; width: 1096px; font-size: 54.6px;  line-height: 1; text-align: left; color: #C35B3F; }
+.n632 { left: 128px; top: 7859px; width: 1278px; font-size: 54.6px;  line-height: 1; color: #C35B3F; }
+.n633 { left: 128px; top: 7477px; width: 1028px; font-size: 54.6px;  line-height: 1; color: #C35B3F; }
+.n634 { left: 120px; top: 6849px; width: 1292px; font-size: 109.2px; line-height: 1; text-align: left; color: #C35B3F; }
+.n635 { left: 128px; top: 7182px; transform: translateY(2px); width: 1283px; font-size: 31.85px; line-height: 1.2; letter-spacing: 0.04em; }
+.n636 { left: 133px; top: 7948px; transform: translateY(2px); width: 1283px; font-size: 31.85px; line-height: 1.2; letter-spacing: 0.04em; }
+.n637 { left: 128px; top: 7571px; transform: translateY(2px); width: 1029px; font-size: 31.85px; line-height: 1.2; letter-spacing: 0.04em; }
 
 /* footer */
 .n638 {
@@ -203,13 +205,14 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 .n642 { left: 1186px; top: 8721.1px; transform: translateY(2px);  width: 209px; font-size: 25.6px; line-height: 1; }
 .n643 { left: 1186px; top: 8679.6px; transform: translateY(1px);  width: 118px; font-size: 25.6px; line-height: 1; }
 .n644 { left: 1186px; top: 8804.29px; transform: translateY(2px); width: 401px; font-size: 25.6px; line-height: 1; }
+a.n640:hover, a.n641:hover, a.n642:hover, a.n643:hover, a.n644:hover { color: #C35B3F; }
 .n645 { left: 192px; top: 8741.1px; width: 136px; font-size: 25.6px; line-height: 1; }
 .n646 { left: 192px; top: 8805.1px; width: 123px; font-size: 25.6px; line-height: 1; }
 .n647 { left: 128px; top: 8730px;   width: 48px; height: 48px; }
 .n651 { left: 128px; top: 8793.9px; width: 48px; height: 48px; }
 .n657 { left: 128px; top: 8622px; width: 192px; font-size: 30px; line-height: 1; }
 .n658 { left: 660px; top: 8622px; width: 205px; font-size: 30px; line-height: 1; }
-.n659 { left: 128px; top: 8857.9px; width: 262.4px; font-size: 19.2px; line-height: 1.2; }
+.n659 { left: 128px; top: 8857.9px; width: 440px; font-size: 19.2px; line-height: 1.2; }
 /* порядок «ГДЕ КУПИТЬ»: Золотое яблоко, ЛЭТУАЛЬ, Ozon, Wildberries (top сверху вниз) */
 .n660 { left: 660px; top: 8682px; width: 48px; height: 48px; } /* Золотое яблоко */
 .n671 { left: 660px; top: 8874px; width: 48px; height: 48px; } /* Wildberries */

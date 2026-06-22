@@ -1,0 +1,180 @@
+/* ============================================================
+   legal.css — общий стиль юридических страниц UNCHARTED
+   (оферта / конфиденциальность / cookie / лицензия)
+   Читабельная типографика в фирменном стиле, без абсолютного
+   макета лендинга. Шрифты — те же, что на сайте.
+   ============================================================ */
+
+/* ---- Fonts (синхронно со styles.css) ---- */
+@font-face {
+  font-family: 'Tenor Sans';
+  font-style: normal; font-weight: 400;
+  src: url('fonts/tenor-sans-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Tenor Sans';
+  font-style: normal; font-weight: 400;
+  src: url('fonts/tenor-sans-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Tenor Sans';
+  font-style: normal; font-weight: 400;
+  src: url('fonts/tenor-sans-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Geometria';
+  font-style: normal; font-weight: 300;
+  src: url('fonts/geometria-light.woff2') format('woff2'), url('fonts/geometria_light.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Geometria';
+  font-style: normal; font-weight: 400;
+  src: url('fonts/geometria-regular.woff2') format('woff2'), url('fonts/geometria-regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Geometria';
+  font-style: normal; font-weight: 500;
+  src: url('fonts/geometria-medium.woff2') format('woff2'), url('fonts/geometria_medium.otf') format('opentype');
+}
+
+:root {
+  --ink: #313131;
+  --accent: #C35B3F;
+  --paper: #F4F0EA;
+  --paper-2: #EFEAE2;
+  --line: rgba(49, 49, 49, .14);
+  --muted: #797268;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Geometria', sans-serif; font-weight: 300;
+  font-size: 17px; line-height: 1.7;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---- Header ---- */
+.legal-header {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;
+  padding: 18px clamp(20px, 5vw, 64px);
+  background: rgba(244, 240, 234, .88);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.legal-logo { display: inline-flex; }
+.legal-logo img { height: 24px; display: block; }
+.legal-nav {
+  display: flex; gap: clamp(14px, 3vw, 36px);
+  font-family: 'Tenor Sans', sans-serif;
+  font-size: 13.5px; letter-spacing: .12em; text-transform: uppercase;
+}
+.legal-nav a { color: var(--ink); }
+.legal-nav a:hover { color: var(--accent); text-decoration: none; }
+
+/* ---- Document body ---- */
+.legal-main {
+  max-width: 792px; margin: 0 auto;
+  padding: clamp(40px, 7vw, 84px) clamp(20px, 5vw, 40px) 96px;
+}
+.legal-kicker {
+  font-family: 'Tenor Sans', sans-serif;
+  text-transform: uppercase; letter-spacing: .24em;
+  font-size: 12.5px; color: var(--accent); margin-bottom: 14px;
+}
+.legal-main h1 {
+  font-family: 'Tenor Sans', sans-serif; font-weight: 400;
+  font-size: clamp(29px, 5vw, 44px); line-height: 1.15;
+  letter-spacing: .01em; text-transform: uppercase;
+}
+.legal-updated {
+  color: var(--muted); font-size: 14px;
+  margin: 16px 0 32px; padding-bottom: 26px;
+  border-bottom: 1px solid var(--line);
+}
+.legal-main h2 {
+  font-family: 'Tenor Sans', sans-serif; font-weight: 400;
+  font-size: clamp(20px, 3vw, 26px); line-height: 1.25;
+  letter-spacing: .01em; margin: 46px 0 16px;
+}
+.legal-main h3 {
+  font-family: 'Geometria', sans-serif; font-weight: 500;
+  font-size: 18px; margin: 26px 0 10px;
+}
+.legal-main p { margin: 0 0 16px; }
+.legal-main ul, .legal-main ol { margin: 0 0 18px; padding-left: 26px; }
+.legal-main li { margin-bottom: 9px; }
+.legal-main li::marker { color: var(--accent); }
+.legal-main strong { font-weight: 500; }
+.legal-main a { text-decoration: underline; text-underline-offset: 2px; }
+
+/* Памятка-плашка для заказчика (в начале документа) */
+.legal-note {
+  background: rgba(195, 91, 63, .07);
+  border-left: 3px solid var(--accent);
+  padding: 16px 20px; border-radius: 4px;
+  margin: 0 0 36px; font-size: 15px; line-height: 1.6; color: #5e584f;
+}
+.legal-note strong { color: var(--accent); }
+
+/* Плейсхолдеры под реквизиты — подсвечены, чтобы заказчик их нашёл */
+.ph {
+  background: rgba(195, 91, 63, .14);
+  color: #8f3f29;
+  border-bottom: 1px dashed rgba(195, 91, 63, .55);
+  padding: 0 3px; border-radius: 2px;
+  font-weight: 400; font-style: normal;
+}
+
+/* Реквизиты в конце документа */
+.legal-requisites {
+  margin-top: 14px; padding: 24px 26px;
+  background: var(--paper-2); border-radius: 6px;
+  font-size: 15.5px; line-height: 1.8;
+}
+.legal-requisites p { margin: 0; }
+
+/* ---- Footer ---- */
+.legal-footer {
+  border-top: 1px solid var(--line);
+  background: var(--paper-2);
+  padding: 52px clamp(20px, 5vw, 64px) 40px;
+}
+.legal-footer-inner {
+  max-width: 980px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; gap: 40px 64px; justify-content: space-between;
+}
+.legal-foot-brand {
+  font-family: 'Geometria', sans-serif; font-weight: 500;
+  font-size: 30px; letter-spacing: .02em; text-transform: uppercase;
+}
+.legal-foot-col h4 {
+  font-family: 'Tenor Sans', sans-serif; font-weight: 400;
+  text-transform: uppercase; letter-spacing: .1em;
+  font-size: 12.5px; color: var(--muted); margin-bottom: 14px;
+}
+.legal-foot-col a, .legal-foot-col p {
+  display: block; color: var(--ink); font-size: 15px; margin-bottom: 10px;
+}
+.legal-foot-col a:hover { color: var(--accent); text-decoration: none; }
+.legal-foot-col .is-here { color: var(--accent); }
+.legal-copy {
+  max-width: 980px; margin: 36px auto 0;
+  font-size: 13px; color: var(--muted); line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  body { font-size: 16px; }
+  .legal-main { padding-top: 40px; }
+  .legal-footer-inner { gap: 32px; }
+}

@@ -18,6 +18,17 @@
 <link rel="stylesheet" href="anim.css">
 </head>
 <body>
+
+<!-- фиксированная полупрозрачная шапка (Figma header) -->
+<header class="topbar" id="topbar">
+  <a class="tb-logo" href="#" data-scroll="0" aria-label="UNCHARTED — наверх"><img src="public/images/logo.svg" alt="UNCHARTED"></a>
+  <nav class="tb-nav" aria-label="Основная навигация">
+    <a class="tb-link" href="#" data-scroll="6849">о бренде</a>
+    <a class="tb-link" href="catalog.html">каталог</a>
+    <a class="tb-link" href="#" data-scroll="8428">контакты</a>
+  </nav>
+</header>
+
 <div class="page">
 
   <!-- 521:582 catalog texture bg -->
@@ -36,9 +47,6 @@
   <div class="abs n593"></div>
   <div class="abs hero-fade"></div>
 
-  <!-- 521:594 logo -->
-  <img class="abs n594" src="public/images/logo.svg" alt="UNCHARTED" data-scroll="0">
-
   <!-- 521:607 canyon valley bg -->
   <img class="abs n607" src="public/images/adj/521-607-adj.webp" alt="" loading="lazy">
 
@@ -56,11 +64,6 @@
 
   <!-- 521:613 footer texture -->
   <img class="abs n613" src="public/images/521-613.webp" alt="" loading="lazy">
-
-  <!-- nav 521:614-616 -->
-  <a class="t up nav-link n614" href="#" data-scroll="6849">о бренде</a>
-  <a class="t up nav-link n615" href="catalog.html">каталог</a>
-  <a class="t up nav-link n616" href="#" data-scroll="8428">контакты</a>
 
   <!-- декоративный фон интро: туманные пейзажи + лайн-арт эскизы (Figma 825:20) -->
   <img class="abs intro-bg" src="public/images/render/intro-bg.webp" alt="" loading="lazy">
@@ -429,9 +432,12 @@
 <script>
 (function () {
   var page = document.querySelector('.page');
+  var bar  = document.getElementById('topbar');
   function fit() {
     var w = document.documentElement.clientWidth;
-    page.style.zoom = w > 768 ? (w / 1920) : '';
+    var z = w > 768 ? (w / 1920) : '';
+    page.style.zoom = z;
+    if (bar) bar.style.zoom = z;
   }
   window.addEventListener('resize', fit);
   fit();

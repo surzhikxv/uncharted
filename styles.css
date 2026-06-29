@@ -105,8 +105,45 @@ a.t, a.btn { color: #313131; text-decoration: none; }
    (раньше top:908 перекрывал девушку → «каталог обрезал»); крем начинается под фото */
 .n593 { left: -72px; top: 1043px; width: 2095px; height: 767px; background: #FAF5F1; }
 
-/* 521:594 logo */
-.n594 { left: 49px; top: 54px; width: 168px; height: 143px; }
+/* ============ Плавающая скруглённая шапка-«пилюля» ============
+   Живёт ВНЕ .page (прямой потомок body), поэтому не клипуется overflow:hidden
+   и не уезжает со скроллом. zoom = clientWidth/1920 задаётся в index.html (как у .page),
+   так что дизайн-px совпадают с системой координат макета.
+   Flex + width:max-content → полоса равна ширине контента (не на всю ширину).
+   Симметричный padding 46px → отступ от лого слева = отступ после «КОНТАКТЫ» справа. */
+.topbar {
+  position: fixed;
+  top: 26px;
+  left: 46px;
+  z-index: 900;             /* ниже модалки .buy-modal (z-index:1000) */
+  display: flex;
+  align-items: center;
+  gap: 60px;                /* лого ↔ навигация */
+  height: 104px;
+  padding: 0 46px;
+  width: -moz-max-content;
+  width: max-content;
+  background: rgba(250, 245, 241, .68);
+  -webkit-backdrop-filter: blur(16px) saturate(108%);
+          backdrop-filter: blur(16px) saturate(108%);
+  border: 1px solid rgba(49, 49, 49, .10);
+  border-radius: 30px;      /* мягкое скругление (не полный «стадион») */
+  box-shadow: 0 16px 42px rgba(90, 55, 30, .12);
+  font-family: 'Tenor Sans', sans-serif;
+}
+.tb-logo { display: block; line-height: 0; }
+.tb-logo img { display: block; width: 94px; height: auto; }
+.tb-nav { display: flex; align-items: baseline; gap: 45px; }
+.tb-link {
+  font-size: 28.8px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: #313131;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .25s ease;
+}
+.tb-link:hover { color: #C35B3F; }
 
 /* 521:607 canyon valley bg */
 .n607 { left: -2px; top: 7054px; width: 1924px; height: 1374px;
@@ -133,10 +170,7 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* 521:613 footer texture */
 .n613 { left: 0; top: 8428px; width: 1920px; height: 582px; }
 
-/* nav */
-.n614 { left: 311px; top: 92px; width: 156px; }
-.n615 { left: 549px; top: 92px; width: 147px; }
-.n616 { left: 778px; top: 92px; width: 177px; }
+/* nav (.nav-link используется в catalog.html — оставлено) */
 .nav-link { font-size: 28.8px; line-height: 1; }
 
 /* intro texts */

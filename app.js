@@ -10,7 +10,8 @@
     email:       'mailto:info.uncharted@list.ru',
   };
   const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const zoom = () => Math.max(document.documentElement.clientWidth, 769) / 1920;
+  const MOBILE_MAX = 768;
+  const zoom = () => Math.max(document.documentElement.clientWidth, MOBILE_MAX + 1) / 1920;
 
   // --- ссылки из конфига ---
   document.querySelectorAll('[data-link]').forEach(el => {
@@ -27,7 +28,7 @@
   document.querySelectorAll('[data-scroll]').forEach(el => {
     activate(el, e => {
       e.preventDefault();
-      const y = parseFloat(el.dataset.scroll) * (document.documentElement.clientWidth > 768 ? zoom() : 1);
+      const y = parseFloat(el.dataset.scroll) * (document.documentElement.clientWidth > MOBILE_MAX ? zoom() : 1);
       window.scrollTo({ top: y, behavior: REDUCED ? 'auto' : 'smooth' });
     });
   });
@@ -35,7 +36,7 @@
   // --- переход по якорю с другой страницы (catalog.html → index.html#about) ---
   const HASH_POS = { '#about': 6849, '#catalog': 1789, '#contacts': 8428 };
   if (HASH_POS[location.hash] && document.querySelector('.page')) {
-    if (document.documentElement.clientWidth > 768) {
+    if (document.documentElement.clientWidth > MOBILE_MAX) {
       scrollTo(0, HASH_POS[location.hash] * zoom());
     } else {
       const m = document.getElementById('m-' + location.hash.slice(1));
@@ -52,11 +53,35 @@
   // --- модалка КУПИТЬ ---
   const modal = document.getElementById('buyModal');
   let lastFocus = null;
-  const openModal = () => { lastFocus = document.activeElement; modal.hidden = false; document.body.classList.add('modal-open'); modal.querySelector('.buy-row').focus(); };
-  const closeModal = () => { modal.hidden = true; document.body.classList.remove('modal-open'); if (lastFocus && lastFocus.focus) lastFocus.focus(); };
+  const modalBackground = [...document.body.children].filter(el => el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName));
+  const setModalBackground = inert => modalBackground.forEach(el => { el.inert = inert; });
+  const modalFocusable = () => [...modal.querySelectorAll('a[href], button:not([disabled])')]
+    .filter(el => !el.hidden && getComputedStyle(el).display !== 'none');
+  const openModal = () => {
+    lastFocus = document.activeElement;
+    modal.hidden = false;
+    setModalBackground(true);
+    document.body.classList.add('modal-open');
+    modal.querySelector('.buy-row').focus();
+  };
+  const closeModal = () => {
+    modal.hidden = true;
+    setModalBackground(false);
+    document.body.classList.remove('modal-open');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  };
   document.querySelectorAll('[data-buy]').forEach(b => activate(b, openModal));
   modal.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
-  addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+  addEventListener('keydown', e => {
+    if (modal.hidden) return;
+    if (e.key === 'Escape') { closeModal(); return; }
+    if (e.key !== 'Tab') return;
+    const focusable = modalFocusable();
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
 
   // --- карусель продуктов: горизонтальный скролл + стрелки + скроллбар + drag ---
   const sc = document.querySelector('.showcase');
@@ -66,7 +91,7 @@
     const next = sc.querySelector('.sc-arrow--next');
     const bar = sc.querySelector('.sc-bar');
     const thumb = sc.querySelector('.sc-thumb');
-    const vis = () => (document.documentElement.clientWidth > 768 ? document.documentElement.clientWidth / 1920 : 1);
+    const vis = () => (document.documentElement.clientWidth > MOBILE_MAX ? document.documentElement.clientWidth / 1920 : 1);
     const step = () => {
       const card = track.querySelector('.sc-card');
       // шаг = одна карточка + gap (раньше прокручивало целую «страницу» видимых карточек)
@@ -125,7 +150,7 @@
   }
 
   // --- WebGL band ---
-  if (!REDUCED && window.GLEngine && document.documentElement.clientWidth > 768) {
+  if (!REDUCED && window.GLEngine && document.documentElement.clientWidth > MOBILE_MAX) {
     try {
       window.ENGINE = new GLEngine();
       // фотополоса-каньон (band) убрана по макету; webgl-on теперь ставит сцена grain
@@ -158,17 +183,26 @@
   // --- карусель ароматов ---
   const AROMAS = [
     { caption: '/ MANGO BLISS', img: 'public/images/render/bottle-625.webp', m: 'public/images/m/bottle-mango.webp',
-      desc: '<span class="ts4">аромат MANGO BLISS</span><br><span class="ts6">— </span><span class="ts7">билет в неизведанные<br>уголки тропиков мьянмы,<br>где сладкий аромат манго<br>переплетается с ежевикой,<br>иланг-илангом и ноткой<br>пачули</span>' },
+      desc: '<span class="ts4">аромат MANGO BLISS</span><br><span class="ts6">— </span><span class="ts7">билет в неизведанные<br>уголки тропиков мьянмы,<br>где сладкий аромат манго<br>переплетается с ежевикой,<br>иланг-илангом и ноткой<br>пачули</span>',
+      mobileDesc: '<span class="ts4">аромат MANGO BLISS</span><br><span class="ts7">— манго, ежевика, иланг-иланг и пачули</span>' },
     { caption: '/ NAMIBIA DUNES', img: 'public/images/render/aromas/namibia-dunes.webp', m: 'public/images/m/bottle-namibia.webp',
-      desc: '<span class="ts4">аромат NAMIBIA DUNES</span><br><span class="ts6">— </span><span class="ts7">билет в пустыню НАМИБ<br>с бескрайними дюнами,<br>где сладкий апельсин тает в розовом перце, пряных специях и древесном кедре</span>' },
+      desc: '<span class="ts4">аромат NAMIBIA DUNES</span><br><span class="ts6">— </span><span class="ts7">билет в пустыню НАМИБ<br>с бескрайними дюнами,<br>где сладкий апельсин тает в розовом перце, пряных специях и древесном кедре</span>',
+      mobileDesc: '<span class="ts4">аромат NAMIBIA DUNES</span><br><span class="ts7">— апельсин, розовый перец, специи и кедр</span>' },
     { caption: '/ ISLAY SMOKE', img: 'public/images/render/aromas/islay-smoke.webp', m: 'public/images/m/bottle-islay.webp',
-      desc: '<span class="ts4">аромат ISLAY SMOKE</span><br><span class="ts6">— </span><span class="ts7">прогулка по ветреным шотландским холмам,<br>где в воздухе ощущается запах выдержанного виски и табачного дыма. Теплые ноты какао и амбры окутывают словно вечерний туман</span>' },
+      desc: '<span class="ts4">аромат ISLAY SMOKE</span><br><span class="ts6">— </span><span class="ts7">прогулка по ветреным шотландским холмам,<br>где в воздухе ощущается запах выдержанного виски и табачного дыма. Теплые ноты какао и амбры окутывают словно вечерний туман</span>',
+      mobileDesc: '<span class="ts4">аромат ISLAY SMOKE</span><br><span class="ts7">— виски, табачный дым, какао и амбра</span>' },
     { caption: '/ CITRUS VETIVER', img: 'public/images/render/aromas/citrus-vetiver.webp', m: 'public/images/m/bottle-citrus.webp',
-      desc: '<span class="ts4">аромат CITRUS VETIVER</span><br><span class="ts6">— </span><span class="ts7">поход в густые леса мабу, где свежесть ветивера<br>и тепло ореховой коры сливаются со сладким ароматом лимонной карамели и бобов тонка</span>' },
+      desc: '<span class="ts4">аромат CITRUS VETIVER</span><br><span class="ts6">— </span><span class="ts7">поход в густые леса мабу, где свежесть ветивера<br>и тепло ореховой коры сливаются со сладким ароматом лимонной карамели и бобов тонка</span>',
+      mobileDesc: '<span class="ts4">аромат CITRUS VETIVER</span><br><span class="ts7">— ветивер, ореховая кора, лимонная карамель и бобы тонка</span>' },
     { caption: '/ KAMCHATKA VEIL', img: 'public/images/render/aromas/kamchatka-veil.webp', m: 'public/images/m/bottle-kamchatka.webp',
-      desc: '<span class="ts4">аромат KAMCHATKA VEIL</span><br><span class="ts6">— </span><span class="ts7">путешествие на вершины вулканов камчатки, где каждый вздох наполнен пикантным черным перцем<br>и бодрящим бергамотом<br>с нежностью ванили<br>и белого чая</span>' },
+      desc: '<span class="ts4">аромат KAMCHATKA VEIL</span><br><span class="ts6">— </span><span class="ts7">путешествие на вершины вулканов камчатки, где каждый вздох наполнен пикантным черным перцем<br>и бодрящим бергамотом<br>с нежностью ванили<br>и белого чая</span>',
+      mobileDesc: '<span class="ts4">аромат KAMCHATKA VEIL</span><br><span class="ts7">— чёрный перец, бергамот, ваниль и белый чай</span>' },
   ];
-  const MOBILE = document.documentElement.clientWidth <= 768;
+  const aromaStatus = document.getElementById('aromaStatus');
+  const announceAroma = index => {
+    if (aromaStatus) aromaStatus.textContent = 'Выбран аромат ' + AROMAS[index].caption.replace(/^\/\s*/, '');
+  };
+  const MOBILE = document.documentElement.clientWidth <= MOBILE_MAX;
   // по просьбе заказчика: сложная анимация воды/морфа во флаконе (секция АРОМАТЫ)
   // отключена — карусель использует простой кроссфейд (десктоп и мобилка).
   const NO_AROMA_FLUID = true;
@@ -295,6 +329,7 @@
       arrows.forEach(a => a.disabled = true);
       const release = () => { busy = false; arrows.forEach(a => a.disabled = false); };
       const next = (idx + dir + AROMAS.length) % AROMAS.length;
+      announceAroma(next);
       swapTexts(next, dir);
       if (fluid) {
         fluid.transition(dir, next);
@@ -318,7 +353,7 @@
     const mdesc = document.querySelector('.m-car-desc');
     let mi = 0, mfront = 0, mbusy = false;
     let mScene = null, mEng = null, mProg = 0, mDirU = 1;
-    if (!NO_AROMA_FLUID && window.GLEngine && !REDUCED && document.documentElement.clientWidth <= 768) {
+    if (!NO_AROMA_FLUID && window.GLEngine && !REDUCED && document.documentElement.clientWidth <= MOBILE_MAX) {
       try {
         mEng = new GLEngine();
         const cv = document.createElement('canvas');
@@ -357,9 +392,10 @@
       if (mbusy) return; mbusy = true;
       mArm();
       const next = (mi + dir + AROMAS.length) % AROMAS.length;
+      announceAroma(next);
       mDirU = dir;
       cascadeCaption(mcap, AROMAS[next].caption);
-      swapDescDir(mdesc, AROMAS[next].desc.replace(/<br>/g, ' '), dir);
+      swapDescDir(mdesc, (AROMAS[next].mobileDesc || AROMAS[next].desc).replace(/<br>/g, ' '), dir);
       if (mScene && mScene.ready) {
         mEng.swapTexture(mScene, 'uTo', AROMAS[next].m, ok => {
           if (!ok) { mi = next; mbusy = false; return; }
@@ -506,6 +542,6 @@
       });
       requestAnimationFrame(paraTick);
     };
-    requestAnimationFrame(paraTick);
+    if (!MOBILE && items.length) requestAnimationFrame(paraTick);
   }
 })();

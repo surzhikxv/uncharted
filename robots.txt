@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://surzhikxv.github.io/uncharted/sitemap.xml

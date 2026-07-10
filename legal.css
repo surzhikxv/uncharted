@@ -96,6 +96,7 @@ a:hover { text-decoration: underline; }
   font-family: 'Tenor Sans', sans-serif; font-weight: 400;
   font-size: clamp(29px, 5vw, 44px); line-height: 1.15;
   letter-spacing: .01em; text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 .legal-updated {
   color: var(--muted); font-size: 14px;

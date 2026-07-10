@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Каталог — UNCHARTED | Парфюмированная уходовая косметика</title>
 <meta name="description" content="Каталог UNCHARTED: парфюмированные гели для душа и кремы для рук и тела. Ароматы дальних мест — Камчатка, Намиб, Мьянма, Шотландия. Без парабенов, vegan.">
+<meta name="theme-color" content="#FAF4F2">
+<link rel="canonical" href="https://surzhikxv.github.io/uncharted/catalog.html">
 <meta property="og:title" content="Каталог UNCHARTED">
 <meta property="og:description" content="Парфюмированные гели для душа и кремы для рук и тела. Ароматы дальних, почти неизведанных мест.">
 <meta property="og:type" content="website">
@@ -12,10 +14,30 @@
 <meta property="og:image" content="https://surzhikxv.github.io/uncharted/public/images/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Каталог UNCHARTED">
+<meta name="twitter:description" content="Парфюмированные гели для душа и кремы для рук и тела с ароматами дальних мест.">
+<meta name="twitter:image" content="https://surzhikxv.github.io/uncharted/public/images/og.jpg">
 <link rel="icon" type="image/svg+xml" href="public/images/logo.svg">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="anim.css">
-<link rel="stylesheet" href="catalog.css">
+<link rel="preload" as="image" href="public/images/catalog/gel-450-kamchatka-veil.webp">
+<link rel="stylesheet" href="styles.css?v=20260710-1">
+<link rel="stylesheet" href="anim.css?v=20260710-1">
+<link rel="stylesheet" href="catalog.css?v=20260710-2">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Каталог UNCHARTED",
+  "url": "https://surzhikxv.github.io/uncharted/catalog.html",
+  "inLanguage": "ru-RU",
+  "mainEntity": {
+    "@type": "ItemList",
+    "name": "Парфюмированная уходовая косметика UNCHARTED",
+    "numberOfItems": 12
+  }
+}
+</script>
 </head>
 <body class="cat-body">
 <div class="cat">
@@ -45,7 +67,7 @@
       <ul class="cat-grid">
 
         <li class="cat-card" data-cat="gel-450">
-          <div class="cat-photo"><img src="public/images/catalog/gel-450-kamchatka-veil.webp" alt="Гель для душа UNCHARTED KAMCHATKA VEIL, 450 мл — флакон с помпой среди льда, белых цветов и чёрного перца" loading="lazy" width="880" height="1100"></div>
+          <div class="cat-photo"><img src="public/images/catalog/gel-450-kamchatka-veil.webp" alt="Гель для душа UNCHARTED KAMCHATKA VEIL, 450 мл — флакон с помпой среди льда, белых цветов и чёрного перца" loading="eager" fetchpriority="high" width="880" height="1100"></div>
           <p class="cat-name">Kamchatka Veil</p>
           <p class="cat-type">Гель для душа</p>
           <p class="cat-vol">450 мл</p>
@@ -227,9 +249,9 @@
 
 <div class="buy-modal" id="buyModal" hidden>
   <div class="buy-overlay" data-close></div>
-  <div class="buy-card" role="dialog" aria-modal="true" aria-label="Где купить">
+  <div class="buy-card" role="dialog" aria-modal="true" aria-labelledby="buyTitle">
     <button class="buy-close" data-close aria-label="Закрыть">&#10005;</button>
-    <p class="buy-title">ГДЕ КУПИТЬ</p>
+    <p class="buy-title" id="buyTitle">ГДЕ КУПИТЬ</p>
     <a class="buy-row" data-link="goldapple" href="#" target="_blank" rel="noopener"><img src="public/images/icon-660.svg" alt="">Золотое яблоко</a>
     <a class="buy-row" data-link="letu" href="#" target="_blank" rel="noopener"><span class="buy-letu"><img src="public/images/icon-684.svg" alt=""><img class="buy-letu-glyph" src="public/images/icon-687.svg" alt=""></span>ЛЭТУАЛЬ</a>
     <a class="buy-row" data-link="ozon" href="#" target="_blank" rel="noopener"><img src="public/images/icon-680.svg" alt="">Ozon</a>
@@ -248,6 +270,6 @@
   fit();
 })();
 </script>
-<script src="app.js" defer></script>
+<script src="app.js?v=20260710-2" defer></script>
 </body>
 </html>

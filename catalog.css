@@ -262,8 +262,18 @@ html { scroll-behavior: smooth; }
   .cat-name { margin-top: 14px; font-size: 15px; letter-spacing: .06em; }
   .cat-type { margin-top: 5px; font-size: 12.5px; }
   .cat-vol { margin-top: 4px; font-size: 13px; }
-  .cat-actions { flex-direction: column; gap: 8px; margin-top: 14px; }
-  .cat-btn { height: 42px; font-size: 13px; border-radius: 7px; }
+  .cat-actions {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 0;
+  }
+  .cat-btn {
+    flex: none;
+    height: 42px;
+    font-size: 13px;
+    border-radius: 7px;
+  }
 
   .cat-footer { display: none; }
   .cat-footer-m {

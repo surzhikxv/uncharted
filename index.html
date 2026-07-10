@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>UNCHARTED — парфюмированная уходовая косметика</title>
 <meta name="description" content="UNCHARTED — парфюмированные гели для душа и кремы для рук и тела. Каждый аромат — история далёкого места: Камчатка, пустыня Намиб, тропики Мьянмы. Без парабенов, vegan.">
+<meta name="theme-color" content="#FAF4F2">
+<link rel="canonical" href="https://surzhikxv.github.io/uncharted/">
 <meta property="og:title" content="UNCHARTED — парфюмированная уходовая косметика">
 <meta property="og:description" content="Ароматы дальних, почти неизведанных мест: гели для душа и кремы для рук и тела. Без парабенов, vegan.">
 <meta property="og:type" content="website">
@@ -12,10 +14,44 @@
 <meta property="og:image" content="https://surzhikxv.github.io/uncharted/public/images/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="UNCHARTED — парфюмированная уходовая косметика">
+<meta name="twitter:description" content="Ароматы дальних, почти неизведанных мест: гели для душа и кремы для рук и тела.">
+<meta name="twitter:image" content="https://surzhikxv.github.io/uncharted/public/images/og.jpg">
 <link rel="icon" type="image/svg+xml" href="public/images/logo.svg">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="mobile.css?v=20260710-24">
-<link rel="stylesheet" href="anim.css">
+<link rel="preload" as="image" href="public/images/m/hero-woman.webp" media="(max-width: 768px)">
+<link rel="preload" as="image" href="public/images/render/hero-woman.webp" media="(min-width: 1200px)">
+<link rel="stylesheet" href="styles.css?v=20260710-1">
+<link rel="stylesheet" href="mobile.css?v=20260710-32">
+<link rel="stylesheet" href="anim.css?v=20260710-1">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://surzhikxv.github.io/uncharted/#website",
+      "url": "https://surzhikxv.github.io/uncharted/",
+      "name": "UNCHARTED",
+      "description": "Парфюмированная уходовая косметика, вдохновлённая дальними местами.",
+      "inLanguage": "ru-RU",
+      "publisher": { "@id": "https://surzhikxv.github.io/uncharted/#organization" }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://surzhikxv.github.io/uncharted/#organization",
+      "name": "UNCHARTED",
+      "url": "https://surzhikxv.github.io/uncharted/",
+      "logo": "https://surzhikxv.github.io/uncharted/public/images/logo.svg",
+      "sameAs": [
+        "https://vk.com/unchartedcosmetics",
+        "https://www.instagram.com/uncharted_cosmetics/"
+      ]
+    }
+  ]
+}
+</script>
 </head>
 <body>
 
@@ -29,7 +65,7 @@
   </nav>
 </header>
 
-<div class="page">
+<main class="page" id="desktop-main">
 
   <!-- 521:582 catalog texture bg -->
   <img class="abs n582" src="public/images/521-582.webp" alt="" loading="lazy">
@@ -92,7 +128,7 @@
   <div class="abs n628"></div>
 
   <!-- 521:629 АРОМАТЫ -->
-  <h2 class="t up n629">АРОМАТЫ</h2>
+  <h2 class="t up n629" id="desktop-aromas-title">АРОМАТЫ</h2>
 
   <!-- 521:630 giant uncharted -->
   <p class="t up n630">uncharted</p>
@@ -256,7 +292,7 @@
   <p class="t n729a">когда вода смывает дневную суету,<br>остаются только вы и место…</p>
   <p class="t n729b">где шум города растворяется в звуках природы</p>
 
-</div>
+</main>
 
 <div class="m">
 
@@ -268,6 +304,8 @@
       <a href="#m-contacts">контакты</a>
     </nav>
   </header>
+
+  <main class="m-main" id="mobile-main">
 
   <section class="m-hero">
     <img class="m-hero-bg" src="public/images/m/hero-woman.webp" alt="">
@@ -309,7 +347,7 @@
     <div class="m-prop-diagram m-prop-diagram--cream m-rv">
       <div class="m-prop-figure" aria-hidden="true">
         <img class="m-prop-lines" src="public/images/m/props-cream-lines.svg" alt="">
-        <img class="m-prop-drop m-prop-drop--cream" src="public/images/m/props-cream.png" alt="">
+        <img class="m-prop-drop m-prop-drop--cream" src="public/images/m/props-cream.webp" alt="">
         <span class="m-prop-dot m-prop-dot--lt"></span>
         <span class="m-prop-dot m-prop-dot--rt"></span>
         <span class="m-prop-dot m-prop-dot--lm"></span>
@@ -331,7 +369,7 @@
       <div class="m-prop-figure" aria-hidden="true">
         <img class="m-prop-lines" src="public/images/m/props-gel-lines.svg" alt="">
         <span class="m-prop-drop-fill"></span>
-        <img class="m-prop-drop m-prop-drop--gel" src="public/images/m/props-gel.png" alt="">
+        <img class="m-prop-drop m-prop-drop--gel" src="public/images/m/props-gel.webp" alt="">
         <span class="m-prop-dot m-prop-dot--lt"></span>
         <span class="m-prop-dot m-prop-dot--rt"></span>
         <span class="m-prop-dot m-prop-dot--lm"></span>
@@ -352,21 +390,21 @@
   </section>
 
   <section class="m-shore">
-    <img class="m-pump" src="public/images/m/pump-cutout.png" alt="" loading="lazy">
-    <img class="m-pump m-pump-head" src="public/images/m/pump-cutout.png" alt="" loading="lazy">
+    <img class="m-pump" src="public/images/m/pump-cutout.webp" alt="" loading="lazy">
+    <img class="m-pump m-pump-head" src="public/images/m/pump-cutout.webp" alt="" loading="lazy">
     <p class="m-quote m-quote--one m-rv">когда вода смывает дневную<br>суету, остаются только вы<br>и место...</p>
     <p class="m-quote m-quote--two m-rv">где шум города растворяется в<br>звуках природы</p>
     <img class="m-shore-ridge" src="public/images/m/shore.webp" alt="" loading="lazy">
     <p class="m-shore-word" aria-hidden="true">uncharted</p>
   </section>
 
-  <section class="m-aromas">
-    <h2 class="m-h2 m-rv">АРОМАТЫ</h2>
+  <section class="m-aromas" aria-labelledby="mobile-aromas-title">
+    <h2 class="m-h2 m-rv" id="mobile-aromas-title">АРОМАТЫ</h2>
     <div class="m-aroma-board m-rv">
       <div class="m-scents">
         <p class="m-scents-h">НАШИ ОТДУШКИ</p>
-        <p class="m-scents-t">— это результат кропотливого отбора из сотен образцов и выбора респондентов</p>
-        <p class="m-scents-q">высокое качество отдушек прямиком из европейских парфюмерных домов</p>
+        <p class="m-scents-t">— результат отбора из сотен образцов</p>
+        <p class="m-scents-q">отдушки из европейских парфюмерных домов</p>
       </div>
       <div class="m-car">
         <button class="m-car-arrow m-car-prev" aria-label="Предыдущий аромат"></button>
@@ -377,7 +415,7 @@
         <button class="m-car-arrow m-car-next" aria-label="Следующий аромат"></button>
       </div>
       <p class="m-car-caption fade-swap">/ MANGO BLISS</p>
-      <p class="m-car-desc fade-swap"><span class="ts4">аромат MANGO BLISS</span> — билет в неизведанные уголки тропиков мьянмы, где сладкий аромат манго переплетается с ежевикой, иланг-илангом и ноткой пачули</p>
+      <p class="m-car-desc fade-swap"><span class="ts4">аромат MANGO BLISS</span> — манго, ежевика, иланг-иланг и пачули</p>
     </div>
   </section>
 
@@ -396,6 +434,8 @@
       <p class="m-thesis-t">Каждый аромат UNCHARTED — это многослойная композиция, где ноты сменяют друг друга, создавая новые ощущения и пробуждая воображение.</p>
     </article>
   </section>
+
+  </main>
 
   <footer class="m-footer" id="m-contacts">
     <p class="m-wordmark">uncharted</p>
@@ -431,11 +471,13 @@
 
 </div>
 
+<p class="sr-only" id="aromaStatus" aria-live="polite" aria-atomic="true"></p>
+
 <div class="buy-modal" id="buyModal" hidden>
   <div class="buy-overlay" data-close></div>
-  <div class="buy-card" role="dialog" aria-modal="true" aria-label="Где купить">
+  <div class="buy-card" role="dialog" aria-modal="true" aria-labelledby="buyTitle">
     <button class="buy-close" data-close aria-label="Закрыть">&#10005;</button>
-    <p class="buy-title">ГДЕ КУПИТЬ</p>
+    <p class="buy-title" id="buyTitle">ГДЕ КУПИТЬ</p>
     <a class="buy-row" data-link="goldapple" href="#" target="_blank" rel="noopener"><img src="public/images/icon-660.svg" alt="">Золотое яблоко</a>
     <a class="buy-row" data-link="letu" href="#" target="_blank" rel="noopener"><span class="buy-letu"><img src="public/images/icon-684.svg" alt=""><img class="buy-letu-glyph" src="public/images/icon-687.svg" alt=""></span>ЛЭТУАЛЬ</a>
     <a class="buy-row" data-link="ozon" href="#" target="_blank" rel="noopener"><img src="public/images/icon-680.svg" alt="">Ozon</a>
@@ -457,6 +499,6 @@
   fit();
 })();
 </script>
-<script src="shaders.js" defer></script><script src="app.js" defer></script>
+<script src="shaders.js" defer></script><script src="app.js?v=20260710-3" defer></script>
 </body>
 </html>

@@ -14,7 +14,7 @@
 <meta property="og:image:height" content="630">
 <link rel="icon" type="image/svg+xml" href="public/images/logo.svg">
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="mobile.css">
+<link rel="stylesheet" href="mobile.css?v=20260710-24">
 <link rel="stylesheet" href="anim.css">
 </head>
 <body>
@@ -260,129 +260,143 @@
 
 <div class="m">
 
-  <!-- ШАПКА -->
-  <header class="m-header">
-    <a class="m-logo" href="index.html" aria-label="UNCHARTED — на главную"><img src="public/images/logo.svg" alt="UNCHARTED"></a>
-    <nav class="m-nav" aria-label="Основная навигация">
+  <header class="m-topbar">
+    <a class="m-top-logo" href="index.html" aria-label="UNCHARTED — на главную"><img src="public/images/logo.svg" alt="UNCHARTED"></a>
+    <nav class="m-top-nav" aria-label="Основная навигация">
       <a href="#m-about">о бренде</a>
-      <a href="catalog.html">каталог</a>
+      <a href="#m-catalog">каталог</a>
       <a href="#m-contacts">контакты</a>
     </nav>
   </header>
 
-  <!-- ХИРО: текст поверх пейзажа, как на десктопе -->
   <section class="m-hero">
     <img class="m-hero-bg" src="public/images/m/hero-woman.webp" alt="">
-    <div class="m-hero-inner">
-      <p class="m-hero-text">Парфюмированная уходовая косметика для&nbsp;тех, кто открывает новые горизонты через&nbsp;ароматы</p>
+    <div class="m-hero-inner m-rv">
+      <h1 class="m-hero-text">Парфюмированная уходовая косметика для&nbsp;тех, кто открывает новые горизонты через&nbsp;ароматы</h1>
       <a class="m-btn" href="catalog.html">каталог</a>
     </div>
   </section>
 
-  <!-- ИНТРО -->
-  <section class="m-intro" id="m-about">
-    <p class="m-rv">В ритме города так легко забыть о себе...</p>
-    <p class="m-rv">Мы создали <span class="m-brand">UNCHARTED</span>, чтобы вернуть вам уединение и&nbsp;свежесть природы</p>
-    <p class="m-rv">Каждый аромат — это история далёкого, почти неизведанного места: вулканов Камчатки, пустыни Намиб, тропиков Мьянмы…</p>
-  </section>
-
-  <!-- ФОТОЛЕНТА -->
-  <div class="m-band m-rv"><img src="public/images/m/canyon.webp" alt="" loading="lazy"></div>
-
-  <!-- КАТАЛОГ-ТИЗЕР: горизонтальный скролл всех продуктов -->
-  <section class="m-teaser">
-    <div class="m-teaser-row m-rv">
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/gel-450-kamchatka-veil.webp" alt="Гель для душа KAMCHATKA VEIL — открыть каталог" loading="lazy"><span class="m-teaser-cap">Kamchatka Veil<small>Гель для душа · 450 мл</small></span></a>
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/gel-450-islay-smoke.webp" alt="Гель для душа ISLAY SMOKE — открыть каталог" loading="lazy"><span class="m-teaser-cap">Islay Smoke<small>Гель для душа · 450 мл</small></span></a>
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/gel-450-mango-bliss.webp" alt="Гель для душа MANGO BLISS — открыть каталог" loading="lazy"><span class="m-teaser-cap">Mango Bliss<small>Гель для душа · 450 мл</small></span></a>
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-450-citrus-vetiver.webp" alt="Крем для рук и тела CITRUS VETIVER — открыть каталог" loading="lazy"><span class="m-teaser-cap">Citrus Vetiver<small>Крем для рук и тела · 450 мл</small></span></a>
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-450-frozen-black-pepper.webp" alt="Крем для рук и тела FROZEN BLACK PEPPER — открыть каталог" loading="lazy"><span class="m-teaser-cap">Frozen Black Pepper<small>Крем для рук и тела · 450 мл</small></span></a>
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-450-spicy-frangipani.webp" alt="Крем для рук и тела SPICY FRANGIPANI — открыть каталог" loading="lazy"><span class="m-teaser-cap">Spicy Frangipani<small>Крем для рук и тела · 450 мл</small></span></a>
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-450-mango-bliss.webp" alt="Крем для рук и тела MANGO BLISS — открыть каталог" loading="lazy"><span class="m-teaser-cap">Mango Bliss<small>Крем для рук и тела · 450 мл</small></span></a>
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-450-islay-smoke.webp" alt="Крем для рук и тела ISLAY SMOKE — открыть каталог" loading="lazy"><span class="m-teaser-cap">Islay Smoke<small>Крем для рук и тела · 450 мл</small></span></a>
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-50-citrus-vetiver.webp" alt="Крем для рук и тела CITRUS VETIVER 50 мл — открыть каталог" loading="lazy"><span class="m-teaser-cap">Citrus Vetiver<small>Крем для рук и тела · 50 мл</small></span></a>
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-50-mango-bliss.webp" alt="Крем для рук и тела MANGO BLISS 50 мл — открыть каталог" loading="lazy"><span class="m-teaser-cap">Mango Bliss<small>Крем для рук и тела · 50 мл</small></span></a>
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-50-frozen-black-pepper.webp" alt="Крем для рук и тела FROZEN BLACK PEPPER 50 мл — открыть каталог" loading="lazy"><span class="m-teaser-cap">Frozen Black Pepper<small>Крем для рук и тела · 50 мл</small></span></a>
-      <a class="m-teaser-card" href="catalog.html"><img src="public/images/catalog/cream-50-spicy-frangipani.webp" alt="Крем для рук и тела SPICY FRANGIPANI 50 мл — открыть каталог" loading="lazy"><span class="m-teaser-cap">Spicy Frangipani<small>Крем для рук и тела · 50 мл</small></span></a>
+  <section class="m-catalog" aria-label="Каталог UNCHARTED">
+    <div class="m-product-row m-rv">
+      <article class="m-product-card">
+        <a class="m-product-photo" href="catalog.html" aria-label="Kamchatka Veil — гель для душа, открыть каталог"><img src="public/images/m/card-1.webp" alt="Гель для душа UNCHARTED KAMCHATKA VEIL, 450 мл" loading="lazy"></a>
+        <button class="m-product-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="m-product-card">
+        <a class="m-product-photo" href="catalog.html" aria-label="Islay Smoke — гель для душа, открыть каталог"><img src="public/images/m/card-2.webp" alt="Гель для душа UNCHARTED ISLAY SMOKE, 450 мл" loading="lazy"></a>
+        <button class="m-product-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="m-product-card">
+        <a class="m-product-photo" href="catalog.html" aria-label="Mango Bliss — гель для душа, открыть каталог"><img src="public/images/m/card-3.webp" alt="Гель для душа UNCHARTED MANGO BLISS, 450 мл" loading="lazy"></a>
+        <button class="m-product-buy" type="button" data-buy>купить</button>
+      </article>
+      <article class="m-product-card">
+        <a class="m-product-photo" href="catalog.html" aria-label="Citrus Vetiver — крем для рук и тела, открыть каталог"><img src="public/images/m/card-4.webp" alt="Крем для рук и тела UNCHARTED CITRUS VETIVER, 450 мл" loading="lazy"></a>
+        <button class="m-product-buy" type="button" data-buy>купить</button>
+      </article>
     </div>
-    <a class="m-btn m-teaser-btn m-rv" href="catalog.html">весь каталог</a>
+    <div class="m-intro" id="m-about">
+      <p class="m-intro-line m-intro-line--one m-rv">В ритме города так легко забыть о себе...</p>
+      <p class="m-intro-line m-intro-line--two m-rv">Мы создали <span class="m-brand">UNCHARTED</span>, чтобы вернуть вам уединение и&nbsp;свежесть природы</p>
+      <p class="m-intro-line m-intro-line--three m-rv">Каждый аромат — это история далёкого, почти неизведанного места: вулканов Камчатки, пустыни Намиб, тропиков Мьянмы…</p>
+    </div>
+    <span id="m-catalog" class="m-anchor"></span>
   </section>
 
-  <!-- СВОЙСТВА ГЕЛЕЙ И КРЕМОВ -->
   <section class="m-props">
     <h2 class="m-h m-rv">свойства гелей и&nbsp;кремов</h2>
-    <div class="m-diag m-rv">
-      <img class="m-diag-img" src="public/images/m/geldiag.webp" alt="Капля крема для рук и тела" loading="lazy">
-      <p class="m-diag-name">крем для рук и тела</p>
-      <ul class="m-diag-list">
-        <li>Стойкий аромат на теле</li>
-        <li>Питает, увлажняет и заживляет кожу</li>
-        <li>Содержит масла ши, кокоса, арганы и органическое масло черной оливы</li>
-        <li>Витамин Е, мочевина и экстракт ванили в составе</li>
-        <li>Быстро впитывается, не оставляет липкости и жирных следов</li>
-        <li>Устраняет сухость и раздражение</li>
-      </ul>
-    </div>
-    <div class="m-diag m-rv">
-      <img class="m-diag-img" src="public/images/m/creamdiag.webp" alt="Капля геля для душа" loading="lazy">
-      <p class="m-diag-name">гель для душа</p>
-      <ul class="m-diag-list m-diag-list--geo">
-        <li>Большой объем</li>
-        <li>Насыщенный многогранный аромат</li>
-        <li>Не сушит кожу</li>
-        <li>Содержит сок алоэ вера, глицерин, пантенол, бетаин и кокосовое масло</li>
-        <li>хорошо пенится, густая текстура</li>
-        <li>для мужчин и женщин</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- БЕРЕГ + ЦИТАТА -->
-  <section class="m-shore">
-    <img class="m-shore-bg" src="public/images/m/shore.webp" alt="" loading="lazy">
-    <p class="m-quote m-rv">когда вода смывает дневную суету, остаются только вы и место, где шум города растворяется в&nbsp;звуках природы</p>
-  </section>
-
-  <!-- АРОМАТЫ -->
-  <section class="m-aromas">
-    <p class="m-giant m-rv" aria-hidden="true">uncharted</p>
-    <h2 class="m-h2 m-rv">АРОМАТЫ</h2>
-    <div class="m-car m-rv">
-      <button class="m-car-arrow m-car-prev" aria-label="Предыдущий аромат"></button>
-      <div class="m-car-stage">
-        <img class="m-car-img is-on" src="public/images/m/bottle-mango.webp" alt="Флакон в форме пейзажа аромата">
-        <img class="m-car-img" src="" alt="" aria-hidden="true">
+    <div class="m-prop-diagram m-prop-diagram--cream m-rv">
+      <div class="m-prop-figure" aria-hidden="true">
+        <img class="m-prop-lines" src="public/images/m/props-cream-lines.svg" alt="">
+        <img class="m-prop-drop m-prop-drop--cream" src="public/images/m/props-cream.png" alt="">
+        <span class="m-prop-dot m-prop-dot--lt"></span>
+        <span class="m-prop-dot m-prop-dot--rt"></span>
+        <span class="m-prop-dot m-prop-dot--lm"></span>
+        <span class="m-prop-dot m-prop-dot--rm"></span>
+        <span class="m-prop-dot m-prop-dot--lb"></span>
+        <span class="m-prop-dot m-prop-dot--rb"></span>
       </div>
-      <button class="m-car-arrow m-car-next" aria-label="Следующий аромат"></button>
+      <ul class="m-prop-labels">
+        <li class="m-prop-label m-prop-label--left m-prop-label--top">стойкий<br>аромат<br>на теле</li>
+        <li class="m-prop-label m-prop-label--left m-prop-label--middle">обновляет<br>липидный<br>слой кожи</li>
+        <li class="m-prop-label m-prop-label--left m-prop-label--bottom">быстро<br>впитывается,<br>не оставляя<br>липкости</li>
+        <li class="m-prop-label m-prop-label--right m-prop-label--top">устраняет<br>сухость<br>и раздражение</li>
+        <li class="m-prop-label m-prop-label--right m-prop-label--middle">натуральные<br>компоненты</li>
+        <li class="m-prop-label m-prop-label--right m-prop-label--bottom">питает,<br>увлажняет<br>и заживляет<br>кожу</li>
+      </ul>
+      <p class="m-prop-name">крем для рук и тела</p>
     </div>
-    <p class="m-car-caption fade-swap">/ MANGO BLISS</p>
-    <p class="m-car-desc fade-swap"><span class="ts4">аромат MANGO BLISS</span> — билет в неизведанные уголки тропиков мьянмы, где сладкий аромат манго переплетается с ежевикой, иланг-илангом и ноткой пачули</p>
-    <div class="m-scents m-rv">
-      <p class="m-scents-h">НАШИ ОТДУШКИ</p>
-      <p class="m-scents-t">— это результат кропотливого отбора из сотен образцов и выбора респондентов</p>
-      <p class="m-scents-q">высокое качество отдушек прямиком из европейских парфюмерных домов</p>
+    <div class="m-prop-diagram m-prop-diagram--gel m-rv">
+      <div class="m-prop-figure" aria-hidden="true">
+        <img class="m-prop-lines" src="public/images/m/props-gel-lines.svg" alt="">
+        <span class="m-prop-drop-fill"></span>
+        <img class="m-prop-drop m-prop-drop--gel" src="public/images/m/props-gel.png" alt="">
+        <span class="m-prop-dot m-prop-dot--lt"></span>
+        <span class="m-prop-dot m-prop-dot--rt"></span>
+        <span class="m-prop-dot m-prop-dot--lm"></span>
+        <span class="m-prop-dot m-prop-dot--rm"></span>
+        <span class="m-prop-dot m-prop-dot--lb"></span>
+        <span class="m-prop-dot m-prop-dot--rb"></span>
+      </div>
+      <ul class="m-prop-labels m-prop-labels--geo">
+        <li class="m-prop-label m-prop-label--left m-prop-label--top">насыщенный<br>многогранный<br>аромат</li>
+        <li class="m-prop-label m-prop-label--left m-prop-label--middle">большой<br>объем</li>
+        <li class="m-prop-label m-prop-label--left m-prop-label--bottom">натуральные<br>компоненты</li>
+        <li class="m-prop-label m-prop-label--right m-prop-label--top">хорошо<br>пенится</li>
+        <li class="m-prop-label m-prop-label--right m-prop-label--middle">густая<br>текстура</li>
+        <li class="m-prop-label m-prop-label--right m-prop-label--bottom">не сушит<br>кожу</li>
+      </ul>
+      <p class="m-prop-name">гель для душа</p>
     </div>
   </section>
 
-  <!-- UNCHARTED — ЭТО -->
+  <section class="m-shore">
+    <img class="m-pump" src="public/images/m/pump-cutout.png" alt="" loading="lazy">
+    <img class="m-pump m-pump-head" src="public/images/m/pump-cutout.png" alt="" loading="lazy">
+    <p class="m-quote m-quote--one m-rv">когда вода смывает дневную<br>суету, остаются только вы<br>и место...</p>
+    <p class="m-quote m-quote--two m-rv">где шум города растворяется в<br>звуках природы</p>
+    <img class="m-shore-ridge" src="public/images/m/shore.webp" alt="" loading="lazy">
+    <p class="m-shore-word" aria-hidden="true">uncharted</p>
+  </section>
+
+  <section class="m-aromas">
+    <h2 class="m-h2 m-rv">АРОМАТЫ</h2>
+    <div class="m-aroma-board m-rv">
+      <div class="m-scents">
+        <p class="m-scents-h">НАШИ ОТДУШКИ</p>
+        <p class="m-scents-t">— это результат кропотливого отбора из сотен образцов и выбора респондентов</p>
+        <p class="m-scents-q">высокое качество отдушек прямиком из европейских парфюмерных домов</p>
+      </div>
+      <div class="m-car">
+        <button class="m-car-arrow m-car-prev" aria-label="Предыдущий аромат"></button>
+        <div class="m-car-stage">
+          <img class="m-car-img is-on" src="public/images/m/bottle-mango.webp" alt="Флакон в форме пейзажа аромата">
+          <img class="m-car-img" src="public/images/m/bottle-mango.webp" alt="" aria-hidden="true">
+        </div>
+        <button class="m-car-arrow m-car-next" aria-label="Следующий аромат"></button>
+      </div>
+      <p class="m-car-caption fade-swap">/ MANGO BLISS</p>
+      <p class="m-car-desc fade-swap"><span class="ts4">аромат MANGO BLISS</span> — билет в неизведанные уголки тропиков мьянмы, где сладкий аромат манго переплетается с ежевикой, иланг-илангом и ноткой пачули</p>
+    </div>
+  </section>
+
   <section class="m-eto">
     <h2 class="m-h2 m-h2--dark m-rv">UNCHARTED — ЭТО</h2>
-    <div class="m-thesis m-rv">
+    <article class="m-thesis m-rv">
       <p class="m-thesis-h">КАЧЕСТВО БЕЗ КОМПРОМИССОВ</p>
       <p class="m-thesis-t">Мы тщательно контролируем всё: от формул и текстур до упаковки и деталей флакона, чтобы каждый продукт был безопасным, эстетичным и совершенным в использовании.</p>
-    </div>
-    <div class="m-thesis m-rv">
+    </article>
+    <article class="m-thesis m-rv">
       <p class="m-thesis-h">УХОД КАК ПЕРЕЗАГРУЗКА</p>
       <p class="m-thesis-t">Уход, который помогает замедлиться, восстановиться, почувствовать внутренний баланс и оказаться вдали от шума города.</p>
-    </div>
-    <div class="m-thesis m-rv">
+    </article>
+    <article class="m-thesis m-rv">
       <p class="m-thesis-h">МНОГОГРАННЫЕ АРОМАТЫ</p>
       <p class="m-thesis-t">Каждый аромат UNCHARTED — это многослойная композиция, где ноты сменяют друг друга, создавая новые ощущения и пробуждая воображение.</p>
-    </div>
-    <div class="m-eto-view m-rv"><img src="public/images/m/canyon.webp" alt="" loading="lazy"></div>
+    </article>
   </section>
 
-  <!-- ФУТЕР -->
   <footer class="m-footer" id="m-contacts">
     <p class="m-wordmark">uncharted</p>
     <div class="m-foot-groups">

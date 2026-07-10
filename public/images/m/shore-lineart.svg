@@ -1,0 +1,29 @@
+<svg width="900" height="1600" viewBox="0 0 900 1600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="450" y1="0" x2="450" y2="1600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFDFC"/>
+      <stop offset="0.48" stop-color="#FFF9F5"/>
+      <stop offset="0.72" stop-color="#FDF3EC"/>
+      <stop offset="1" stop-color="#FAEFE7"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="900" height="1600" fill="url(#bg)"/>
+
+  <g stroke="#EBCFB8" stroke-width="2" stroke-linecap="round" opacity="0.42">
+    <path d="M520 -26C402 47 300 112 205 191C118 264 54 325-24 354"/>
+    <path d="M612 -25C493 53 382 122 278 205C176 286 86 357-25 388"/>
+    <path d="M704 -25C583 57 467 132 357 218C247 305 136 386-25 418"/>
+    <path d="M796 -24C671 62 554 141 437 232C318 324 186 412-25 449"/>
+    <path d="M888 -22C758 66 641 151 516 246C389 343 236 436-25 474"/>
+    <path d="M980 -20C845 72 725 162 596 261C458 367 282 461-25 497"/>
+  </g>
+
+  <g stroke="#E8CBB2" stroke-linecap="round" opacity="0.48">
+    <path d="M704 837C717 747 738 648 771 580C781 559 792 548 801 557C815 570 823 575 838 579C857 584 862 626 873 657C885 692 902 708 926 724" stroke-width="2.4"/>
+    <path d="M731 826C740 741 756 668 779 610C787 590 795 578 802 575C810 581 817 592 825 608C833 625 839 638 847 651C855 666 865 682 882 697" stroke-width="1.6"/>
+    <path d="M759 817C765 739 776 683 789 635C794 616 799 603 803 596C809 605 814 621 819 640C825 661 832 680 842 700" stroke-width="1.3"/>
+    <path d="M887 665C897 672 910 682 927 698" stroke-width="1.5"/>
+  </g>
+
+</svg>

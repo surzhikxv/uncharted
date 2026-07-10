@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UNCHARTED — редактор мобильного блока</title>
+<style>html,body{margin:0;min-height:100%;}body{background:#efedeb;}</style>
+</head>
+<body>
+<style>
+  @font-face {
+    font-family: 'Tenor Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: url('fonts/tenor-sans-cyrillic.woff2') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'Geometria';
+    font-style: normal;
+    font-weight: 400;
+    src: url('fonts/geometria-regular.woff2') format('woff2');
+  }
+
+  #uncharted-props-editor {
+    --upe-ui-bg: var(--background, #efedeb);
+    --upe-ui-fg: var(--foreground, #252321);
+    --upe-panel: var(--card, #ffffff);
+    --upe-panel-fg: var(--card-foreground, #252321);
+    --upe-muted: var(--muted, #ece8e4);
+    --upe-muted-fg: var(--muted-foreground, #6c6762);
+    --upe-border: var(--border, #d4cec8);
+    --upe-primary: var(--primary, #282522);
+    --upe-primary-fg: var(--primary-foreground, #ffffff);
+    --upe-ring: var(--ring, #c35b3f);
+    width: 100%;
+    min-width: 0;
+    color: var(--upe-ui-fg);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  #uncharted-props-editor *,
+  #uncharted-props-editor *::before,
+  #uncharted-props-editor *::after {
+    box-sizing: border-box;
+  }
+
+  #uncharted-props-editor button,
+  #uncharted-props-editor input,
+  #uncharted-props-editor select,
+  #uncharted-props-editor textarea {
+    font: inherit;
+  }
+
+  .upe-app {
+    min-height: 100vh;
+    padding: 16px;
+    background: var(--upe-ui-bg);
+  }
+
+  .upe-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 1040px;
+    margin: 0 auto 14px;
+  }
+
+  .upe-toolbar-copy {
+    color: var(--upe-muted-fg);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .upe-actions,
+  .upe-control-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .upe-button {
+    min-height: 36px;
+    padding: 7px 12px;
+    color: var(--upe-panel-fg);
+    border: 1px solid var(--upe-border);
+    border-radius: 8px;
+    background: var(--upe-panel);
+    cursor: pointer;
+  }
+
+  .upe-button--primary {
+    color: var(--upe-primary-fg);
+    border-color: var(--upe-primary);
+    background: var(--upe-primary);
+  }
+
+  .upe-button:focus-visible,
+  .upe-select:focus-visible,
+  .upe-range:focus-visible,
+  .upe-textarea:focus-visible {
+    outline: 2px solid var(--upe-ring);
+    outline-offset: 2px;
+  }
+
+  .upe-layout {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(280px, 330px);
+    gap: 16px;
+    max-width: 1040px;
+    margin: 0 auto;
+    align-items: start;
+  }
+
+  .upe-stage-column {
+    min-width: 0;
+  }
+
+  .upe-stage-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    min-height: 320px;
+    overflow: hidden;
+  }
+
+  .upe-stage {
+    position: relative;
+    flex: 0 0 auto;
+    width: 394px;
+    height: 650px;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(250, 245, 241, .18), rgba(250, 245, 241, .04)),
+      url('public/images/521-582.webp') center top / cover no-repeat,
+      #fff;
+    box-shadow: 0 12px 36px rgba(45, 35, 28, .16);
+    transform-origin: 50% 0;
+    user-select: none;
+  }
+
+  .upe-selection-box {
+    position: absolute;
+    z-index: 30;
+    display: none;
+    border: 1px solid #1677ff;
+    background: rgba(22, 119, 255, .06);
+    pointer-events: none;
+  }
+
+  .upe-selection-box::before,
+  .upe-selection-box::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border: 1px solid #1677ff;
+    background: #fff;
+  }
+
+  .upe-selection-box::before {
+    top: -4px;
+    left: -4px;
+  }
+
+  .upe-selection-box::after {
+    right: -4px;
+    bottom: -4px;
+  }
+
+  .upe-editable {
+    --upe-x: 0px;
+    --upe-y: 0px;
+    --upe-scale-x: 1;
+    --upe-scale-y: 1;
+    --upe-opacity: 1;
+    translate: var(--upe-x) var(--upe-y);
+    scale: var(--upe-scale-x) var(--upe-scale-y);
+    opacity: var(--upe-opacity);
+    transform-origin: 50% 50%;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .upe-editable:active {
+    cursor: grabbing;
+  }
+
+  .upe-props-title {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    z-index: 8;
+    width: 100%;
+    padding: 0 14px;
+    color: #c35b3f;
+    font-family: 'Tenor Sans', sans-serif;
+    font-size: 24.4px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -.015em;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .upe-diagram {
+    position: absolute;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+  }
+
+  .upe-diagram--cream {
+    top: 99px;
+    height: 252px;
+  }
+
+  .upe-diagram--gel {
+    top: 365px;
+    height: 236px;
+  }
+
+  .upe-figure {
+    position: absolute;
+    width: 53%;
+    transform: translateX(-50%);
+  }
+
+  .upe-diagram--cream .upe-figure {
+    top: 12%;
+    left: 47.5%;
+    aspect-ratio: 603.243 / 418.389;
+  }
+
+  .upe-diagram--gel .upe-figure {
+    top: 13%;
+    left: 53.25%;
+    aspect-ratio: 605.255 / 388.269;
+  }
+
+  .upe-lines,
+  .upe-drop,
+  .upe-drop-fill {
+    position: absolute;
+    display: block;
+    max-width: none;
+  }
+
+  .upe-lines {
+    inset: 0;
+    z-index: 4;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .upe-drop {
+    top: 50%;
+    left: 50%;
+    z-index: 3;
+    height: auto;
+    transform-origin: 50% 50%;
+  }
+
+  .upe-drop--cream {
+    top: 45%;
+    width: 146%;
+    transform: translate(-50%, -50%) scaleY(1.15);
+  }
+
+  .upe-drop-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+  }
+
+  .upe-drop--gel {
+    top: 57%;
+    left: 54%;
+    width: 159%;
+    transform: translate(-50%, -50%) scaleX(1.06) scaleY(1.15);
+  }
+
+  .upe-drop-fill {
+    top: 57%;
+    left: 54%;
+    z-index: 2;
+    width: 159%;
+    aspect-ratio: 1;
+    background: #fffdfc;
+    clip-path: polygon(44% 22%, 49% 25%, 54% 31%, 59% 40%, 62% 49%, 63% 57%, 61% 64%, 57% 70%, 51% 73%, 45% 74%, 39% 71%, 35% 66%, 33% 59%, 34% 51%, 37% 43%, 40% 35%, 42% 28%);
+    transform: translate(-50%, -50%) scaleX(1.06) scaleY(1.15);
+    transform-origin: 50% 50%;
+  }
+
+  .upe-dot-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .upe-dot {
+    position: absolute;
+    width: 4.5px;
+    height: 4.5px;
+    border-radius: 50%;
+    background: #c35b3f;
+    transform: translate(-50%, -50%);
+  }
+
+  .upe-diagram--cream .upe-dot--lt { left: .17%; top: 13.04%; }
+  .upe-diagram--cream .upe-dot--rt { left: 99.83%; top: 6.97%; }
+  .upe-diagram--cream .upe-dot--lm { left: .65%; top: 57.28%; }
+  .upe-diagram--cream .upe-dot--rm { left: 96.81%; top: 45.35%; }
+  .upe-diagram--cream .upe-dot--lb { left: 2.19%; top: 89.65%; }
+  .upe-diagram--cream .upe-dot--rb { left: 99.73%; top: 86.81%; }
+
+  .upe-diagram--gel .upe-dot--lt { left: 1.18%; top: 25.86%; }
+  .upe-diagram--gel .upe-dot--rt { left: 96.74%; top: 1.8%; }
+  .upe-diagram--gel .upe-dot--lm { left: .1%; top: 70.59%; }
+  .upe-diagram--gel .upe-dot--rm { left: 97.96%; top: 45.5%; }
+  .upe-diagram--gel .upe-dot--lb { left: 3.69%; top: 98.15%; }
+  .upe-diagram--gel .upe-dot--rb { left: 99.78%; top: 85%; }
+
+  .upe-label-group {
+    position: absolute;
+    inset: 0;
+    z-index: 7;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .upe-label {
+    position: absolute;
+    color: #313131;
+    font-family: 'Tenor Sans', sans-serif;
+    font-size: 10.84px;
+    font-weight: 400;
+    line-height: 1.06;
+    letter-spacing: 0;
+    transform: translateY(-50%);
+  }
+
+  .upe-label-group--left .upe-label {
+    text-align: right;
+  }
+
+  .upe-label-group--right .upe-label {
+    text-align: left;
+  }
+
+  .upe-diagram--cream .upe-label-group--left .upe-label {
+    right: 80%;
+    width: 19%;
+  }
+
+  .upe-diagram--cream .upe-label-group--right .upe-label {
+    left: 75.5%;
+    width: 20%;
+  }
+
+  .upe-diagram--cream .upe-label--top.upe-label--left { top: 19%; }
+  .upe-diagram--cream .upe-label--middle.upe-label--left { top: 44.8%; }
+  .upe-diagram--cream .upe-label--bottom.upe-label--left { top: 63.5%; }
+  .upe-diagram--cream .upe-label--top.upe-label--right { top: 16%; }
+  .upe-diagram--cream .upe-label--middle.upe-label--right { top: 37.7%; }
+  .upe-diagram--cream .upe-label--bottom.upe-label--right { top: 61.5%; }
+
+  .upe-diagram--gel .upe-label {
+    font-family: 'Geometria', sans-serif;
+  }
+
+  .upe-diagram--gel .upe-label-group--left .upe-label {
+    right: 75%;
+    width: 23%;
+  }
+
+  .upe-diagram--gel .upe-label-group--right .upe-label {
+    left: 81%;
+    width: 19%;
+  }
+
+  .upe-diagram--gel .upe-label--top.upe-label--left { top: 27.7%; }
+  .upe-diagram--gel .upe-label--middle.upe-label--left { top: 53.1%; }
+  .upe-diagram--gel .upe-label--bottom.upe-label--left { top: 68.8%; }
+  .upe-diagram--gel .upe-label--top.upe-label--right { top: 14%; }
+  .upe-diagram--gel .upe-label--middle.upe-label--right { top: 38.9%; }
+  .upe-diagram--gel .upe-label--bottom.upe-label--right { top: 61.3%; }
+
+  .upe-prop-name {
+    position: absolute;
+    right: 0;
+    left: 0;
+    z-index: 7;
+    color: #313131;
+    font-family: 'Tenor Sans', sans-serif;
+    font-size: 20.1px;
+    font-weight: 400;
+    line-height: 1;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .upe-diagram--cream .upe-prop-name { bottom: 5%; }
+  .upe-diagram--gel .upe-prop-name { bottom: 1.5%; }
+
+  .upe-controls {
+    position: sticky;
+    top: 12px;
+    display: grid;
+    gap: 14px;
+    padding: 16px;
+    color: var(--upe-panel-fg);
+    border: 1px solid var(--upe-border);
+    border-radius: 12px;
+    background: var(--upe-panel);
+  }
+
+  .upe-field {
+    display: grid;
+    gap: 7px;
+  }
+
+  .upe-field-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .upe-value {
+    color: var(--upe-muted-fg);
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+  }
+
+  .upe-select,
+  .upe-textarea {
+    width: 100%;
+    color: var(--upe-panel-fg);
+    border: 1px solid var(--upe-border);
+    border-radius: 8px;
+    background: var(--upe-panel);
+  }
+
+  .upe-select {
+    min-height: 40px;
+    padding: 7px 10px;
+  }
+
+  .upe-range {
+    width: 100%;
+    accent-color: var(--upe-primary);
+  }
+
+  .upe-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .upe-textarea {
+    min-height: 112px;
+    padding: 10px;
+    resize: vertical;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .upe-hint {
+    margin: 0;
+    color: var(--upe-muted-fg);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .upe-status {
+    min-height: 18px;
+    color: var(--upe-muted-fg);
+    font-size: 12px;
+  }
+
+  @media (max-width: 760px) {
+    .upe-app { padding: 10px; }
+    .upe-toolbar { align-items: flex-start; flex-direction: column; }
+    .upe-layout { grid-template-columns: 1fr; }
+    .upe-controls { position: static; }
+  }
+</style>
+
+<div id="uncharted-props-editor">
+  <div class="upe-app">
+    <div class="upe-toolbar">
+      <div class="upe-toolbar-copy">Кликните элемент или выберите слой. Перетаскивание — мышью; стрелки — 1 px, Shift + стрелка — 10 px.</div>
+      <div class="upe-actions">
+        <button class="upe-button" id="upe-reset-all" type="button">Сбросить всё</button>
+        <button class="upe-button upe-button--primary" id="upe-copy" type="button">Скопировать настройки</button>
+      </div>
+    </div>
+
+    <div class="upe-layout">
+      <div class="upe-stage-column">
+        <div class="upe-stage-wrap" id="upe-stage-wrap">
+          <section class="upe-stage" id="upe-stage" aria-label="Редактируемый мобильный блок свойств гелей и кремов">
+            <h2 class="upe-props-title upe-editable" data-editable data-layer="title" data-label="Заголовок">свойства гелей и кремов</h2>
+
+            <div class="upe-diagram upe-diagram--cream">
+              <div class="upe-figure">
+                <img class="upe-lines upe-editable" data-editable data-layer="cream-lines" data-label="Верхние линии" src="public/images/m/props-cream-lines.svg" alt="">
+                <img class="upe-drop upe-drop--cream upe-editable" data-editable data-layer="cream-drop" data-label="Верхняя капля" src="public/images/m/props-cream.png" alt="">
+                <div class="upe-dot-layer upe-editable" data-editable data-layer="cream-dots" data-label="Верхние точки">
+                  <span class="upe-dot upe-dot--lt"></span><span class="upe-dot upe-dot--rt"></span>
+                  <span class="upe-dot upe-dot--lm"></span><span class="upe-dot upe-dot--rm"></span>
+                  <span class="upe-dot upe-dot--lb"></span><span class="upe-dot upe-dot--rb"></span>
+                </div>
+              </div>
+
+              <ul class="upe-label-group upe-label-group--left upe-editable" data-editable data-layer="cream-left-text" data-label="Верхний текст слева">
+                <li class="upe-label upe-label--left upe-label--top">стойкий<br>аромат<br>на теле</li>
+                <li class="upe-label upe-label--left upe-label--middle">обновляет<br>липидный<br>слой кожи</li>
+                <li class="upe-label upe-label--left upe-label--bottom">быстро<br>впитывается,<br>не оставляя<br>липкости</li>
+              </ul>
+              <ul class="upe-label-group upe-label-group--right upe-editable" data-editable data-layer="cream-right-text" data-label="Верхний текст справа">
+                <li class="upe-label upe-label--right upe-label--top">устраняет<br>сухость<br>и раздражение</li>
+                <li class="upe-label upe-label--right upe-label--middle">натуральные<br>компоненты</li>
+                <li class="upe-label upe-label--right upe-label--bottom">питает,<br>увлажняет<br>и заживляет<br>кожу</li>
+              </ul>
+              <p class="upe-prop-name upe-editable" data-editable data-layer="cream-name" data-label="Подпись крема">крем для рук и тела</p>
+            </div>
+
+            <div class="upe-diagram upe-diagram--gel">
+              <div class="upe-figure">
+                <img class="upe-lines upe-editable" data-editable data-layer="gel-lines" data-label="Нижние линии" data-initial-x="-2.86" data-initial-y="12.54" src="public/images/m/props-gel-lines.svg" alt="">
+                <div class="upe-drop-layer upe-editable" data-editable data-layer="gel-drop" data-label="Нижняя капля" data-initial-y="-0.03">
+                  <span class="upe-drop-fill"></span>
+                  <img class="upe-drop upe-drop--gel" src="public/images/m/props-gel.png" alt="">
+                </div>
+                <div class="upe-dot-layer upe-editable" data-editable data-layer="gel-dots" data-label="Нижние точки" data-initial-x="-2.86" data-initial-y="12.54">
+                  <span class="upe-dot upe-dot--lt"></span><span class="upe-dot upe-dot--rt"></span>
+                  <span class="upe-dot upe-dot--lm"></span><span class="upe-dot upe-dot--rm"></span>
+                  <span class="upe-dot upe-dot--lb"></span><span class="upe-dot upe-dot--rb"></span>
+                </div>
+              </div>
+
+              <ul class="upe-label-group upe-label-group--left upe-editable" data-editable data-layer="gel-left-text" data-label="Нижний текст слева" data-initial-x="-2.86" data-initial-y="12.54">
+                <li class="upe-label upe-label--left upe-label--top">насыщенный<br>многогранный<br>аромат</li>
+                <li class="upe-label upe-label--left upe-label--middle">большой<br>объем</li>
+                <li class="upe-label upe-label--left upe-label--bottom">натуральные<br>компоненты</li>
+              </ul>
+              <ul class="upe-label-group upe-label-group--right upe-editable" data-editable data-layer="gel-right-text" data-label="Нижний текст справа" data-initial-x="-2.86" data-initial-y="12.54">
+                <li class="upe-label upe-label--right upe-label--top">хорошо<br>пенится</li>
+                <li class="upe-label upe-label--right upe-label--middle">густая<br>текстура</li>
+                <li class="upe-label upe-label--right upe-label--bottom">не сушит<br>кожу</li>
+              </ul>
+              <p class="upe-prop-name upe-editable" data-editable data-layer="gel-name" data-label="Подпись геля">гель для душа</p>
+            </div>
+
+            <div class="upe-selection-box" id="upe-selection-box" aria-hidden="true"></div>
+          </section>
+        </div>
+      </div>
+
+      <aside class="upe-controls" aria-label="Настройки выбранного слоя">
+        <label class="upe-field">
+          <span class="upe-field-heading">Слой</span>
+          <select class="upe-select" id="upe-layer-select">
+            <optgroup label="Группы">
+              <option value="group:gel-callouts">Нижние линии + точки + текст</option>
+              <option value="group:cream-callouts">Верхние линии + точки + текст</option>
+            </optgroup>
+          </select>
+        </label>
+
+        <label class="upe-field">
+          <span class="upe-field-heading"><span>По горизонтали</span><output class="upe-value" id="upe-x-value">0 px</output></span>
+          <input class="upe-range" id="upe-x" type="range" min="-160" max="160" step="0.1" value="0">
+        </label>
+
+        <label class="upe-field">
+          <span class="upe-field-heading"><span>По вертикали</span><output class="upe-value" id="upe-y-value">0 px</output></span>
+          <input class="upe-range" id="upe-y" type="range" min="-160" max="160" step="0.1" value="0">
+        </label>
+
+        <label class="upe-field">
+          <span class="upe-field-heading"><span>Ширина</span><output class="upe-value" id="upe-sx-value">100%</output></span>
+          <input class="upe-range" id="upe-sx" type="range" min="0.4" max="2" step="0.01" value="1">
+        </label>
+
+        <label class="upe-field">
+          <span class="upe-field-heading"><span>Высота</span><output class="upe-value" id="upe-sy-value">100%</output></span>
+          <input class="upe-range" id="upe-sy" type="range" min="0.4" max="2" step="0.01" value="1">
+        </label>
+
+        <label class="upe-check">
+          <input id="upe-link-scale" type="checkbox" checked>
+          <span>Менять ширину и высоту вместе</span>
+        </label>
+
+        <label class="upe-field">
+          <span class="upe-field-heading"><span>Прозрачность</span><output class="upe-value" id="upe-opacity-value">100%</output></span>
+          <input class="upe-range" id="upe-opacity" type="range" min="0.1" max="1" step="0.01" value="1">
+        </label>
+
+        <div class="upe-control-actions">
+          <button class="upe-button" id="upe-reset-layer" type="button">Сбросить слой</button>
+        </div>
+
+        <label class="upe-field">
+          <span class="upe-field-heading">Настройки</span>
+          <textarea class="upe-textarea" id="upe-export" readonly spellcheck="false"></textarea>
+        </label>
+        <p class="upe-hint">Настройки сохраняются в браузере автоматически. Чтобы передать результат, нажмите «Скопировать настройки».</p>
+        <div class="upe-status" id="upe-status" aria-live="polite"></div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+  (() => {
+    const root = document.getElementById('uncharted-props-editor');
+    const stage = document.getElementById('upe-stage');
+    const stageWrap = document.getElementById('upe-stage-wrap');
+    const selectionBox = document.getElementById('upe-selection-box');
+    const layerSelect = document.getElementById('upe-layer-select');
+    const exportBox = document.getElementById('upe-export');
+    const status = document.getElementById('upe-status');
+    const storageKey = 'uncharted-props-editor-v1';
+
+    const inputs = {
+      x: document.getElementById('upe-x'),
+      y: document.getElementById('upe-y'),
+      sx: document.getElementById('upe-sx'),
+      sy: document.getElementById('upe-sy'),
+      opacity: document.getElementById('upe-opacity')
+    };
+
+    const outputs = {
+      x: document.getElementById('upe-x-value'),
+      y: document.getElementById('upe-y-value'),
+      sx: document.getElementById('upe-sx-value'),
+      sy: document.getElementById('upe-sy-value'),
+      opacity: document.getElementById('upe-opacity-value')
+    };
+
+    const linkScale = document.getElementById('upe-link-scale');
+    const editable = [...root.querySelectorAll('[data-editable][data-layer]')];
+    const byId = Object.fromEntries(editable.map((element) => [element.dataset.layer, element]));
+    const groups = {
+      'group:gel-callouts': ['gel-lines', 'gel-dots', 'gel-left-text', 'gel-right-text'],
+      'group:cream-callouts': ['cream-lines', 'cream-dots', 'cream-left-text', 'cream-right-text']
+    };
+
+    const defaults = {};
+    editable.forEach((element) => {
+      defaults[element.dataset.layer] = {
+        x: Number(element.dataset.initialX || 0),
+        y: Number(element.dataset.initialY || 0),
+        sx: Number(element.dataset.initialScaleX || 1),
+        sy: Number(element.dataset.initialScaleY || 1),
+        opacity: Number(element.dataset.initialOpacity || 1)
+      };
+
+      const option = document.createElement('option');
+      option.value = element.dataset.layer;
+      option.textContent = element.dataset.label;
+      layerSelect.append(option);
+    });
+
+    const clone = (value) => JSON.parse(JSON.stringify(value));
+    let state = clone(defaults);
+    let selectedKey = 'group:gel-callouts';
+    let selectedIds = groups[selectedKey].slice();
+    let drag = null;
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+      if (saved && typeof saved === 'object') {
+        Object.keys(defaults).forEach((id) => {
+          if (saved[id]) state[id] = { ...defaults[id], ...saved[id] };
+        });
+      }
+    } catch (_) {
+      state = clone(defaults);
+    }
+
+    const round = (value, digits = 2) => Number(Number(value).toFixed(digits));
+
+    function idsForKey(key) {
+      return groups[key] ? groups[key].slice() : [key];
+    }
+
+    function applyState(id) {
+      const element = byId[id];
+      const value = state[id];
+      if (!element || !value) return;
+      element.style.setProperty('--upe-x', `${value.x}px`);
+      element.style.setProperty('--upe-y', `${value.y}px`);
+      element.style.setProperty('--upe-scale-x', value.sx);
+      element.style.setProperty('--upe-scale-y', value.sy);
+      element.style.setProperty('--upe-opacity', value.opacity);
+    }
+
+    function applyAll() {
+      Object.keys(state).forEach(applyState);
+      updateSelectionBox();
+      updateExport();
+    }
+
+    function save() {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      } catch (_) {
+        status.textContent = 'Не удалось сохранить настройки в браузере.';
+      }
+    }
+
+    function currentValue() {
+      return state[selectedIds[0]] || defaults[selectedIds[0]];
+    }
+
+    function updateControls() {
+      const value = currentValue();
+      if (!value) return;
+      inputs.x.value = value.x;
+      inputs.y.value = value.y;
+      inputs.sx.value = value.sx;
+      inputs.sy.value = value.sy;
+      inputs.opacity.value = value.opacity;
+      outputs.x.value = `${round(value.x, 1)} px`;
+      outputs.y.value = `${round(value.y, 1)} px`;
+      outputs.sx.value = `${Math.round(value.sx * 100)}%`;
+      outputs.sy.value = `${Math.round(value.sy * 100)}%`;
+      outputs.opacity.value = `${Math.round(value.opacity * 100)}%`;
+    }
+
+    function selectKey(key) {
+      if (!byId[key] && !groups[key]) return;
+      selectedKey = key;
+      selectedIds = idsForKey(key);
+      layerSelect.value = key;
+      updateControls();
+      updateSelectionBox();
+    }
+
+    function updateSelectionBox() {
+      requestAnimationFrame(() => {
+        const elements = selectedIds.map((id) => byId[id]).filter(Boolean);
+        if (!elements.length) {
+          selectionBox.style.display = 'none';
+          return;
+        }
+
+        const stageRect = stage.getBoundingClientRect();
+        const fitScale = stageRect.width / 394;
+        const rects = elements.map((element) => element.getBoundingClientRect());
+        const left = Math.min(...rects.map((rect) => rect.left));
+        const top = Math.min(...rects.map((rect) => rect.top));
+        const right = Math.max(...rects.map((rect) => rect.right));
+        const bottom = Math.max(...rects.map((rect) => rect.bottom));
+
+        selectionBox.style.display = 'block';
+        selectionBox.style.left = `${(left - stageRect.left) / fitScale}px`;
+        selectionBox.style.top = `${(top - stageRect.top) / fitScale}px`;
+        selectionBox.style.width = `${(right - left) / fitScale}px`;
+        selectionBox.style.height = `${(bottom - top) / fitScale}px`;
+      });
+    }
+
+    function updateExport() {
+      const compact = {};
+      Object.entries(state).forEach(([id, value]) => {
+        compact[id] = {
+          x: round(value.x),
+          y: round(value.y),
+          scaleX: round(value.sx, 3),
+          scaleY: round(value.sy, 3),
+          opacity: round(value.opacity, 3)
+        };
+      });
+      exportBox.value = JSON.stringify(compact, null, 2);
+    }
+
+    function setSelectedProperty(property, value) {
+      selectedIds.forEach((id) => {
+        state[id][property] = value;
+        applyState(id);
+      });
+      save();
+      updateControls();
+      updateSelectionBox();
+      updateExport();
+    }
+
+    function shiftSelected(dx, dy) {
+      selectedIds.forEach((id) => {
+        state[id].x = round(state[id].x + dx);
+        state[id].y = round(state[id].y + dy);
+        applyState(id);
+      });
+      save();
+      updateControls();
+      updateSelectionBox();
+      updateExport();
+    }
+
+    layerSelect.addEventListener('change', () => selectKey(layerSelect.value));
+
+    inputs.x.addEventListener('input', () => setSelectedProperty('x', Number(inputs.x.value)));
+    inputs.y.addEventListener('input', () => setSelectedProperty('y', Number(inputs.y.value)));
+    inputs.opacity.addEventListener('input', () => setSelectedProperty('opacity', Number(inputs.opacity.value)));
+    inputs.sx.addEventListener('input', () => {
+      const value = Number(inputs.sx.value);
+      setSelectedProperty('sx', value);
+      if (linkScale.checked) setSelectedProperty('sy', value);
+    });
+    inputs.sy.addEventListener('input', () => {
+      const value = Number(inputs.sy.value);
+      setSelectedProperty('sy', value);
+      if (linkScale.checked) setSelectedProperty('sx', value);
+    });
+
+    stage.addEventListener('pointerdown', (event) => {
+      const target = event.target.closest('[data-editable][data-layer]');
+      if (!target) return;
+      const id = target.dataset.layer;
+      if (!selectedIds.includes(id)) selectKey(id);
+      const start = Object.fromEntries(selectedIds.map((selectedId) => [selectedId, { ...state[selectedId] }]));
+      drag = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, start };
+      stage.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    });
+
+    stage.addEventListener('pointermove', (event) => {
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      const fitScale = stage.getBoundingClientRect().width / 394;
+      const dx = (event.clientX - drag.startX) / fitScale;
+      const dy = (event.clientY - drag.startY) / fitScale;
+      selectedIds.forEach((id) => {
+        state[id].x = round(drag.start[id].x + dx);
+        state[id].y = round(drag.start[id].y + dy);
+        applyState(id);
+      });
+      updateControls();
+      updateSelectionBox();
+      updateExport();
+    });
+
+    function finishDrag(event) {
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      drag = null;
+      save();
+    }
+
+    stage.addEventListener('pointerup', finishDrag);
+    stage.addEventListener('pointercancel', finishDrag);
+
+    document.addEventListener('keydown', (event) => {
+      const tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      const step = event.shiftKey ? 10 : 1;
+      if (event.key === 'ArrowLeft') shiftSelected(-step, 0);
+      else if (event.key === 'ArrowRight') shiftSelected(step, 0);
+      else if (event.key === 'ArrowUp') shiftSelected(0, -step);
+      else if (event.key === 'ArrowDown') shiftSelected(0, step);
+      else return;
+      event.preventDefault();
+    });
+
+    document.getElementById('upe-reset-layer').addEventListener('click', () => {
+      selectedIds.forEach((id) => {
+        state[id] = { ...defaults[id] };
+        applyState(id);
+      });
+      save();
+      updateControls();
+      updateSelectionBox();
+      updateExport();
+      status.textContent = 'Выбранный слой сброшен.';
+    });
+
+    document.getElementById('upe-reset-all').addEventListener('click', () => {
+      state = clone(defaults);
+      try { localStorage.removeItem(storageKey); } catch (_) {}
+      applyAll();
+      updateControls();
+      status.textContent = 'Все настройки сброшены.';
+    });
+
+    document.getElementById('upe-copy').addEventListener('click', async () => {
+      updateExport();
+      try {
+        await navigator.clipboard.writeText(exportBox.value);
+        status.textContent = 'Настройки скопированы.';
+      } catch (_) {
+        exportBox.focus();
+        exportBox.select();
+        status.textContent = 'Текст выделен — скопируйте его вручную.';
+      }
+    });
+
+    exportBox.addEventListener('focus', () => exportBox.select());
+
+    function fitStage() {
+      const available = Math.max(280, stageWrap.clientWidth - 8);
+      const fitScale = Math.min(1, available / 394);
+      stage.style.transform = `scale(${fitScale})`;
+      stageWrap.style.height = `${650 * fitScale}px`;
+      updateSelectionBox();
+    }
+
+    window.addEventListener('resize', fitStage);
+    applyAll();
+    selectKey(selectedKey);
+    fitStage();
+  })();
+</script>
+
+</body>
+</html>

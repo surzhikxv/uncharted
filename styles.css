@@ -220,12 +220,13 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 /* UNCHARTED — ЭТО section */
 /* подзаголовки и абзацы блока уменьшены на 9% (×0.91): 60→54.6px, 35→31.85px */
 .n631 { left: 128px; top: 7085px; width: 1096px; font-size: 54.6px;  line-height: 1; text-align: left; color: #C35B3F; }
-.n632 { left: 128px; top: 7859px; width: 1278px; font-size: 54.6px;  line-height: 1; color: #C35B3F; }
-.n633 { left: 128px; top: 7477px; width: 1028px; font-size: 54.6px;  line-height: 1; color: #C35B3F; }
+/* блоки выровнены по равному межблочному отступу 150px (B1 анкер, B2/B3 подняты) */
+.n632 { left: 128px; top: 7809px; width: 1278px; font-size: 54.6px;  line-height: 1; color: #C35B3F; }
+.n633 { left: 128px; top: 7447px; width: 1028px; font-size: 54.6px;  line-height: 1; color: #C35B3F; }
 .n634 { left: 120px; top: 6849px; width: 1292px; font-size: 109.2px; line-height: 1; text-align: left; color: #C35B3F; }
 .n635 { left: 128px; top: 7182px; transform: translateY(2px); width: 1283px; font-size: 31.85px; line-height: 1.2; letter-spacing: 0.04em; }
-.n636 { left: 133px; top: 7948px; transform: translateY(2px); width: 1283px; font-size: 31.85px; line-height: 1.2; letter-spacing: 0.04em; }
-.n637 { left: 128px; top: 7571px; transform: translateY(2px); width: 1029px; font-size: 31.85px; line-height: 1.2; letter-spacing: 0.04em; }
+.n636 { left: 133px; top: 7906px; transform: translateY(2px); width: 1283px; font-size: 31.85px; line-height: 1.2; letter-spacing: 0.04em; }
+.n637 { left: 128px; top: 7544px; transform: translateY(2px); width: 1029px; font-size: 31.85px; line-height: 1.2; letter-spacing: 0.04em; }
 
 /* footer */
 .n638 {

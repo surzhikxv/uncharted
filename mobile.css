@@ -34,6 +34,7 @@
   html {
     overflow-x: hidden;
     scroll-behavior: smooth;
+    background: #F1EBE6;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
@@ -47,7 +48,7 @@
   body {
     min-width: 320px;
     overflow-x: hidden;
-    background: var(--m-bg);
+    background: #F1EBE6;
   }
 
   .m,
@@ -1611,9 +1612,9 @@
 
   .m-catalog {
     --m-catalog-lift: clamp(40px, 9.4vw, 43px);
-    height: calc(100svh - var(--m-catalog-lift));
-    min-height: calc(760px - var(--m-catalog-lift));
-    max-height: calc(820px - var(--m-catalog-lift));
+    height: auto;
+    min-height: max(calc(100svh - var(--m-catalog-lift)), calc(760px - var(--m-catalog-lift)));
+    max-height: none;
     padding: calc(clamp(82px, 18.4vw, 86px) - var(--m-catalog-lift)) 0 0;
     background:
       linear-gradient(180deg, rgba(255, 255, 255, .52) 0%, rgba(250, 245, 241, .38) 42%, rgba(246, 229, 222, .54) 100%),
@@ -1666,7 +1667,7 @@
   }
 
   .m-intro {
-    padding: 48px 34px 0;
+    padding: 48px 34px clamp(24px, 6.7vw, 30px);
   }
 
   .m-intro-line {
@@ -2030,8 +2031,11 @@
   }
 
   .m-topbar {
-    height: clamp(44px, 13.778vw, 62px);
-    padding: clamp(7px, 2.222vw, 10px) clamp(13px, 4vw, 18px);
+    height: calc(clamp(44px, 13.778vw, 62px) + env(safe-area-inset-top));
+    padding:
+      calc(clamp(7px, 2.222vw, 10px) + env(safe-area-inset-top))
+      clamp(13px, 4vw, 18px)
+      clamp(7px, 2.222vw, 10px);
     gap: clamp(11px, 3.556vw, 16px);
     background: rgba(250, 245, 241, .12);
     backdrop-filter: none;

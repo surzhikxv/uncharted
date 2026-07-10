@@ -23,7 +23,7 @@
 <link rel="preload" as="image" href="public/images/catalog/gel-450-kamchatka-veil.webp">
 <link rel="stylesheet" href="styles.css?v=20260710-1">
 <link rel="stylesheet" href="anim.css?v=20260710-1">
-<link rel="stylesheet" href="catalog.css?v=20260710-2">
+<link rel="stylesheet" href="catalog.css?v=20260710-4">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -247,6 +247,22 @@
 
 </div>
 
+<dialog class="product-dialog" id="productDialog" aria-labelledby="productDialogTitle">
+  <div class="product-dialog-in">
+    <div class="product-dialog-media">
+      <img id="productDialogImage" alt="">
+    </div>
+    <div class="product-dialog-copy">
+      <button class="buy-close product-dialog-close" type="button" data-detail-close aria-label="Закрыть">&#10005;</button>
+      <p class="product-dialog-kicker">UNCHARTED</p>
+      <h2 class="product-dialog-title" id="productDialogTitle"></h2>
+      <p class="product-dialog-type" id="productDialogType"></p>
+      <p class="product-dialog-volume" id="productDialogVolume"></p>
+      <button class="cat-btn product-dialog-buy" type="button" data-detail-buy>купить</button>
+    </div>
+  </div>
+</dialog>
+
 <div class="buy-modal" id="buyModal" hidden>
   <div class="buy-overlay" data-close></div>
   <div class="buy-card" role="dialog" aria-modal="true" aria-labelledby="buyTitle">
@@ -270,6 +286,6 @@
   fit();
 })();
 </script>
-<script src="app.js?v=20260710-2" defer></script>
+<script src="app.js?v=20260710-4" defer></script>
 </body>
 </html>

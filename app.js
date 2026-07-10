@@ -22,7 +22,13 @@
   });
 
   // --- вспомогательная функция: клик + Enter/Space ---
-  const activate = (el, fn) => { el.addEventListener('click', fn); el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(e); } }); };
+  const activate = (el, fn) => {
+    el.addEventListener('click', fn);
+    if (el.matches('button, a[href]')) return;
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(e); }
+    });
+  };
 
   // --- плавный скролл ---
   document.querySelectorAll('[data-scroll]').forEach(el => {
@@ -70,7 +76,7 @@
     document.body.classList.remove('modal-open');
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   };
-  document.querySelectorAll('[data-buy]').forEach(b => activate(b, openModal));
+  document.querySelectorAll('[data-buy]:not(.cat-btn--ghost)').forEach(b => activate(b, openModal));
   modal.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
   addEventListener('keydown', e => {
     if (modal.hidden) return;
@@ -489,6 +495,53 @@
         cio.observe(card);
       });
     }
+  }
+
+  // --- карточка товара в каталоге: «Подробнее» показывает товар крупнее ---
+  const productDialog = document.getElementById('productDialog');
+  if (productDialog) {
+    const productImage = document.getElementById('productDialogImage');
+    const productTitle = document.getElementById('productDialogTitle');
+    const productType = document.getElementById('productDialogType');
+    const productVolume = document.getElementById('productDialogVolume');
+    const detailClose = productDialog.querySelector('[data-detail-close]');
+    const detailBuy = productDialog.querySelector('[data-detail-buy]');
+    let detailFocus = null;
+
+    const closeDetail = restoreFocus => {
+      if (!productDialog.open) return;
+      if (!restoreFocus) detailFocus = null;
+      productDialog.close();
+    };
+
+    document.querySelectorAll('.cat-btn--ghost[data-buy]').forEach(button => activate(button, () => {
+      const card = button.closest('.cat-card');
+      const image = card.querySelector('.cat-photo img');
+      detailFocus = button;
+      productImage.src = image.currentSrc || image.src;
+      productImage.alt = image.alt;
+      productTitle.textContent = card.querySelector('.cat-name').textContent;
+      productType.textContent = card.querySelector('.cat-type').textContent;
+      productVolume.textContent = card.querySelector('.cat-vol').textContent;
+      productDialog.showModal();
+      detailClose.focus();
+    }));
+
+    detailClose.addEventListener('click', () => closeDetail(true));
+    productDialog.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { event.preventDefault(); closeDetail(true); }
+    });
+    productDialog.addEventListener('click', event => {
+      if (event.target === productDialog) closeDetail(true);
+    });
+    productDialog.addEventListener('close', () => {
+      if (detailFocus && detailFocus.focus) detailFocus.focus();
+      detailFocus = null;
+    });
+    detailBuy.addEventListener('click', () => {
+      closeDetail(false);
+      openModal();
+    });
   }
 
   // --- анимации: каскад хиро, reveals, параллакс, побуквенный UNCHARTED ---

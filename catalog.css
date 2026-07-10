@@ -175,6 +175,84 @@ body.anim .cat-card.rv-card:not(.in) { opacity: 0; transform: translateY(26px); 
 .cat-btn--ghost:hover { background: #C35B3F; color: #fff; }
 .cat-btn:focus-visible { outline: 2px solid #7c2d12; outline-offset: 2px; }
 
+/* ---- подробный просмотр товара ---- */
+.product-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(820px, calc(100vw - 40px));
+  max-height: calc(100dvh - 40px);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  border-radius: 16px;
+  background: #FAF5F1;
+  color: #313131;
+  box-shadow: 0 24px 80px rgba(60, 25, 8, .35);
+  font-family: 'Tenor Sans', sans-serif;
+}
+.product-dialog::backdrop {
+  background: rgba(49, 33, 24, .45);
+  -webkit-backdrop-filter: blur(3px);
+          backdrop-filter: blur(3px);
+}
+.product-dialog-in {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
+}
+.product-dialog-media {
+  min-height: 500px;
+  background: #F1E5DC;
+}
+.product-dialog-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.product-dialog-copy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 66px 44px 40px;
+}
+.product-dialog-kicker {
+  color: #C35B3F;
+  font-size: 13px;
+  letter-spacing: .18em;
+}
+.product-dialog-title {
+  margin-top: 18px;
+  color: #313131;
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.product-dialog-type {
+  margin-top: 22px;
+  font-family: 'Geometria', sans-serif;
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 1.35;
+}
+.product-dialog-volume {
+  margin-top: 9px;
+  color: #C35B3F;
+  font-size: 17px;
+  letter-spacing: .04em;
+}
+.product-dialog-buy {
+  flex: none;
+  width: 100%;
+  margin-top: auto;
+}
+.product-dialog-close {
+  top: 14px;
+  right: 16px;
+}
+
 /* ---- футер: те же классы, top = top лендинга − 8428 ---- */
 .cat-footer { position: relative; height: 581.6px; margin-top: 40px; }
 .cat-footer .n613 { top: 0; }
@@ -237,13 +315,10 @@ html { scroll-behavior: smooth; }
   .cat-aside-in {
     position: static;
     flex-direction: row;
+    flex-wrap: wrap;
     gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 6px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    overflow-x: visible;
   }
-  .cat-aside-in::-webkit-scrollbar { display: none; }
   .cat-filter {
     flex-shrink: 0;
     padding: 9px 16px;
@@ -265,8 +340,8 @@ html { scroll-behavior: smooth; }
   .cat-actions {
     flex-direction: column;
     gap: 8px;
-    margin-top: 14px;
-    padding-top: 0;
+    margin-top: auto;
+    padding-top: 14px;
   }
   .cat-btn {
     flex: none;
@@ -310,4 +385,72 @@ html { scroll-behavior: smooth; }
     text-decoration: none;
   }
   .cat-footer-m-copy { margin-top: 22px; font-family: 'Geometria', sans-serif; font-size: 11.5px; color: #8a7a6e; }
+
+  .product-dialog {
+    width: min(430px, calc(100vw - 28px));
+    max-height: calc(100dvh - 28px);
+    border-radius: 12px;
+  }
+
+  .product-dialog-in {
+    grid-template-columns: 1fr;
+  }
+
+  .product-dialog-media {
+    min-height: 0;
+    height: min(48dvh, 430px);
+  }
+
+  .product-dialog-copy {
+    min-height: 260px;
+    padding: 32px 24px 24px;
+  }
+
+  .product-dialog-kicker {
+    font-size: 11px;
+  }
+
+  .product-dialog-title {
+    margin-top: 10px;
+    padding-right: 28px;
+    font-size: 25px;
+  }
+
+  .product-dialog-type {
+    margin-top: 14px;
+    font-size: 15px;
+  }
+
+  .product-dialog-volume {
+    margin-top: 6px;
+    font-size: 15px;
+  }
+
+  .product-dialog-buy {
+    height: 44px;
+    margin-top: 22px;
+  }
+
+  @media (max-width: 359px) {
+    .cat-header {
+      padding: 14px 16px;
+    }
+
+    .cat-logo img {
+      height: 32px;
+    }
+
+    .cat-nav {
+      gap: 7px;
+    }
+
+    .cat-nav .nav-link {
+      font-size: 12.5px;
+    }
+
+    .cat-main {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+  }
 }

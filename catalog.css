@@ -353,9 +353,11 @@ html { scroll-behavior: smooth; }
   .cat-footer { display: none; }
   .cat-footer-m {
     display: block;
-    padding: 44px 20px 28px;
+    padding: 44px 22px 30px;
     text-align: center;
-    background: url('public/images/521-613.webp') bottom center / cover;
+    background:
+      linear-gradient(180deg, rgba(250, 245, 241, .92) 0%, rgba(250, 245, 241, .72) 34%, rgba(250, 245, 241, .96) 100%),
+      url('public/images/m/footer.webp') bottom center / cover;
   }
   .cat-footer-m-mark {
     font-family: 'Geometria', sans-serif;
@@ -383,6 +385,21 @@ html { scroll-behavior: smooth; }
     font-size: 14px;
     color: #313131;
     text-decoration: none;
+  }
+  .cat-footer-m-legal {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin: 24px auto 0;
+    max-width: 340px;
+  }
+  .cat-footer-m-legal a {
+    color: #313131;
+    font-family: 'Geometria', sans-serif;
+    font-size: 12px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
   .cat-footer-m-copy { margin-top: 22px; font-family: 'Geometria', sans-serif; font-size: 11.5px; color: #8a7a6e; }
 

@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://surzhikxv.github.io/uncharted/sitemap.xml
+Sitemap: https://unchartedcosmetics.ru/sitemap.xml

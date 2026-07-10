@@ -77,6 +77,7 @@ img.abs { display: block; }
 }
 .up { text-transform: uppercase; }
 a.t, a.btn { color: #313131; text-decoration: none; }
+.social-asterisk { display: inline-block; margin-left: 1px; color: #C35B3F; font-size: .66em; line-height: 1; vertical-align: top; }
 .nav-link, .btn, [data-scroll], [data-buy], [data-link] { cursor: pointer; }
 .accent { color: #C35B3F; }
 

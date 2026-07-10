@@ -449,17 +449,6 @@
     });
   }
 
-  // --- мобильные scroll-reveal'ы ---
-  if (!REDUCED) {
-    const mrv = document.querySelectorAll('.m-rv');
-    if (mrv.length) {
-      const mio = new IntersectionObserver(es => es.forEach(e => {
-        if (e.isIntersecting) { e.target.classList.add('in'); mio.unobserve(e.target); }
-      }), { threshold: .12 });
-      mrv.forEach(el => mio.observe(el));
-    }
-  }
-
   // --- каталог: живые фильтры + появление карточек ---
   const catGrid = document.querySelector('.cat-grid');
   if (catGrid) {

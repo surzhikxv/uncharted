@@ -167,17 +167,6 @@
     border-bottom: 1px solid currentColor;
   }
 
-  body.anim .m-rv {
-    opacity: 0;
-    transform: translateY(22px);
-    transition: opacity .85s cubic-bezier(.22, 1, .36, 1), transform .85s cubic-bezier(.22, 1, .36, 1);
-  }
-
-  body.anim .m-rv.in {
-    opacity: 1;
-    transform: none;
-  }
-
   .m-hero {
     position: relative;
     height: min(740px, calc(100svh - 72px));
@@ -1593,6 +1582,7 @@
     --m-accent: #C35B3F;
     --m-page-pad: clamp(22px, 5.6vw, 32px);
     --m-story-bg: #FAF4F2;
+    --m-header-height: calc(clamp(44px, 13.778vw, 62px) + env(safe-area-inset-top));
     background: #FAF5F1;
   }
 
@@ -1694,9 +1684,15 @@
   }
 
   .m-intro-line--two {
-    width: min(100%, 350px);
+    width: min(calc(100% - 38px), 350px);
     margin-top: 44px;
     margin-left: 38px;
+  }
+
+  .m-anchor,
+  .m-intro,
+  .m-footer {
+    scroll-margin-top: var(--m-header-height);
   }
 
   .m-intro-line--three {
@@ -2032,7 +2028,8 @@
 
   /* 924:1736 — mobile pump/shore frame, measured against the 900x1600 export. */
   .m-shore {
-    height: min(100svh, 177.778vw);
+    width: 100%;
+    height: auto;
     min-height: 0;
     aspect-ratio: 9 / 16;
     background:
@@ -2043,15 +2040,17 @@
   }
 
   .m-topbar {
-    height: calc(clamp(44px, 13.778vw, 62px) + env(safe-area-inset-top));
+    height: var(--m-header-height);
     padding:
       calc(clamp(7px, 2.222vw, 10px) + env(safe-area-inset-top))
       clamp(13px, 4vw, 18px)
       clamp(7px, 2.222vw, 10px);
     gap: clamp(11px, 3.556vw, 16px);
-    background: rgba(250, 245, 241, .12);
+    background: #FAF5F1;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    border-bottom: 1px solid rgba(49, 49, 49, .08);
+    box-shadow: 0 2px 12px rgba(73, 48, 34, .06);
   }
 
   .m-top-logo {
@@ -2124,15 +2123,19 @@
   }
 
   .m-shore-word {
+    left: clamp(10px, 3.2vw, 16px);
+    right: clamp(10px, 3.2vw, 16px);
+    width: auto;
     bottom: 5.125%;
     color: #E38A71;
     font-family: 'Geometria', sans-serif;
-    font-size: clamp(46px, 14vw, 62px);
-    font-weight: 700;
-    font-synthesis: weight;
+    font-size: clamp(43px, 13.2vw, 60px);
+    font-weight: 500;
+    font-synthesis: none;
     line-height: .902;
     letter-spacing: 0;
-    transform: translateX(-50%);
+    text-align: center;
+    transform: none;
   }
 
   .m-shore::after {

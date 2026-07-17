@@ -1634,7 +1634,7 @@
     left: 0;
     right: 0;
     bottom: -1.2%;
-    height: 40.2%;
+    height: 60%;
     background:
       linear-gradient(180deg, rgba(250, 244, 242, .04) 0%, rgba(250, 244, 242, .12) 62%, rgba(250, 244, 242, .78) 88%, var(--m-story-bg) 100%),
       url('public/images/m/catalog-intro-bg.webp') right center / 136% 100% no-repeat;
@@ -1671,7 +1671,7 @@
   }
 
   .m-intro {
-    padding: clamp(154px, 38vw, 171px) 34px clamp(24px, 6.7vw, 30px);
+    padding: 48px 34px clamp(24px, 6.7vw, 30px);
   }
 
   .m-intro-line {

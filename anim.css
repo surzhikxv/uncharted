@@ -12,6 +12,7 @@
 .buy-letu img { width: 36px; height: 36px; }
 .buy-letu-glyph { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 23px !important; height: 12px !important; }
 .buy-row:hover { background: #F1E5DC; transform: translateX(4px); }
+.buy-empty { margin: 8px 4px 4px; color: #75695f; font-family: 'Geometria', sans-serif; font-size: 14px; line-height: 1.45; }
 .buy-legal { margin: 18px 4px 0; color: #75695f; font-family: 'Geometria', sans-serif; font-size: 12px; line-height: 1.45; }
 .buy-close { position: absolute; top: 14px; right: 16px; border: 0; background: none; font-size: 20px; color: #8a7a6e; cursor: pointer; padding: 8px; outline: none; -webkit-tap-highlight-color: transparent; transition: color .2s; }
 .buy-close:hover { color: #C35B3F; }

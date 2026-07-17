@@ -12,60 +12,69 @@
   const PRODUCTS = {
     'gel-450-kamchatka-veil': {
       label: 'KAMCHATKA VEIL · гель для душа · 450 мл',
-      search: 'UNCHARTED KAMCHATKA VEIL гель для душа 450 мл',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-gel-dlya-dusha-kamchatka-veil/181100699',
     },
     'gel-450-islay-smoke': {
       label: 'ISLAY SMOKE · гель для душа · 450 мл',
-      search: 'UNCHARTED ISLAY SMOKE гель для душа 450 мл',
+      goldapple: 'https://goldapple.ru/99000116008-islay-smoke',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-gel-dlya-dusha-islay-smoke/181200040',
       wildberries: 'https://www.wildberries.ru/catalog/549449189/detail.aspx',
     },
     'gel-450-mango-bliss': {
       label: 'MANGO BLISS · гель для душа · 450 мл',
-      search: 'UNCHARTED MANGO BLISS гель для душа 450 мл',
+      goldapple: 'https://goldapple.ru/99000004327-no3-mango-bliss',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-gel-dlya-dusha-mango-bliss/181200045',
       wildberries: 'https://www.wildberries.ru/catalog/235077800/detail.aspx',
     },
     'gel-450-namibia-dunes': {
       label: 'NAMIBIA DUNES · гель для душа · 450 мл',
-      search: 'UNCHARTED NAMIBIA DUNES гель для душа 450 мл',
     },
     'cream-450-citrus-vetiver': {
       label: 'CITRUS VETIVER · крем для рук и тела · 450 мл',
-      search: 'UNCHARTED CITRUS VETIVER крем для рук и тела 450 мл',
+      goldapple: 'https://goldapple.ru/99000047659-no6-citrus-vetiver',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-citrus-vetiver/181200037',
     },
     'cream-450-frozen-black-pepper': {
       label: 'FROZEN BLACK PEPPER · крем для рук и тела · 450 мл',
-      search: 'UNCHARTED FROZEN BLACK PEPPER крем для рук и тела 450 мл',
+      goldapple: 'https://goldapple.ru/99000047661-no1-frozen-black-pepper',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-frozen-black-pepper/181200036',
     },
     'cream-450-spicy-frangipani': {
       label: 'SPICY FRANGIPANI · крем для рук и тела · 450 мл',
-      search: 'UNCHARTED SPICY FRANGIPANI крем для рук и тела 450 мл',
+      goldapple: 'https://goldapple.ru/99000047656-no5-spicy-frangipani',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-spicy-frangipani/181200039',
       wildberries: 'https://www.wildberries.ru/catalog/318042676/detail.aspx',
     },
     'cream-450-mango-bliss': {
       label: 'MANGO BLISS · крем для рук и тела · 450 мл',
-      search: 'UNCHARTED MANGO BLISS крем для рук и тела 450 мл',
+      goldapple: 'https://goldapple.ru/99000047655-no3-mango-bliss',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-mango-bliss/181200038',
     },
     'cream-450-islay-smoke': {
       label: 'ISLAY SMOKE · крем для рук и тела · 450 мл',
-      search: 'UNCHARTED ISLAY SMOKE крем для рук и тела 450 мл',
+      goldapple: 'https://goldapple.ru/99000149169-uncharted-tobacco-whiskey-vanilla-cocoa',
     },
     'cream-50-citrus-vetiver': {
       label: 'CITRUS VETIVER · крем для рук и тела · 50 мл',
-      search: 'UNCHARTED CITRUS VETIVER крем для рук и тела 50 мл',
+      goldapple: 'https://goldapple.ru/99000047659-no6-citrus-vetiver',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-citrus-vetiver/185200373',
       wildberries: 'https://www.wildberries.ru/catalog/318042883/detail.aspx',
     },
     'cream-50-mango-bliss': {
       label: 'MANGO BLISS · крем для рук и тела · 50 мл',
-      search: 'UNCHARTED MANGO BLISS крем для рук и тела 50 мл',
+      goldapple: 'https://goldapple.ru/99000047655-no3-mango-bliss',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-mango-bliss/185200372',
     },
     'cream-50-frozen-black-pepper': {
       label: 'FROZEN BLACK PEPPER · крем для рук и тела · 50 мл',
-      search: 'UNCHARTED FROZEN BLACK PEPPER крем для рук и тела 50 мл',
+      goldapple: 'https://goldapple.ru/99000047661-no1-frozen-black-pepper',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-frozen-black-pepper/185200371',
       wildberries: 'https://www.wildberries.ru/catalog/318042880/detail.aspx',
     },
     'cream-50-spicy-frangipani': {
       label: 'SPICY FRANGIPANI · крем для рук и тела · 50 мл',
-      search: 'UNCHARTED SPICY FRANGIPANI крем для рук и тела 50 мл',
+      goldapple: 'https://goldapple.ru/99000047656-no5-spicy-frangipani',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-spicy-frangipani/185200370',
       wildberries: 'https://www.wildberries.ru/catalog/318042882/detail.aspx',
     },
   };
@@ -74,7 +83,7 @@
   const zoom = () => Math.max(document.documentElement.clientWidth, MOBILE_MAX + 1) / 1920;
 
   // --- ссылки из конфига ---
-  document.querySelectorAll('[data-link]').forEach(el => {
+  document.querySelectorAll('[data-link]:not(.buy-row)').forEach(el => {
     const url = LINKS[el.dataset.link];
     if (!url) return;
     if (el.tagName === 'A') { el.href = url; el.target = '_blank'; el.rel = 'noopener'; }
@@ -132,31 +141,32 @@
     const filename = (image.currentSrc || image.src).split('/').pop().split('?')[0].replace(/\.webp$/i, '');
     return PRODUCTS[filename] ? filename : null;
   };
-  const productLinks = product => {
-    const query = encodeURIComponent(product.search);
-    return {
-      goldapple: `https://goldapple.ru/catalogsearch/result?q=${query}`,
-      letu: `https://www.letu.ru/search?search=${query}`,
-      ozon: `https://www.ozon.ru/search/?text=${query}`,
-      wildberries: product.wildberries || `https://www.wildberries.ru/catalog/0/search.aspx?search=${query}`,
-    };
-  };
   const openModal = source => {
     const productKey = productKeyFrom(source);
     const product = productKey && PRODUCTS[productKey];
     if (!product) return;
-    const links = productLinks(product);
     const productLabel = modal.querySelector('[data-buy-product]');
     if (productLabel) productLabel.textContent = product.label;
+    let visibleRows = 0;
     modal.querySelectorAll('.buy-row[data-link]').forEach(row => {
-      row.href = links[row.dataset.link];
+      const url = product[row.dataset.link];
+      row.hidden = !url;
+      if (!url) {
+        row.removeAttribute('href');
+        row.removeAttribute('aria-label');
+        return;
+      }
+      visibleRows += 1;
+      row.href = url;
       row.setAttribute('aria-label', `Купить ${product.label} в ${row.textContent.trim()}`);
     });
+    const emptyState = modal.querySelector('[data-buy-empty]');
+    if (emptyState) emptyState.hidden = visibleRows > 0;
     lastFocus = document.activeElement;
     modal.hidden = false;
     setModalBackground(true);
     document.body.classList.add('modal-open');
-    modal.querySelector('.buy-row').focus();
+    (modal.querySelector('.buy-row:not([hidden])') || modal.querySelector('.buy-close')).focus();
   };
   const closeModal = () => {
     modal.hidden = true;

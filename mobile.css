@@ -1676,17 +1676,17 @@
 
   .m-intro-line {
     color: #111;
-    font-size: 15px;
+    font-size: clamp(14px, 3.72vw, 15px);
     line-height: 1.34;
     letter-spacing: .02em;
   }
 
   .m-intro-line--one {
-    width: min(100%, 400px);
+    width: min(calc(100% + 34px), 400px);
   }
 
   .m-intro-line--two {
-    width: min(calc(100% - 38px), 350px);
+    width: min(calc(100% - 4px), 350px);
     margin-top: 44px;
     margin-left: 38px;
   }
@@ -2543,7 +2543,9 @@
   }
 
   .m-eto .m-h2--dark {
-    font-size: clamp(29px, 7.9vw, 39px);
+    font-size: clamp(24px, 7.7vw, 39px);
+    letter-spacing: .01em;
+    white-space: nowrap;
   }
 
   .m-eto .m-thesis-h {

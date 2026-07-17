@@ -12,7 +12,9 @@
   const PRODUCTS = {
     'gel-450-kamchatka-veil': {
       label: 'KAMCHATKA VEIL · гель для душа · 450 мл',
+      goldapple: 'https://goldapple.ru/99000004326-no1-frozen-black-pepper',
       letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-gel-dlya-dusha-kamchatka-veil/181100699',
+      wildberries: 'https://www.wildberries.ru/catalog/884672873/detail.aspx',
     },
     'gel-450-islay-smoke': {
       label: 'ISLAY SMOKE · гель для душа · 450 мл',
@@ -28,16 +30,21 @@
     },
     'gel-450-namibia-dunes': {
       label: 'NAMIBIA DUNES · гель для душа · 450 мл',
+      goldapple: 'https://goldapple.ru/99000004325-no5-spicy-frangipani',
+      letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-gel-dlya-dusha-spicy-frangipani/181100698',
+      wildberries: 'https://www.wildberries.ru/catalog/1225289179/detail.aspx',
     },
     'cream-450-citrus-vetiver': {
       label: 'CITRUS VETIVER · крем для рук и тела · 450 мл',
       goldapple: 'https://goldapple.ru/99000047659-no6-citrus-vetiver',
       letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-citrus-vetiver/181200037',
+      wildberries: 'https://www.wildberries.ru/catalog/318042677/detail.aspx',
     },
     'cream-450-frozen-black-pepper': {
       label: 'FROZEN BLACK PEPPER · крем для рук и тела · 450 мл',
       goldapple: 'https://goldapple.ru/99000047661-no1-frozen-black-pepper',
       letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-frozen-black-pepper/181200036',
+      wildberries: 'https://www.wildberries.ru/catalog/318042678/detail.aspx',
     },
     'cream-450-spicy-frangipani': {
       label: 'SPICY FRANGIPANI · крем для рук и тела · 450 мл',
@@ -49,10 +56,12 @@
       label: 'MANGO BLISS · крем для рук и тела · 450 мл',
       goldapple: 'https://goldapple.ru/99000047655-no3-mango-bliss',
       letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-mango-bliss/181200038',
+      wildberries: 'https://www.wildberries.ru/catalog/318042679/detail.aspx',
     },
     'cream-450-islay-smoke': {
       label: 'ISLAY SMOKE · крем для рук и тела · 450 мл',
       goldapple: 'https://goldapple.ru/99000149169-uncharted-tobacco-whiskey-vanilla-cocoa',
+      wildberries: 'https://www.wildberries.ru/catalog/883807325/detail.aspx',
     },
     'cream-50-citrus-vetiver': {
       label: 'CITRUS VETIVER · крем для рук и тела · 50 мл',
@@ -64,6 +73,7 @@
       label: 'MANGO BLISS · крем для рук и тела · 50 мл',
       goldapple: 'https://goldapple.ru/99000047655-no3-mango-bliss',
       letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-mango-bliss/185200372',
+      wildberries: 'https://www.wildberries.ru/catalog/318042881/detail.aspx',
     },
     'cream-50-frozen-black-pepper': {
       label: 'FROZEN BLACK PEPPER · крем для рук и тела · 50 мл',

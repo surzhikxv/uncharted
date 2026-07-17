@@ -5,6 +5,7 @@
 .buy-card { position: relative; width: min(440px, 86vw); background: #FAF5F1; border-radius: 12px; padding: 44px 40px 30px; font-family: 'Tenor Sans', sans-serif; box-shadow: 0 24px 80px rgba(60, 25, 8, .35); animation: buyIn .35s cubic-bezier(.22,1,.36,1); }
 @keyframes buyIn { from { opacity: 0; transform: translateY(14px) scale(.98); } }
 .buy-title { font-size: 26px; letter-spacing: .08em; color: #C35B3F; margin-bottom: 26px; }
+.buy-product { margin: -16px 4px 18px; color: #75695f; font-family: 'Geometria', sans-serif; font-size: 12px; line-height: 1.4; letter-spacing: .035em; text-transform: uppercase; }
 .buy-row { display: flex; align-items: center; gap: 16px; padding: 14px 10px; font-size: 21px; color: #313131; text-decoration: none; border-radius: 8px; transition: background .25s, transform .25s; }
 .buy-row img { width: 36px; height: 36px; }
 .buy-letu { position: relative; display: inline-flex; width: 36px; height: 36px; flex-shrink: 0; }

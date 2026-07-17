@@ -1111,7 +1111,7 @@
   }
 
   .m-product-photo {
-    aspect-ratio: 480 / 796;
+    aspect-ratio: 4 / 5;
     border-radius: 6px;
     background: #F6ECE6;
     box-shadow: none;
@@ -1427,7 +1427,7 @@
   }
 
   .m-product-photo {
-    aspect-ratio: 480 / 796;
+    aspect-ratio: 4 / 5;
     border-radius: 6px;
     background: #F4E7DF;
   }

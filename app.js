@@ -9,6 +9,66 @@
     instagram:   'https://www.instagram.com/uncharted_cosmetics/',
     email:       'mailto:info.uncharted@list.ru',
   };
+  const PRODUCTS = {
+    'gel-450-kamchatka-veil': {
+      label: 'KAMCHATKA VEIL · гель для душа · 450 мл',
+      search: 'UNCHARTED KAMCHATKA VEIL гель для душа 450 мл',
+    },
+    'gel-450-islay-smoke': {
+      label: 'ISLAY SMOKE · гель для душа · 450 мл',
+      search: 'UNCHARTED ISLAY SMOKE гель для душа 450 мл',
+      wildberries: 'https://www.wildberries.ru/catalog/549449189/detail.aspx',
+    },
+    'gel-450-mango-bliss': {
+      label: 'MANGO BLISS · гель для душа · 450 мл',
+      search: 'UNCHARTED MANGO BLISS гель для душа 450 мл',
+      wildberries: 'https://www.wildberries.ru/catalog/235077800/detail.aspx',
+    },
+    'gel-450-namibia-dunes': {
+      label: 'NAMIBIA DUNES · гель для душа · 450 мл',
+      search: 'UNCHARTED NAMIBIA DUNES гель для душа 450 мл',
+    },
+    'cream-450-citrus-vetiver': {
+      label: 'CITRUS VETIVER · крем для рук и тела · 450 мл',
+      search: 'UNCHARTED CITRUS VETIVER крем для рук и тела 450 мл',
+    },
+    'cream-450-frozen-black-pepper': {
+      label: 'FROZEN BLACK PEPPER · крем для рук и тела · 450 мл',
+      search: 'UNCHARTED FROZEN BLACK PEPPER крем для рук и тела 450 мл',
+    },
+    'cream-450-spicy-frangipani': {
+      label: 'SPICY FRANGIPANI · крем для рук и тела · 450 мл',
+      search: 'UNCHARTED SPICY FRANGIPANI крем для рук и тела 450 мл',
+      wildberries: 'https://www.wildberries.ru/catalog/318042676/detail.aspx',
+    },
+    'cream-450-mango-bliss': {
+      label: 'MANGO BLISS · крем для рук и тела · 450 мл',
+      search: 'UNCHARTED MANGO BLISS крем для рук и тела 450 мл',
+    },
+    'cream-450-islay-smoke': {
+      label: 'ISLAY SMOKE · крем для рук и тела · 450 мл',
+      search: 'UNCHARTED ISLAY SMOKE крем для рук и тела 450 мл',
+    },
+    'cream-50-citrus-vetiver': {
+      label: 'CITRUS VETIVER · крем для рук и тела · 50 мл',
+      search: 'UNCHARTED CITRUS VETIVER крем для рук и тела 50 мл',
+      wildberries: 'https://www.wildberries.ru/catalog/318042883/detail.aspx',
+    },
+    'cream-50-mango-bliss': {
+      label: 'MANGO BLISS · крем для рук и тела · 50 мл',
+      search: 'UNCHARTED MANGO BLISS крем для рук и тела 50 мл',
+    },
+    'cream-50-frozen-black-pepper': {
+      label: 'FROZEN BLACK PEPPER · крем для рук и тела · 50 мл',
+      search: 'UNCHARTED FROZEN BLACK PEPPER крем для рук и тела 50 мл',
+      wildberries: 'https://www.wildberries.ru/catalog/318042880/detail.aspx',
+    },
+    'cream-50-spicy-frangipani': {
+      label: 'SPICY FRANGIPANI · крем для рук и тела · 50 мл',
+      search: 'UNCHARTED SPICY FRANGIPANI крем для рук и тела 50 мл',
+      wildberries: 'https://www.wildberries.ru/catalog/318042882/detail.aspx',
+    },
+  };
   const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const MOBILE_MAX = 768;
   const zoom = () => Math.max(document.documentElement.clientWidth, MOBILE_MAX + 1) / 1920;
@@ -64,7 +124,34 @@
   const setModalBackground = inert => modalBackground.forEach(el => { el.inert = inert; });
   const modalFocusable = () => [...modal.querySelectorAll('a[href], button:not([disabled])')]
     .filter(el => !el.hidden && getComputedStyle(el).display !== 'none');
-  const openModal = () => {
+  const productKeyFrom = source => {
+    if (typeof source === 'string') return PRODUCTS[source] ? source : null;
+    const card = source && source.closest && source.closest('.sc-card, .m-product-card, .cat-card');
+    const image = card && card.querySelector('img');
+    if (!image) return null;
+    const filename = (image.currentSrc || image.src).split('/').pop().split('?')[0].replace(/\.webp$/i, '');
+    return PRODUCTS[filename] ? filename : null;
+  };
+  const productLinks = product => {
+    const query = encodeURIComponent(product.search);
+    return {
+      goldapple: `https://goldapple.ru/catalogsearch/result?q=${query}`,
+      letu: `https://www.letu.ru/search?search=${query}`,
+      ozon: `https://www.ozon.ru/search/?text=${query}`,
+      wildberries: product.wildberries || `https://www.wildberries.ru/catalog/0/search.aspx?search=${query}`,
+    };
+  };
+  const openModal = source => {
+    const productKey = productKeyFrom(source);
+    const product = productKey && PRODUCTS[productKey];
+    if (!product) return;
+    const links = productLinks(product);
+    const productLabel = modal.querySelector('[data-buy-product]');
+    if (productLabel) productLabel.textContent = product.label;
+    modal.querySelectorAll('.buy-row[data-link]').forEach(row => {
+      row.href = links[row.dataset.link];
+      row.setAttribute('aria-label', `Купить ${product.label} в ${row.textContent.trim()}`);
+    });
     lastFocus = document.activeElement;
     modal.hidden = false;
     setModalBackground(true);
@@ -77,7 +164,7 @@
     document.body.classList.remove('modal-open');
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   };
-  document.querySelectorAll('[data-buy]:not(.cat-btn--ghost)').forEach(b => activate(b, openModal));
+  document.querySelectorAll('[data-buy]:not(.cat-btn--ghost)').forEach(b => activate(b, () => openModal(b)));
   modal.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeModal));
   addEventListener('keydown', e => {
     if (modal.hidden) return;
@@ -507,6 +594,7 @@
     const detailClose = productDialog.querySelector('[data-detail-close]');
     const detailBuy = productDialog.querySelector('[data-detail-buy]');
     let detailFocus = null;
+    let detailProductKey = null;
 
     const closeDetail = restoreFocus => {
       if (!productDialog.open) return;
@@ -518,6 +606,7 @@
       const card = button.closest('.cat-card');
       const image = card.querySelector('.cat-photo img');
       detailFocus = button;
+      detailProductKey = productKeyFrom(button);
       productImage.src = image.currentSrc || image.src;
       productImage.alt = image.alt;
       productTitle.textContent = card.querySelector('.cat-name').textContent;
@@ -539,8 +628,9 @@
       detailFocus = null;
     });
     detailBuy.addEventListener('click', () => {
+      const productKey = detailProductKey;
       closeDetail(false);
-      openModal();
+      openModal(productKey);
     });
   }
 

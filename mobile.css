@@ -1671,7 +1671,7 @@
   }
 
   .m-intro {
-    padding: 48px 34px clamp(24px, 6.7vw, 30px);
+    padding: clamp(154px, 38vw, 171px) 34px clamp(24px, 6.7vw, 30px);
   }
 
   .m-intro-line {

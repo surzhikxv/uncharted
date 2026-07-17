@@ -77,7 +77,14 @@ img.abs { display: block; }
 }
 .up { text-transform: uppercase; }
 a.t, a.btn { color: #313131; text-decoration: none; }
-.social-asterisk { display: inline-block; margin-left: 1px; color: #C35B3F; font-size: .66em; line-height: 1; vertical-align: top; }
+.social-asterisk {
+  display: inline;
+  margin-left: .08em;
+  color: inherit;
+  font-size: 1em;
+  line-height: inherit;
+  vertical-align: baseline;
+}
 .nav-link, .btn, [data-scroll], [data-buy], [data-link] { cursor: pointer; }
 .accent { color: #C35B3F; }
 
@@ -113,6 +120,20 @@ a.t, a.btn { color: #313131; text-decoration: none; }
 
 /* 521:592 aromas bg */
 .n592 { left: 0; top: 5336px; width: 1920px; height: 1632px; }
+
+/* Более плотный фирменный лайн-арт поверх спокойного фона ароматов. */
+.aromas-texture {
+  left: 0;
+  top: 5336px;
+  width: 1920px;
+  height: 1632px;
+  background: url('public/images/521-582.webp') center / cover no-repeat;
+  mix-blend-mode: multiply;
+  opacity: .38;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 89%, transparent 100%);
+          mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 89%, transparent 100%);
+}
 
 /* 521:593 cream rectangle — опущена, чтобы показать больше модели до карусели
    (раньше top:908 перекрывал девушку → «каталог обрезал»); крем начинается под фото */
@@ -367,6 +388,15 @@ a.n640:hover, a.n641:hover, a.n642:hover, a.n643:hover, a.n644:hover { color: #C
   background: linear-gradient(180deg, rgba(250,245,241,0) 0%, rgba(250,245,241,.55) 55%, #FAF5F1 100%); }
 .geldiag   { left: 850px; top: 2960px; width: 667px; height: 510px; }
 .creamdiag { left: 850px; top: 3520px; width: 667px; height: 615px; }
+
+/* У запечённых схем светлая подложка. Смешивание и мягкие края не дают ей
+   прямоугольником обрезать общий рисунок (в частности цветок над гелем). */
+.geldiag,
+.creamdiag {
+  mix-blend-mode: multiply;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 18%, #000 90%, transparent 100%);
+          mask-image: linear-gradient(180deg, transparent 0, #000 18%, #000 90%, transparent 100%);
+}
 
 /* 521:698 gradient blur */
 .n698 {

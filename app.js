@@ -23,6 +23,7 @@
 
   // --- вспомогательная функция: клик + Enter/Space ---
   const activate = (el, fn) => {
+    if (!el) return;
     el.addEventListener('click', fn);
     if (el.matches('button, a[href]')) return;
     el.addEventListener('keydown', e => {
@@ -190,19 +191,19 @@
   const AROMAS = [
     { caption: '/ MANGO BLISS', img: 'public/images/render/bottle-625.webp', m: 'public/images/m/bottle-mango.webp',
       desc: '<span class="ts4">аромат MANGO BLISS</span><br><span class="ts6">— </span><span class="ts7">билет в неизведанные<br>уголки тропиков мьянмы,<br>где сладкий аромат манго<br>переплетается с ежевикой,<br>иланг-илангом и ноткой<br>пачули</span>',
-      mobileDesc: '<span class="ts4">аромат MANGO BLISS</span><br><span class="ts7">— манго, ежевика, иланг-иланг и пачули</span>' },
+      mobileDesc: 'АРОМАТ MANGO BLISS — БИЛЕТ В НЕИЗВЕДАННЫЕ УГОЛКИ ТРОПИКОВ МЬЯНМЫ, ГДЕ СЛАДКИЙ АРОМАТ МАНГО ПЕРЕПЛЕТАЕТСЯ С ЕЖЕВИКОЙ, ИЛАНГ-ИЛАНГОМ И НОТКОЙ ПАЧУЛИ' },
     { caption: '/ NAMIBIA DUNES', img: 'public/images/render/aromas/namibia-dunes.webp', m: 'public/images/m/bottle-namibia.webp',
       desc: '<span class="ts4">аромат NAMIBIA DUNES</span><br><span class="ts6">— </span><span class="ts7">билет в пустыню НАМИБ<br>с бескрайними дюнами,<br>где сладкий апельсин тает в розовом перце, пряных специях и древесном кедре</span>',
-      mobileDesc: '<span class="ts4">аромат NAMIBIA DUNES</span><br><span class="ts7">— апельсин, розовый перец, специи и кедр</span>' },
+      mobileDesc: 'АРОМАТ NAMIBIA DUNES — БИЛЕТ В ПУСТЫНЮ НАМИБ С БЕСКРАЙНИМИ ДЮНАМИ, ГДЕ СЛАДКИЙ АПЕЛЬСИН ТАЕТ В РОЗОВОМ ПЕРЦЕ, ПРЯНЫХ СПЕЦИЯХ И ДРЕВЕСНОМ КЕДРЕ' },
     { caption: '/ ISLAY SMOKE', img: 'public/images/render/aromas/islay-smoke.webp', m: 'public/images/m/bottle-islay.webp',
       desc: '<span class="ts4">аромат ISLAY SMOKE</span><br><span class="ts6">— </span><span class="ts7">прогулка по ветреным шотландским холмам,<br>где в воздухе ощущается запах выдержанного виски и табачного дыма. Теплые ноты какао и амбры окутывают словно вечерний туман</span>',
-      mobileDesc: '<span class="ts4">аромат ISLAY SMOKE</span><br><span class="ts7">— виски, табачный дым, какао и амбра</span>' },
+      mobileDesc: 'АРОМАТ ISLAY SMOKE — ПРОГУЛКА ПО ВЕТРЕНЫМ ШОТЛАНДСКИМ ХОЛМАМ, ГДЕ В ВОЗДУХЕ ОЩУЩАЕТСЯ ЗАПАХ ВЫДЕРЖАННОГО ВИСКИ И ТАБАЧНОГО ДЫМА, А НОТЫ КАКАО И АМБРЫ ОКУТЫВАЮТ СЛОВНО ВЕЧЕРНИЙ ТУМАН' },
     { caption: '/ CITRUS VETIVER', img: 'public/images/render/aromas/citrus-vetiver.webp', m: 'public/images/m/bottle-citrus.webp',
       desc: '<span class="ts4">аромат CITRUS VETIVER</span><br><span class="ts6">— </span><span class="ts7">поход в густые леса мабу, где свежесть ветивера<br>и тепло ореховой коры сливаются со сладким ароматом лимонной карамели и бобов тонка</span>',
-      mobileDesc: '<span class="ts4">аромат CITRUS VETIVER</span><br><span class="ts7">— ветивер, ореховая кора, лимонная карамель и бобы тонка</span>' },
+      mobileDesc: 'АРОМАТ CITRUS VETIVER — ПОХОД В ГУСТЫЕ ЛЕСА МАБУ, ГДЕ СВЕЖЕСТЬ ВЕТИВЕРА И ТЕПЛО ОРЕХОВОЙ КОРЫ СЛИВАЮТСЯ СО СЛАДКИМ АРОМАТОМ ЛИМОННОЙ КАРАМЕЛИ И БОБОВ ТОНКА' },
     { caption: '/ KAMCHATKA VEIL', img: 'public/images/render/aromas/kamchatka-veil.webp', m: 'public/images/m/bottle-kamchatka.webp',
       desc: '<span class="ts4">аромат KAMCHATKA VEIL</span><br><span class="ts6">— </span><span class="ts7">путешествие на вершины вулканов камчатки, где каждый вздох наполнен пикантным черным перцем<br>и бодрящим бергамотом<br>с нежностью ванили<br>и белого чая</span>',
-      mobileDesc: '<span class="ts4">аромат KAMCHATKA VEIL</span><br><span class="ts7">— чёрный перец, бергамот, ваниль и белый чай</span>' },
+      mobileDesc: 'АРОМАТ KAMCHATKA VEIL — ПУТЕШЕСТВИЕ НА ВЕРШИНЫ ВУЛКАНОВ КАМЧАТКИ, ГДЕ ПИКАНТНЫЙ ЧЁРНЫЙ ПЕРЕЦ И БОДРЯЩИЙ БЕРГАМОТ СОЕДИНЯЮТСЯ С НЕЖНОСТЬЮ ВАНИЛИ И БЕЛОГО ЧАЯ' },
   ];
   const aromaStatus = document.getElementById('aromaStatus');
   const announceAroma = index => {
@@ -357,6 +358,7 @@
     const imgs = mstage.querySelectorAll('.m-car-img');
     const mcap = document.querySelector('.m-car-caption');
     const mdesc = document.querySelector('.m-car-desc');
+    const mdots = [...document.querySelectorAll('.m-car-dots span')];
     let mi = 0, mfront = 0, mbusy = false;
     let mScene = null, mEng = null, mProg = 0, mDirU = 1;
     if (!NO_AROMA_FLUID && window.GLEngine && !REDUCED && document.documentElement.clientWidth <= MOBILE_MAX) {
@@ -400,8 +402,9 @@
       const next = (mi + dir + AROMAS.length) % AROMAS.length;
       announceAroma(next);
       mDirU = dir;
-      cascadeCaption(mcap, AROMAS[next].caption);
-      swapDescDir(mdesc, (AROMAS[next].mobileDesc || AROMAS[next].desc).replace(/<br>/g, ' '), dir);
+      mdots.forEach((dot, dotIndex) => dot.classList.toggle('is-active', dotIndex === next));
+      if (mcap) cascadeCaption(mcap, AROMAS[next].caption);
+      if (mdesc) swapDescDir(mdesc, (AROMAS[next].mobileDesc || AROMAS[next].desc).replace(/<br>/g, ' '), dir);
       if (mScene && mScene.ready) {
         mEng.swapTexture(mScene, 'uTo', AROMAS[next].m, ok => {
           if (!ok) { mi = next; mbusy = false; return; }
@@ -447,6 +450,14 @@
       const dx = e.clientX - x0; x0 = null;
       if (Math.abs(dx) > 40) mgo(dx < 0 ? 1 : -1);
     });
+  }
+
+  const mobileAromas = document.querySelector('.m-aromas');
+  const mobileTopbar = document.querySelector('.m-topbar');
+  if (MOBILE && mobileAromas && mobileTopbar) {
+    new IntersectionObserver(entries => entries.forEach(entry => {
+      mobileTopbar.classList.toggle('is-over-aromas', entry.isIntersecting);
+    }), { rootMargin: '-1px 0px -88% 0px', threshold: .001 }).observe(mobileAromas);
   }
 
   // --- каталог: живые фильтры + появление карточек ---

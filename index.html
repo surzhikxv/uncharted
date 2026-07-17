@@ -22,8 +22,8 @@
 <link rel="icon" type="image/svg+xml" href="public/images/logo.svg">
 <link rel="preload" as="image" href="public/images/m/hero-woman.webp" media="(max-width: 768px)">
 <link rel="preload" as="image" href="public/images/render/hero-woman.webp" media="(min-width: 1200px)">
-<link rel="stylesheet" href="styles.css?v=20260710-1">
-<link rel="stylesheet" href="mobile.css?v=20260710-37">
+<link rel="stylesheet" href="styles.css?v=20260717-2">
+<link rel="stylesheet" href="mobile.css?v=20260717-11">
 <link rel="stylesheet" href="anim.css?v=20260710-3">
 <script type="application/ld+json">
 {
@@ -78,6 +78,7 @@
 
   <!-- 521:592 aromas bg -->
   <img class="abs n592" src="public/images/521-592.webp" alt="" loading="lazy">
+  <div class="abs aromas-texture" aria-hidden="true"></div>
 
   <!-- 521:593 cream rectangle -->
   <div class="abs n593"></div>
@@ -441,13 +442,8 @@
   </section>
 
   <section class="m-aromas" aria-labelledby="mobile-aromas-title">
-    <h2 class="m-h2 m-rv" id="mobile-aromas-title">АРОМАТЫ</h2>
+    <h2 class="m-h2" id="mobile-aromas-title">АРОМАТЫ</h2>
     <div class="m-aroma-board m-rv">
-      <div class="m-scents">
-        <p class="m-scents-h">НАШИ ОТДУШКИ</p>
-        <p class="m-scents-t">— результат отбора из сотен образцов</p>
-        <p class="m-scents-q">отдушки из европейских парфюмерных домов</p>
-      </div>
       <div class="m-car">
         <button class="m-car-arrow m-car-prev" aria-label="Предыдущий аромат"></button>
         <div class="m-car-stage">
@@ -457,8 +453,12 @@
         <button class="m-car-arrow m-car-next" aria-label="Следующий аромат"></button>
       </div>
       <p class="m-car-caption fade-swap">/ MANGO BLISS</p>
-      <p class="m-car-desc fade-swap"><span class="ts4">аромат MANGO BLISS</span> — манго, ежевика, иланг-иланг и пачули</p>
+      <div class="m-car-dots" aria-hidden="true">
+        <span class="is-active"></span><span></span><span></span><span></span><span></span>
+      </div>
+      <p class="m-car-desc fade-swap">АРОМАТ MANGO BLISS — БИЛЕТ В НЕИЗВЕДАННЫЕ УГОЛКИ ТРОПИКОВ МЬЯНМЫ, ГДЕ СЛАДКИЙ АРОМАТ МАНГО ПЕРЕПЛЕТАЕТСЯ С ЕЖЕВИКОЙ, ИЛАНГ-ИЛАНГОМ И НОТКОЙ ПАЧУЛИ</p>
     </div>
+    <span class="m-aromas-scrollbar" aria-hidden="true"></span>
   </section>
 
   <section class="m-eto">
@@ -486,7 +486,7 @@
         <p class="m-foot-h">контакты:</p>
         <a class="m-foot-mail" href="mailto:info.uncharted@list.ru">info.uncharted@list.ru</a>
         <a class="m-foot-row" href="#" data-link="vk"><img src="public/images/icon-647.svg" alt="">ВКонтакте</a>
-        <a class="m-foot-row" href="#" data-link="instagram"><img src="public/images/icon-651.svg" alt="">Instagram<span class="m-social-asterisk" aria-hidden="true">*</span></a>
+        <a class="m-foot-row" href="#" data-link="instagram"><img src="public/images/icon-651.svg" alt=""><span class="m-foot-social-label">Instagram<span class="m-social-asterisk" aria-hidden="true">*</span></span></a>
         <p class="m-foot-note">*Instagram — принадлежит корпорации Meta, которая признана экстремистской и запрещена в РФ</p>
       </div>
       <div class="m-foot-group">

@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Каталог — UNCHARTED | Парфюмированная уходовая косметика</title>
 <meta name="description" content="Каталог UNCHARTED: парфюмированные гели для душа и кремы для рук и тела. Ароматы дальних мест — Камчатка, Намиб, Мьянма, Шотландия.">
 <meta name="theme-color" content="#FAF4F2">
@@ -22,8 +22,9 @@
 <link rel="icon" type="image/svg+xml" href="public/images/logo.svg">
 <link rel="preload" as="image" href="public/images/catalog/gel-450-kamchatka-veil.webp">
 <link rel="stylesheet" href="styles.css?v=20260717-2">
+<link rel="stylesheet" href="mobile.css?v=20260722-1">
 <link rel="stylesheet" href="anim.css?v=20260717-5">
-<link rel="stylesheet" href="catalog.css?v=20260710-6">
+<link rel="stylesheet" href="catalog.css?v=20260722-1">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -243,23 +244,37 @@
     <img class="abs n687" src="public/images/icon-687.svg" alt="">
   </footer>
 
-  <!-- компактный футер для мобильной версии -->
-  <footer class="cat-footer-m">
-    <p class="cat-footer-m-mark">uncharted</p>
-    <a class="cat-footer-m-mail" href="mailto:info.uncharted@list.ru">info.uncharted@list.ru</a>
-    <div class="cat-footer-m-shops">
-      <a href="#" data-link="goldapple">Золотое яблоко</a>
-      <a href="#" data-link="letu">ЛЭТУАЛЬ</a>
-      <a href="#" data-link="ozon">Ozon</a>
-      <a href="#" data-link="wildberries">Wildberries</a>
+  <!-- мобильный футер — точная копия футера главной -->
+  <footer class="m cat-footer-m m-footer">
+    <p class="m-wordmark">uncharted</p>
+    <div class="m-foot-groups">
+      <div class="m-foot-group">
+        <p class="m-foot-h">контакты:</p>
+        <a class="m-foot-mail" href="mailto:info.uncharted@list.ru">info.uncharted@list.ru</a>
+        <a class="m-foot-row" href="#" data-link="vk"><img src="public/images/icon-647.svg" alt="">ВКонтакте</a>
+        <a class="m-foot-row" href="#" data-link="instagram"><img src="public/images/icon-651.svg" alt=""><span class="m-foot-social-label">Instagram<span class="m-social-asterisk" aria-hidden="true">*</span></span></a>
+        <p class="m-foot-note">*Instagram — принадлежит корпорации Meta, которая признана экстремистской и запрещена в РФ</p>
+      </div>
+      <div class="m-foot-group">
+        <p class="m-foot-h">ГДЕ КУПИТЬ:</p>
+        <a class="m-foot-row m-geo" href="#" data-link="goldapple"><img src="public/images/icon-660.svg" alt="">Золотое яблоко</a>
+        <a class="m-foot-row m-geo" href="#" data-link="letu"><span class="m-letu"><img src="public/images/icon-684.svg" alt=""><img class="m-letu-glyph" src="public/images/icon-687.svg" alt=""></span>ЛЭТУАЛЬ</a>
+        <a class="m-foot-row m-geo" href="#" data-link="ozon"><img src="public/images/icon-680.svg" alt="">Ozon</a>
+        <a class="m-foot-row m-geo" href="#" data-link="wildberries"><img src="public/images/icon-671.svg" alt="">Wildberries</a>
+      </div>
+      <div class="m-foot-group">
+        <p class="m-foot-h">Информация:</p>
+        <ul class="m-foot-list">
+          <li><a href="license.html">правила сайта</a></li>
+          <li><a href="cookie.html">политика cookie</a></li>
+          <li><a href="offer.html">о покупке на маркетплейсах</a></li>
+          <li><a href="privacy.html">политика конфиденциальности</a></li>
+        </ul>
+      </div>
     </div>
-    <nav class="cat-footer-m-legal" aria-label="Правовая информация">
-      <a href="offer.html">о покупке</a>
-      <a href="privacy.html">политика данных</a>
-      <a href="cookie.html">cookie</a>
-      <a href="license.html">правила сайта</a>
-    </nav>
-    <p class="cat-footer-m-copy">2026 UNCHARTED · All rights reserved</p>
+    <div class="m-copy">
+      <p>2026 <span class="m-up">uncharted</span> · All rights reserved</p>
+    </div>
   </footer>
 
 </div>
@@ -306,6 +321,6 @@
   fit();
 })();
 </script>
-<script src="app.js?v=20260717-8" defer></script>
+<script src="app.js?v=20260722-2" defer></script>
 </body>
 </html>

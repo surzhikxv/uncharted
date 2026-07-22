@@ -298,6 +298,8 @@ html { scroll-behavior: smooth; }
   .cat-logo { position: static; width: auto; height: auto; }
   .cat-logo img { height: 36px; width: auto; }
   .cat-header {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -352,56 +354,10 @@ html { scroll-behavior: smooth; }
 
   .cat-footer { display: none; }
   .cat-footer-m {
+    position: relative;
+    z-index: 2;
     display: block;
-    padding: 44px 22px 30px;
-    text-align: center;
-    background:
-      linear-gradient(180deg, rgba(250, 245, 241, .92) 0%, rgba(250, 245, 241, .72) 34%, rgba(250, 245, 241, .96) 100%),
-      url('public/images/m/footer.webp') bottom center / cover;
   }
-  .cat-footer-m-mark {
-    font-family: 'Geometria', sans-serif;
-    font-weight: 500;
-    font-size: 28px;
-    text-transform: uppercase;
-    color: #313131;
-  }
-  .cat-footer-m-mail {
-    display: inline-block;
-    margin-top: 14px;
-    font-size: 15px;
-    color: #313131;
-    text-decoration: none;
-  }
-  .cat-footer-m-shops {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px 18px;
-    margin-top: 18px;
-  }
-  .cat-footer-m-shops a {
-    font-family: 'Geometria', sans-serif;
-    font-size: 14px;
-    color: #313131;
-    text-decoration: none;
-  }
-  .cat-footer-m-legal {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px 14px;
-    margin: 24px auto 0;
-    max-width: 340px;
-  }
-  .cat-footer-m-legal a {
-    color: #313131;
-    font-family: 'Geometria', sans-serif;
-    font-size: 12px;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-  .cat-footer-m-copy { margin-top: 22px; font-family: 'Geometria', sans-serif; font-size: 11.5px; color: #8a7a6e; }
 
   .product-dialog {
     width: min(430px, calc(100vw - 28px));

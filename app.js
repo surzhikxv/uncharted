@@ -28,6 +28,7 @@
       label: 'MANGO BLISS · гель для душа · 450 мл',
       goldapple: 'https://goldapple.ru/99000004327-no3-mango-bliss',
       letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-gel-dlya-dusha-mango-bliss/181200045',
+      ozon: 'https://www.ozon.ru/product/sredstvo-dlya-dusha-gel-450-ml-3668397168/',
       wildberries: 'https://www.wildberries.ru/catalog/235077800/detail.aspx',
     },
     'gel-450-namibia-dunes': {
@@ -41,18 +42,21 @@
       label: 'CITRUS VETIVER · крем для рук и тела · 450 мл',
       goldapple: 'https://goldapple.ru/99000047659-no6-citrus-vetiver',
       letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-citrus-vetiver/181200037',
+      ozon: 'https://www.ozon.ru/product/parfyumirovannyy-krem-dlya-ruk-i-tela-uncharted-6-vetiver-limon-mindal-vanil-450-ml-1833154209/',
       wildberries: 'https://www.wildberries.ru/catalog/318042677/detail.aspx',
     },
     'cream-450-frozen-black-pepper': {
       label: 'FROZEN BLACK PEPPER · крем для рук и тела · 450 мл',
       goldapple: 'https://goldapple.ru/99000047661-no1-frozen-black-pepper',
       letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-frozen-black-pepper/181200036',
+      ozon: 'https://www.ozon.ru/product/parfyumirovannyy-krem-dlya-ruk-i-tela-uncharted-1-chernyy-perets-bergamot-vanil-450-ml-1833154380/',
       wildberries: 'https://www.wildberries.ru/catalog/318042678/detail.aspx',
     },
     'cream-450-spicy-frangipani': {
       label: 'SPICY FRANGIPANI · крем для рук и тела · 450 мл',
       goldapple: 'https://goldapple.ru/99000047656-no5-spicy-frangipani',
       letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-spicy-frangipani/181200039',
+      ozon: 'https://www.ozon.ru/product/parfyumirovannyy-krem-dlya-ruk-i-tela-uncharted-5-kedr-perets-vanil-apelsin-450-ml-1833154286/',
       wildberries: 'https://www.wildberries.ru/catalog/318042676/detail.aspx',
     },
     'cream-450-mango-bliss': {
@@ -65,6 +69,7 @@
     'cream-450-islay-smoke': {
       label: 'ISLAY SMOKE · крем для рук и тела · 450 мл',
       goldapple: 'https://goldapple.ru/99000149169-uncharted-tobacco-whiskey-vanilla-cocoa',
+      letu: LINKS.letu,
       ozon: 'https://www.ozon.ru/product/parfyumirovannyy-krem-dlya-ruk-i-tela-uncharted-tabak-vanil-kakao-450-ml-3602232500/',
       wildberries: 'https://www.wildberries.ru/catalog/883807325/detail.aspx',
     },
@@ -79,6 +84,7 @@
       label: 'MANGO BLISS · крем для рук и тела · 50 мл',
       goldapple: 'https://goldapple.ru/99000047655-no3-mango-bliss',
       letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-mango-bliss/185200372',
+      ozon: 'https://www.ozon.ru/product/parfyumirovannyy-krem-dlya-ruk-i-tela-uncharted-3-mango-ezhevika-pachuli-ilang-ilang-50-ml-1833154280/',
       wildberries: 'https://www.wildberries.ru/catalog/318042881/detail.aspx',
     },
     'cream-50-frozen-black-pepper': {
@@ -92,6 +98,7 @@
       label: 'SPICY FRANGIPANI · крем для рук и тела · 50 мл',
       goldapple: 'https://goldapple.ru/99000047656-no5-spicy-frangipani',
       letu: 'https://www.letu.ru/product/uncharted-parfyumirovannyi-krem-dlya-ruk-i-tela-spicy-frangipani/185200370',
+      ozon: 'https://www.ozon.ru/product/parfyumirovannyy-krem-dlya-ruk-i-tela-uncharted-5-kedr-perets-vanil-apelsin-50-ml-1833154362/',
       wildberries: 'https://www.wildberries.ru/catalog/318042882/detail.aspx',
     },
   };

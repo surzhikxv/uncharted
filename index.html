@@ -23,7 +23,7 @@
 <link rel="preload" as="image" href="public/images/m/hero-woman.webp" media="(max-width: 768px)">
 <link rel="preload" as="image" href="public/images/render/hero-woman.webp" media="(min-width: 1200px)">
 <link rel="stylesheet" href="styles.css?v=20260717-2">
-<link rel="stylesheet" href="mobile.css?v=20260717-16">
+<link rel="stylesheet" href="mobile.css?v=20260722-1">
 <link rel="stylesheet" href="anim.css?v=20260717-5">
 <script type="application/ld+json">
 {
@@ -316,6 +316,7 @@
 
   <section class="m-hero">
     <img class="m-hero-bg" src="public/images/m/hero-woman.webp" alt="">
+    <canvas class="m-hero-fog" data-shader="mobile-fog" aria-hidden="true"></canvas>
     <div class="m-hero-inner m-rv">
       <h1 class="m-hero-text">Парфюмированная уходовая косметика для&nbsp;тех, кто открывает новые горизонты через&nbsp;ароматы</h1>
       <a class="m-btn" href="catalog.html">каталог</a>
@@ -544,6 +545,6 @@
   fit();
 })();
 </script>
-<script src="shaders.js" defer></script><script src="app.js?v=20260717-8" defer></script>
+<script src="shaders.js" defer></script><script src="app.js?v=20260722-1" defer></script>
 </body>
 </html>

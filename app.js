@@ -263,32 +263,47 @@
     update();
   }
 
-  // --- WebGL band ---
-  if (!REDUCED && window.GLEngine && document.documentElement.clientWidth > MOBILE_MAX) {
+  // --- WebGL-слои hero ---
+  if (!REDUCED && window.GLEngine) {
     try {
       window.ENGINE = new GLEngine();
-      // фотополоса-каньон (band) убрана по макету; webgl-on теперь ставит сцена grain
-      const grain = document.querySelector('canvas[data-shader="grain"]');
-      if (grain) {
-        const gsc = ENGINE.addScene(grain, GRAIN_FRAG, {}, () => ({}));
-        if (gsc) {
-          gsc.onFail = () => document.body.classList.remove('webgl-on');
-          const onReady = () => { if (gsc.ready) document.body.classList.add('webgl-on'); else if (!gsc.failed) requestAnimationFrame(onReady); };
-          requestAnimationFrame(onReady);
+      if (document.documentElement.clientWidth > MOBILE_MAX) {
+        // фотополоса-каньон (band) убрана по макету; webgl-on теперь ставит сцена grain
+        const grain = document.querySelector('canvas[data-shader="grain"]');
+        if (grain) {
+          const gsc = ENGINE.addScene(grain, GRAIN_FRAG, {}, () => ({}));
+          if (gsc) {
+            gsc.onFail = () => document.body.classList.remove('webgl-on');
+            const onReady = () => { if (gsc.ready) document.body.classList.add('webgl-on'); else if (!gsc.failed) requestAnimationFrame(onReady); };
+            requestAnimationFrame(onReady);
+          }
         }
-      }
-      // атмосферный туман у модели на hero
-      const fog = document.querySelector('canvas[data-shader="fog"]');
-      if (fog) ENGINE.addScene(fog, MIST_FRAG, {}, () => ({}));
-      // течение струи геля на помпе
-      const flow = document.querySelector('canvas[data-shader="flow"]');
-      if (flow) {
-        const fsc = ENGINE.addScene(flow, FLOW_FRAG, { uTex: 'public/images/render/pump-697.webp' }, () => ({}));
-        if (fsc) {
-          const fb = document.querySelector('.pump-fallback');
-          fsc.onFail = () => { flow.style.display = 'none'; fb.style.visibility = 'visible'; };
-          const onFlowReady = () => { if (fsc.ready) fb.style.visibility = 'hidden'; else if (!fsc.failed) requestAnimationFrame(onFlowReady); };
-          requestAnimationFrame(onFlowReady);
+        // атмосферный туман у модели на hero
+        const fog = document.querySelector('canvas[data-shader="fog"]');
+        if (fog) ENGINE.addScene(fog, MIST_FRAG, {}, () => ({}));
+        // течение струи геля на помпе
+        const flow = document.querySelector('canvas[data-shader="flow"]');
+        if (flow) {
+          const fsc = ENGINE.addScene(flow, FLOW_FRAG, { uTex: 'public/images/render/pump-697.webp' }, () => ({}));
+          if (fsc) {
+            const fb = document.querySelector('.pump-fallback');
+            fsc.onFail = () => { flow.style.display = 'none'; fb.style.visibility = 'visible'; };
+            const onFlowReady = () => { if (fsc.ready) fb.style.visibility = 'hidden'; else if (!fsc.failed) requestAnimationFrame(onFlowReady); };
+            requestAnimationFrame(onFlowReady);
+          }
+        }
+      } else {
+        const mobileFog = document.querySelector('canvas[data-shader="mobile-fog"]');
+        if (mobileFog) {
+          const mfsc = ENGINE.addScene(mobileFog, MIST_FRAG, {}, () => ({}));
+          if (mfsc) {
+            mfsc.onFail = () => document.body.classList.remove('m-webgl-on');
+            const onMobileFogReady = () => {
+              if (mfsc.ready) document.body.classList.add('m-webgl-on');
+              else if (!mfsc.failed) requestAnimationFrame(onMobileFogReady);
+            };
+            requestAnimationFrame(onMobileFogReady);
+          }
         }
       }
     } catch (e) { console.warn('WebGL off:', e); }
